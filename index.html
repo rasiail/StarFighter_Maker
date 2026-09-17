@@ -26,6 +26,7 @@
             background-color: #02060d;
             font-family: 'Share Tech Mono', monospace;
             color: #4df58a;
+            cursor: default;
         }
 
         #game-container {
@@ -33,6 +34,7 @@
             width: 100%;
             height: 100%;
             outline: none;
+            cursor: crosshair;
         }
 
         canvas#webgl-canvas {
@@ -386,12 +388,31 @@
         <canvas id="webgl-canvas"></canvas>
         <canvas id="hud-canvas"></canvas>
         <div class="scanlines"></div>
+        <div id="virtual-cursor" style="display: none; position: fixed; top: 0; left: 0; width: 32px; height: 32px; margin-top: -16px; margin-left: -16px; pointer-events: none; z-index: 9999; will-change: transform;">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style="filter: drop-shadow(0 0 4px #4df58a);">
+                <circle cx="16" cy="16" r="6" stroke="#4df58a" stroke-width="1.8" fill="rgba(77, 245, 138, 0.15)"/>
+                <line x1="16" y1="2" x2="16" y2="8" stroke="#4df58a" stroke-width="2"/>
+                <line x1="16" y1="24" x2="16" y2="30" stroke="#4df58a" stroke-width="2"/>
+                <line x1="2" y1="16" x2="8" y2="16" stroke="#4df58a" stroke-width="2"/>
+                <line x1="24" y1="16" x2="30" y2="16" stroke="#4df58a" stroke-width="2"/>
+                <circle cx="16" cy="16" r="1.5" fill="#ffffff"/>
+            </svg>
+        </div>
 
         <div id="ui-overlay">
             <div class="hud-header">
                 <div class="hud-badge">
                     <div>UNIT: F-104G STARFIGHTER</div>
                     <div id="mission-name" style="font-size: 11px; color: #7fe6a7;">OP: CANYON SCOUT</div>
+                    <div style="margin-top: 6px; width: 140px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                            <span>HULL HP</span>
+                            <span id="player-hp-val" style="color: #4df58a; font-weight: bold;">100%</span>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.6); border: 1px solid #4df58a; border-radius: 2px; overflow: hidden;">
+                            <div id="player-hp-bar" style="width: 100%; height: 100%; background: #4df58a; transition: width 0.15s, background-color 0.2s;"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="hud-badge" id="hud-score-box">
                     <div>SCORE: <span id="score-val" style="color: #fff;">0000</span></div>
@@ -535,7 +556,7 @@
                 </div>
 
                 <!-- 3. SFX 볼륨 -->
-                <div class="option-row" style="margin-bottom: 18px;">
+                <div class="option-row" style="margin-bottom: 14px;">
                     <div style="width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <span style="font-weight: bold; color: #ffffff; font-size: 13px;">SFX / ENGINE</span>
@@ -545,6 +566,18 @@
                     </div>
                 </div>
 
+                <!-- 4. 마우스 창 내부 가둠 & 조준 커서 유지 -->
+                <div class="option-row" style="margin-bottom: 18px;">
+                    <div>
+                        <div style="font-weight: bold; color: #ffffff; font-size: 14px;">CONFINE MOUSE TO WINDOW</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">창 밖 이탈 방지 + 전투 조준 커서 유지 (ESC/종료 시 해제)</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="opt-pointer-lock" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
                 <div style="display: flex; justify-content: center;">
                     <button class="start-btn" id="btn-close-options" style="padding: 10px 32px; font-size: 14px;">APPLY & RESUME [ESC]</button>
                 </div>
@@ -552,13 +585,17 @@
         </div>
 
         <div id="gameover-modal" style="display: none;">
-            <div class="briefing-box">
+            <div class="briefing-box" style="max-width: 520px; padding: 28px 32px;">
                 <h1 class="briefing-title" id="gameover-title">MISSION COMPLETE</h1>
                 <p class="briefing-subtitle" id="gameover-sub">AIR SUPERIORITY ACHIEVED</p>
-                <p style="font-size: 18px; margin: 20px 0; color: #ffeb3b;">
+                <p style="font-size: 18px; margin: 16px 0 24px; color: #ffeb3b;">
                     FINAL SCORE: <span id="final-score">0</span>
                 </p>
-                <button class="start-btn" id="btn-restart">RE-ENGAGE</button>
+                <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%;">
+                    <button class="start-btn" id="btn-next-stage" style="width: 280px; background: rgba(20, 80, 45, 0.9); border-color: #4df58a;">NEXT STAGE</button>
+                    <button class="start-btn" id="btn-restart" style="width: 280px;">RETRY MISSION</button>
+                    <button class="start-btn" id="btn-main-menu" style="width: 280px; background: rgba(35, 45, 55, 0.85); border-color: #79a8c7; color: #a9d4ee;">MAIN MENU</button>
+                </div>
             </div>
         </div>
     </div>
@@ -894,8 +931,8 @@
                 this.particles = [];
                 this.maxParticles = 120;
                 
-                // 로우폴리곤 덩어리 지오메트리 (이코사헤드론 - 20면체)
-                this.geom = new THREE.IcosahedronGeometry(0.24, 0);
+                // 로우폴리곤 덩어리 지오메트리 (상주하는 코어 구형 0.38과 동일한 기준 규격)
+                this.geom = new THREE.IcosahedronGeometry(0.38, 0);
                 
                 // 파티클 풀 미리 생성 (풀링 방식)
                 for (let i = 0; i < this.maxParticles; i++) {
@@ -915,9 +952,8 @@
                         rotAxis: new THREE.Vector3(Math.random()-0.5, Math.random()-0.5, Math.random()-0.5).normalize(),
                         rotSpeed: 8 + Math.random() * 12,
                         life: 0,
-                        maxLife: 0.10,   // 아주 짧게 타오름 (0.08~0.12초)
-                        startScale: 0.35,
-                        maxScale: 0.9,
+                        maxLife: 0.15,
+                        startScale: 0.80, // 상주 구형의 80% 기준 크기
                         isAfterburner: false,
                         isEnemy: false,
                         active: false
@@ -944,23 +980,23 @@
                 p.isEnemy = isEnemy;
                 p.life = 0;
 
-                // 적절한 라이프타임 (0.14 ~ 0.23초): 구형 뭉침 방지 및 원뿔 형태 유지
-                p.maxLife = isAfterburner ? 0.20 + Math.random() * 0.04 : 0.15 + Math.random() * 0.03;
-                p.startScale = (0.42 + Math.random() * 0.1) * (isAfterburner ? 1.35 : 0.95);
-                p.maxScale = p.startScale * (isAfterburner ? 1.2 : 1.1);
+                // 적절한 라이프타임 (0.16 ~ 0.24초): 뒤로 뻗어나가는 시원한 제트 화염
+                p.maxLife = isAfterburner ? 0.22 + Math.random() * 0.04 : 0.16 + Math.random() * 0.03;
+                
+                // 상주하는 노즐 구형(반경 0.38)의 정확히 80% 크기로 시작
+                p.startScale = 0.80 * (isAfterburner ? 1.25 : 1.0) * (0.95 + Math.random() * 0.1);
 
-                // 노즐 로컬 위치에서 생성 (+ 약간의 랜덤 지터)
+                // 노즐 로컬 위치에서 생성 (+ 미세 랜덤 지터)
                 p.mesh.position.copy(localPos).add(new THREE.Vector3(
-                    (Math.random() - 0.5) * 0.06,
-                    (Math.random() - 0.5) * 0.06,
-                    (Math.random() - 0.5) * 0.06
+                    (Math.random() - 0.5) * 0.04,
+                    (Math.random() - 0.5) * 0.04,
+                    (Math.random() - 0.5) * 0.04
                 ));
 
                 // ─── 로컬 좌표계 원뿔(Cone) 사출 속도 ──────────────────────────
                 // F-104 기준 로컬 +Z가 기체 후방 방향입니다.
-                // 구형 뭉침을 해소하기 위해 후방으로 16 ~ 26 m/s의 시원한 제트 분출 속도 부여
-                const ejectSpeed = isAfterburner ? (24.0 + Math.random() * 4.0) : (15.0 + Math.random() * 3.0);
-                const spread = (isAfterburner ? 1.0 : 0.6) * (0.6 + throttleRatio * 0.4);
+                const ejectSpeed = isAfterburner ? (26.0 + Math.random() * 4.0) : (16.0 + Math.random() * 3.0);
+                const spread = (isAfterburner ? 0.9 : 0.55) * (0.6 + throttleRatio * 0.4);
 
                 p.velocity.set(
                     (Math.random() - 0.5) * spread,
@@ -991,9 +1027,9 @@
                     // 로우폴리면 자전
                     p.mesh.rotateOnAxis(p.rotAxis, p.rotSpeed * delta);
 
-                    // 스케일: 뒤로 갈수록 가늘어지는 리니어 원뿔 수렴
-                    const s = p.startScale * (1.0 - progress * 0.88);
-                    p.mesh.scale.setScalar(Math.max(0.02, s));
+                    // 스케일: 라이프타임에 따라 100%에서 0%로 자연스럽게 가늘어지며 소멸
+                    const s = p.startScale * Math.max(0.0, 1.0 - progress);
+                    p.mesh.scale.setScalar(Math.max(0.01, s));
 
                     // 색상 및 투명도 진화
                     if (p.isEnemy) {
@@ -1497,10 +1533,11 @@
             const c = document.createElement('canvas');
             c.width = 512; c.height = 512;
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#b77949';
+            // 채도를 대폭 낮춘 건조한 사막 모래/협곡 흙먼지 톤 (Desaturated muted sand & rock)
+            ctx.fillStyle = '#554d45';
             ctx.fillRect(0, 0, 512, 512);
             for (let i = 0; i < 35000; i++) {
-                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(215,150,95,0.22)' : 'rgba(125,70,35,0.2)';
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(118, 110, 100, 0.22)' : 'rgba(56, 50, 45, 0.25)';
                 ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
             }
             const tex = new THREE.CanvasTexture(c);
@@ -1640,13 +1677,13 @@
                 skyMat.color.setHex(0x6bb5ff);
                 scene.background.setHex(0x6bb5ff);
                 scene.fog.color.setHex(0xa0c8ff);
-                sunLight.color.setHex(0xfffaed);
-                sunLight.intensity = 1.35;
+                sunLight.color.setHex(0xfff5e6);
+                sunLight.intensity = (stageId === 1 ? 1.12 : 1.35); // 사막 눈부심 완화
                 sunLight.position.set(4000, 5000, -3000);
                 ambientLight.color.setHex(0xffffff);
-                ambientLight.intensity = 0.50;
+                ambientLight.intensity = (stageId === 1 ? 0.42 : 0.50);
                 hemiLight.color.setHex(0xa0c8ff);
-                hemiLight.groundColor.setHex(stageId === 2 ? 0x1a4568 : 0xb88855);
+                hemiLight.groundColor.setHex(stageId === 2 ? 0x1a4568 : (stageId === 1 ? 0x48423a : 0x7a5833));
             } else if (timeOfDay === 'SUNSET') {
                 skyMat.color.setHex(0xc85532); // 오렌지/레드 노을
                 scene.background.setHex(0xc85532);
@@ -1684,13 +1721,13 @@
             // 4. 스테이지별 지형 고도 및 환경 프랍 생성
             if (stageId === 1) {
                 // ==========================================
-                // STAGE 1: 사막 (DESERT)
+                // STAGE 1: 사막 (DESERT - 채도를 확 낮춘 차분한 모래 흙빛)
                 // ==========================================
                 currentEnvironment.theme = 'DESERT';
                 terrainMat.map = sandTexture;
-                terrainMat.color.setHex(0xffffff);
-                terrainMat.roughness = 0.9;
-                terrainMat.metalness = 0.1;
+                terrainMat.color.setHex(0x9a938a); // 채도를 대폭 낮춘 매트한 드라이 샌드 톤
+                terrainMat.roughness = 0.95;
+                terrainMat.metalness = 0.05;
                 terrainMat.needsUpdate = true;
 
                 // 굴곡진 모래 사구와 웅장한 협곡
@@ -1890,6 +1927,7 @@
         // 전투기 하위 카메라 피봇 생성 (전투기 중심을 피봇 축으로 지정하여 유격 0 실현)
         cameraPivot = new THREE.Group();
         cameraPivot.name = "cameraPivot";
+        cameraPivot.rotation.order = 'YXZ';
         cameraPivot.position.set(0, 0.4, 0); // 전투기 동체 정중앙 무게중심
         playerMesh.add(cameraPivot);
 
@@ -2191,9 +2229,9 @@
             const pMesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.6 + Math.random() * 0.8, 5, 5),
                 new THREE.MeshBasicMaterial({
-                    color: 0xd4d8db,
+                    color: 0x5f666e, // 짙은 어두운 색에서 약간 더 밝아진 자연스러운 미사일 연기 그레이
                     transparent: true,
-                    opacity: 0.55
+                    opacity: 0.62
                 })
             );
             pMesh.position.copy(pos);
@@ -2707,6 +2745,34 @@
             freelookIdleTimer: 0
         };
 
+        // 생존 적기 중 최적의 타깃을 찾아 lockedEnemyIndex 자동 지정
+        function acquireNextBestTarget() {
+            const aliveList = [];
+            enemies.forEach((e, idx) => {
+                if (e.alive) {
+                    const dist = playerMesh.position.distanceTo(e.mesh.position);
+                    aliveList.push({ enemy: e, idx, dist });
+                }
+            });
+
+            if (aliveList.length === 0) return null;
+
+            // 거리순 정렬
+            aliveList.sort((a, b) => a.dist - b.dist);
+
+            // 카메라 정면 벡터와 가까운 적 우선 탐색
+            const camFwd = new THREE.Vector3();
+            camera.getWorldDirection(camFwd);
+            const inFront = aliveList.find(item => {
+                const toEnemy = item.enemy.mesh.position.clone().sub(camera.position).normalize();
+                return camFwd.dot(toEnemy) > 0.15;
+            });
+
+            const chosen = inFront || aliveList[0];
+            lockedEnemyIndex = chosen.idx;
+            return chosen.enemy;
+        }
+
         function updateCamera(delta) {
             // 속도에 따른 동적 FOV 조정
             const speedRatio = (playerFlight.speed - playerFlight.minSpeed) / (playerFlight.maxSpeed - playerFlight.minSpeed);
@@ -2721,7 +2787,12 @@
 
             if (!cameraPivot) return;
 
-            const targetEnemy = enemies[lockedEnemyIndex] && enemies[lockedEnemyIndex].alive ? enemies[lockedEnemyIndex] : null;
+            let targetEnemy = enemies[lockedEnemyIndex] && enemies[lockedEnemyIndex].alive ? enemies[lockedEnemyIndex] : null;
+
+            // 타깃 캠(우클릭 홀드) 중인데 기존 타깃이 격추/무효화된 경우, 즉시 다른 생존 적기를 자동 획득
+            if (keys.targetCam && !targetEnemy) {
+                targetEnemy = acquireNextBestTarget();
+            }
 
             // 1. 타깃 캠 모드 (우클릭 홀드 시 적기 방향으로 카메라 피봇 회전)
             if (keys.targetCam && targetEnemy) {
@@ -2735,27 +2806,32 @@
 
                 // 로컬 방향 각도 산출 (전방 -Z, 우측 +X, 상단 +Y)
                 const distXZ = Math.hypot(localEnemyPos.x, localEnemyPos.z);
-                const targetPitch = Math.atan2(localEnemyPos.y, distXZ);
-                const targetYaw = -Math.atan2(localEnemyPos.x, -localEnemyPos.z); // 우측 타깃 포커싱 시 음수 회전 적용
+                // Pitch: 적기가 상단에 있으면 양수 회전 (수직 뒤집힘 방지 위해 ±83도 한계)
+                const rawPitch = Math.atan2(localEnemyPos.y, Math.max(1.0, distXZ)) + 0.08;
+                const targetPitch = THREE.MathUtils.clamp(rawPitch, -Math.PI * 0.46, Math.PI * 0.46);
 
-                // 카메라가 너무 과도하게 뒤집히지 않도록 부드러운 한계각 적용
-                const clampedPitch = THREE.MathUtils.clamp(targetPitch * 0.65, -0.45, 0.6);
-                const clampedYaw = THREE.MathUtils.clamp(targetYaw * 0.7, -1.2, 1.2);
+                // Yaw: 적기 방위각 360도 전방위 추적 (-Z 기준 시계/반시계)
+                const targetYaw = -Math.atan2(localEnemyPos.x, -localEnemyPos.z);
 
-                // cameraPivot을 타깃 방향으로 부드럽게 선회 (Lerp)
-                cameraPivot.rotation.x = THREE.MathUtils.lerp(cameraPivot.rotation.x, clampedPitch, delta * 7.0);
-                cameraPivot.rotation.y = THREE.MathUtils.lerp(cameraPivot.rotation.y, clampedYaw, delta * 7.0);
+                // Yaw 각도 최단 경로 보간 (±180도 경계선 넘을 때 360도 급회전 방지)
+                let diffYaw = targetYaw - cameraPivot.rotation.y;
+                while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+                while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+
+                const camLerpFactor = 1.0 - Math.exp(-14.0 * delta);
+                cameraPivot.rotation.y += diffYaw * camLerpFactor;
+                cameraPivot.rotation.x = THREE.MathUtils.lerp(cameraPivot.rotation.x, targetPitch, camLerpFactor);
                 cameraPivot.rotation.z = 0;
 
                 // 마우스 프리룩 각도 동기화 (타깃 캠 해제 시 부드러운 전환)
                 cameraConfig.freelookPitch = cameraPivot.rotation.x;
                 cameraConfig.freelookYaw = cameraPivot.rotation.y;
             } else {
-                // 2. 일반 비행 & 마우스 프리룩 모드 (미입력 시 1.5초 후 부드럽게 정면 복귀)
+                // 2. 일반 비행 & 마우스 프리룩 모드 (미입력 시 1.2초 후 부드럽게 정면 복귀)
                 cameraConfig.freelookIdleTimer += delta;
-                if (cameraConfig.freelookIdleTimer > 1.5) {
-                    cameraConfig.freelookYaw = THREE.MathUtils.lerp(cameraConfig.freelookYaw, 0, delta * 4.5);
-                    cameraConfig.freelookPitch = THREE.MathUtils.lerp(cameraConfig.freelookPitch, 0, delta * 4.5);
+                if (cameraConfig.freelookIdleTimer > 1.2) {
+                    cameraConfig.freelookYaw = THREE.MathUtils.lerp(cameraConfig.freelookYaw, 0, delta * 5.0);
+                    cameraConfig.freelookPitch = THREE.MathUtils.lerp(cameraConfig.freelookPitch, 0, delta * 5.0);
                 }
 
                 // cameraPivot에 프리룩 오프셋 회전 적용
@@ -2779,6 +2855,25 @@
             hudCtx.fillStyle = '#4df58a';
             hudCtx.lineWidth = 1.5;
             hudCtx.font = '13px "Share Tech Mono", monospace';
+
+            // 플레이어 기체 체력(HULL HP) 게이지 및 수치 실시간 갱신
+            const hpEl = document.getElementById('player-hp-val');
+            const hpBar = document.getElementById('player-hp-bar');
+            if (hpEl && hpBar) {
+                const hpPct = Math.max(0, Math.min(100, Math.round((playerFlight.health / (playerFlight.maxHealth || 100)) * 100)));
+                hpEl.textContent = `${hpPct}%`;
+                hpBar.style.width = `${hpPct}%`;
+                if (hpPct > 50) {
+                    hpBar.style.backgroundColor = '#4df58a';
+                    hpEl.style.color = '#4df58a';
+                } else if (hpPct > 25) {
+                    hpBar.style.backgroundColor = '#ffbb33';
+                    hpEl.style.color = '#ffbb33';
+                } else {
+                    hpBar.style.backgroundColor = '#ff3344';
+                    hpEl.style.color = '#ff3344';
+                }
+            }
 
             // 카메라가 기체 전방(정면)을 바라보고 있는지 확인 (프리룩 시야 오차 산출)
             const lookAngle = Math.hypot(cameraConfig.freelookYaw, cameraConfig.freelookPitch);
@@ -2907,6 +3002,9 @@
 
             // 2단계: 무기 모드(1번 표준 vs 2번 멀티)에 따른 락온 대상 확정
             let currentLockedEnemy = enemies[lockedEnemyIndex] && enemies[lockedEnemyIndex].alive ? enemies[lockedEnemyIndex] : null;
+            if (!currentLockedEnemy) {
+                currentLockedEnemy = acquireNextBestTarget();
+            }
             let targetInLockCone = false;
             let isCurrentTargetOnScreenCenter = false;
 
@@ -2966,54 +3064,57 @@
                     }
 
                     if (enemy.isLocked) {
-                        // 락온 박스 (펄싱 효과)
+                        // 락온 박스 (펄싱 효과 & 굵은 라인)
                         const pulse = Math.sin(performance.now() * 0.02) * 4;
                         if (isCurrentTarget) {
                             hudCtx.strokeStyle = '#ff3344';
                             hudCtx.fillStyle = '#ff3344';
-                            hudCtx.lineWidth = 2.5;
+                            hudCtx.lineWidth = 3.8; // 굵고 강렬한 락온 사각형
                             hudCtx.strokeRect(sx - 26 - pulse, sy - 26 - pulse, 52 + pulse * 2, 52 + pulse * 2);
-                            hudCtx.font = '13px "Share Tech Mono", monospace';
+                            hudCtx.font = 'bold 14px "Share Tech Mono", monospace';
                             hudCtx.fillText("LOCK", sx - 16, sy - 34);
                         } else {
                             // 멀티 락온 서브 타깃
                             hudCtx.strokeStyle = '#ff7733';
                             hudCtx.fillStyle = '#ff7733';
-                            hudCtx.lineWidth = 2.0;
+                            hudCtx.lineWidth = 3.0; // 멀티 락온 사각형 굵기 상향
                             hudCtx.strokeRect(sx - 22 - pulse, sy - 22 - pulse, 44 + pulse * 2, 44 + pulse * 2);
-                            hudCtx.font = '11px "Share Tech Mono", monospace';
+                            hudCtx.font = 'bold 12px "Share Tech Mono", monospace';
                             hudCtx.fillText("MULTI", sx - 18, sy - 28);
                         }
 
                         // Target Info Tags & Health Bar
-                        hudCtx.font = '12px "Share Tech Mono", monospace';
-                        hudCtx.fillText(`${enemy.callsign} [${distToPlayer}m]`, sx + 30, sy - 6);
-                        hudCtx.strokeRect(sx + 30, sy + 2, 60, 6);
-                        hudCtx.fillRect(sx + 30, sy + 2, Math.max(0, (enemy.health / (enemy.maxHealth || 100)) * 60), 6);
+                        hudCtx.font = 'bold 13px "Share Tech Mono", monospace';
+                        hudCtx.fillText(`${enemy.callsign} [${distToPlayer}m]`, sx + 32, sy - 6);
+                        hudCtx.lineWidth = 1.8;
+                        hudCtx.strokeRect(sx + 32, sy + 2, 60, 6);
+                        hudCtx.fillRect(sx + 32, sy + 2, Math.max(0, (enemy.health / (enemy.maxHealth || 100)) * 60), 6);
 
                     } else if (isCurrentTarget) {
-                        // 현재 타깃이지만 전투기 전방 콘 밖이라 미락온 상태 (초록 다이아몬드)
+                        // 현재 타깃이지만 전투기 전방 콘 밖이라 미락온 상태 (굵고 선명한 초록 다이아몬드)
                         hudCtx.strokeStyle = '#4df58a';
                         hudCtx.fillStyle = '#4df58a';
-                        hudCtx.lineWidth = 1.8;
+                        hudCtx.lineWidth = 3.5; // 다이아몬드 선 굵기 대폭 상향
 
                         hudCtx.beginPath();
-                        hudCtx.moveTo(sx, sy - 22);
-                        hudCtx.lineTo(sx + 22, sy);
-                        hudCtx.lineTo(sx, sy + 22);
-                        hudCtx.lineTo(sx - 22, sy);
+                        hudCtx.moveTo(sx, sy - 24);
+                        hudCtx.lineTo(sx + 24, sy);
+                        hudCtx.lineTo(sx, sy + 24);
+                        hudCtx.lineTo(sx - 24, sy);
                         hudCtx.closePath();
                         hudCtx.stroke();
 
-                        hudCtx.font = '12px "Share Tech Mono", monospace';
-                        hudCtx.fillText(`${enemy.callsign} [${distToPlayer}m]`, sx + 30, sy - 6);
-                        hudCtx.strokeRect(sx + 30, sy + 2, 60, 6);
-                        hudCtx.fillRect(sx + 30, sy + 2, Math.max(0, (enemy.health / (enemy.maxHealth || 100)) * 60), 6);
+                        hudCtx.font = 'bold 13px "Share Tech Mono", monospace';
+                        hudCtx.fillText(`${enemy.callsign} [${distToPlayer}m]`, sx + 32, sy - 6);
+                        hudCtx.lineWidth = 1.8;
+                        hudCtx.strokeRect(sx + 32, sy + 2, 60, 6);
+                        hudCtx.fillRect(sx + 32, sy + 2, Math.max(0, (enemy.health / (enemy.maxHealth || 100)) * 60), 6);
 
                     } else {
-                        // Unfocused Enemy Marker (Simple bracket)
-                        hudCtx.strokeStyle = enemy.isGround ? 'rgba(255, 165, 50, 0.55)' : 'rgba(77, 245, 138, 0.45)';
-                        hudCtx.strokeRect(sx - 12, sy - 12, 24, 24);
+                        // Unfocused Enemy Marker (선명한 코너 브래킷)
+                        hudCtx.strokeStyle = enemy.isGround ? 'rgba(255, 175, 60, 0.75)' : 'rgba(77, 245, 138, 0.65)';
+                        hudCtx.lineWidth = 2.4; // 일반 적기 마커 선 두께 상향
+                        hudCtx.strokeRect(sx - 14, sy - 14, 28, 28);
                     }
                 }
             });
@@ -3812,7 +3913,10 @@
                 }
             }
 
-            cycleTarget();
+            // 현재 락온된 적기가 격추되었거나 무효화된 경우, 즉시 가장 가까운 생존 적기로 자동 락온
+            if (enemy === enemies[lockedEnemyIndex] || !enemies[lockedEnemyIndex] || !enemies[lockedEnemyIndex].alive) {
+                acquireNextBestTarget();
+            }
         }
 
         function respawnEnemy(enemy) {
@@ -3901,16 +4005,18 @@
             inViewList.sort((a, b) => a.dist - b.dist);
             outViewList.sort((a, b) => a.dist - b.dist);
 
-            // 카메라 화면에 보이는 타깃을 최우선으로 배치하고, 그 다음 화면 밖 타깃 배치
-            const targetOrder = inViewList.length > 0 ? inViewList.concat(outViewList) : outViewList;
-            if (targetOrder.length === 0) return;
+            // [최우선 순위 개선]: 화면 안에 적이 1기라도 있으면 오직 화면 안의 적들만 거리순으로 순환!
+            // 화면 안에 적이 아예 없을 때만 화면 밖의 적들을 거리순으로 순환
+            const targetPool = (inViewList.length > 0) ? inViewList : outViewList;
+            if (targetPool.length === 0) return;
 
-            // 현재 타깃의 다음 순서로 순환
-            const curPos = targetOrder.findIndex(item => item.idx === lockedEnemyIndex);
+            const curPos = targetPool.findIndex(item => item.idx === lockedEnemyIndex);
             if (curPos === -1) {
-                lockedEnemyIndex = targetOrder[0].idx;
+                // 현재 타깃이 화면 내에 없다면 -> 화면 내 가장 가까운 적(1순위)으로 즉각 포커싱
+                lockedEnemyIndex = targetPool[0].idx;
             } else {
-                lockedEnemyIndex = targetOrder[(curPos + 1) % targetOrder.length].idx;
+                // 화면 내 타깃들 사이에서 거리순으로 순환
+                lockedEnemyIndex = targetPool[(curPos + 1) % targetPool.length].idx;
             }
         }
 
@@ -4008,11 +4114,11 @@
                 }, 300);
             } else if (e.button === 2) { // Right click
                 isRightClickHeld = false;
-                // 0.5초(500ms) 홀드 시 타깃 캠 활성화
+                // 0.18초(180ms) 이상 홀드 시 즉시 타깃 캠 활성화 (굼뜬 지연 해소)
                 rightClickTimeout = setTimeout(() => {
                     isRightClickHeld = true;
                     keys.targetCam = true;
-                }, 500);
+                }, 180);
             }
         });
 
@@ -4039,7 +4145,7 @@
                 }
                 keys.targetCam = false;
                 
-                // 0.5초를 채우지 않고 뗐다면(단발 클릭) 타깃 순환
+                // 0.18초 이내로 가볍게 클릭(단발 탭) 시 타깃 순환
                 if (!isRightClickHeld) {
                     cycleTarget();
                 }
@@ -4047,8 +4153,33 @@
             }
         });
 
-        // Mouse Freelook: Moving the mouse orbits around the Starfighter 360 degrees
+        // 가상 전투 조준 커서 상태 (화면 경계 내 마우스 가둠 & 시각화)
+        const virtualMouse = {
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            visible: false
+        };
+        const virtualCursorEl = document.getElementById('virtual-cursor');
+
+        function updateVirtualCursorPos() {
+            if (virtualCursorEl && virtualMouse.visible) {
+                virtualCursorEl.style.transform = `translate3d(${virtualMouse.x}px, ${virtualMouse.y}px, 0)`;
+            }
+        }
+
+        // Mouse Freelook & Virtual Cursor Management
         window.addEventListener('mousemove', (e) => {
+            const isLocked = (document.pointerLockElement === document.body);
+            if (isLocked) {
+                // 게임 창 밖으로 나가지 못하도록 화면 경계(안쪽 16px 마진) 내에서 마우스 위치 제한
+                virtualMouse.x = Math.max(16, Math.min(window.innerWidth - 16, virtualMouse.x + e.movementX));
+                virtualMouse.y = Math.max(16, Math.min(window.innerHeight - 16, virtualMouse.y + e.movementY));
+                updateVirtualCursorPos();
+            } else {
+                virtualMouse.x = e.clientX;
+                virtualMouse.y = e.clientY;
+            }
+
             if (!isGameRunning || keys.targetCam) return;
             const dx = e.movementX !== undefined ? e.movementX : 0;
             const dy = e.movementY !== undefined ? e.movementY : 0;
@@ -4144,11 +4275,14 @@
            ============================================================ */
         let isGameRunning = false;
         let isGamePaused = false;
+        let isPointerLockEnabled = true; // 기본값: 게임 플레이 중 창 밖 이탈 방지 (조준 커서 상시 유지)
+        let wasPointerLocked = false;    // 실제 락온 상태 추적 플래그
 
         // ============================================================
-        // Pointer Lock API (게임 중 마우스 커서 가둠/숨김 및 ESC 일시정지 해제)
+        // Pointer Lock & Virtual Combat Cursor Management
         // ============================================================
         function requestGamePointerLock() {
+            if (!isPointerLockEnabled) return;
             if (!isGameRunning || isGamePaused) return;
             const optModal = document.getElementById('options-modal');
             if (optModal && optModal.style.display === 'flex') return;
@@ -4165,24 +4299,52 @@
         }
 
         function releaseGamePointerLock() {
+            wasPointerLocked = false;
             try {
                 if (document.pointerLockElement && document.exitPointerLock) {
                     document.exitPointerLock();
                 }
             } catch (e) {}
+            virtualMouse.visible = false;
+            if (virtualCursorEl) virtualCursorEl.style.display = 'none';
             document.body.style.cursor = 'default';
         }
 
-        // 브라우저 포인터 락 상태 변경 감지 (옵션창 자동 호출 제거 및 커서 동기화)
+        // 브라우저 포인터 락 상태 변경 감지
         document.addEventListener('pointerlockchange', () => {
             const isLocked = (document.pointerLockElement === document.body);
-            if (!isLocked) {
+            if (isLocked) {
+                wasPointerLocked = true;
+                virtualMouse.visible = true;
+                if (virtualCursorEl) virtualCursorEl.style.display = 'block';
+                updateVirtualCursorPos();
+            } else {
+                const hadLock = wasPointerLocked;
+                wasPointerLocked = false;
+                virtualMouse.visible = false;
+                if (virtualCursorEl) virtualCursorEl.style.display = 'none';
                 document.body.style.cursor = 'default';
+
+                // 인게임 비행 중 실제로 포인터 락이 걸려있던 상태에서 ESC 등으로 락이 풀렸을 때만 옵션(일시정지) 메뉴 열기
+                if (hadLock && isGameRunning && !isGamePaused) {
+                    const optModal = document.getElementById('options-modal');
+                    const gameoverModal = document.getElementById('gameover-modal');
+                    const stageModal = document.getElementById('stage-modal');
+                    const startModal = document.getElementById('start-modal');
+                    const isAnyModalOpen = (optModal && optModal.style.display === 'flex') ||
+                                           (gameoverModal && gameoverModal.style.display === 'flex') ||
+                                           (stageModal && stageModal.style.display === 'flex') ||
+                                           (startModal && startModal.style.display !== 'none');
+                    if (!isAnyModalOpen) {
+                        openOptionsMenu();
+                    }
+                }
             }
         });
 
-        // 인게임 화면 클릭 시 마우스 포인터 락 활성화
+        // 인게임 화면 클릭 시 마우스 포인터 락 활성화 (설정이 켜진 경우에만)
         window.addEventListener('click', (e) => {
+            if (!isPointerLockEnabled) return;
             const optModal = document.getElementById('options-modal');
             const isOptOpen = (optModal && optModal.style.display === 'flex');
             const startModal = document.getElementById('start-modal');
@@ -4204,6 +4366,8 @@
             const title = document.getElementById('gameover-title');
             const sub = document.getElementById('gameover-sub');
             const finalScore = document.getElementById('final-score');
+            const btnNext = document.getElementById('btn-next-stage');
+            const btnRestart = document.getElementById('btn-restart');
 
             modal.style.display = 'flex';
             finalScore.textContent = playerFlight.score;
@@ -4212,10 +4376,23 @@
                 title.textContent = "MISSION ACCOMPLISHED";
                 title.style.color = "#79ffb2";
                 sub.textContent = "ALL HOSTILE BANDITS INTERCEPTED AND SPLASHED";
+
+                if (selectedStageId < 3) {
+                    const nextStageNum = selectedStageId + 1;
+                    const nextName = (nextStageNum === 2) ? 'STAGE 02: OCEAN TRIDENT' : 'STAGE 03: METROPOLIS SHIELD';
+                    btnNext.style.display = 'block';
+                    btnNext.textContent = `NEXT: ${nextName}`;
+                } else {
+                    btnNext.style.display = 'none';
+                    sub.textContent = "ALL CAMPAIGN THEATERS LIBERATED. CONGRATULATIONS ACE!";
+                }
+                btnRestart.textContent = "REPLAY MISSION";
             } else {
                 title.textContent = "SHOT DOWN / KIA";
                 title.style.color = "#ff3344";
                 sub.textContent = "AIRCRAFT DESTROYED. MISSION FAILED.";
+                btnNext.style.display = 'none';
+                btnRestart.textContent = "RETRY MISSION";
             }
         }
 
@@ -4327,6 +4504,20 @@
             });
         }
 
+        // 4. 마우스 포인터 락 토글 스위치 (기본 OFF)
+        const optPointerLock = document.getElementById('opt-pointer-lock');
+        if (optPointerLock) {
+            optPointerLock.checked = isPointerLockEnabled;
+            optPointerLock.addEventListener('change', (e) => {
+                isPointerLockEnabled = e.target.checked;
+                if (isPointerLockEnabled) {
+                    requestGamePointerLock();
+                } else {
+                    releaseGamePointerLock();
+                }
+            });
+        }
+
         // SORTIE 버튼 클릭 -> 스테이지 선택 모달 진입
         document.getElementById('btn-sortie').addEventListener('click', () => {
             audio.init();
@@ -4340,12 +4531,38 @@
             document.getElementById('start-modal').style.display = 'flex';
         });
 
-        // 스테이지 선택 완료 후 출격
-        document.getElementById('btn-start-selected-stage').addEventListener('click', () => {
+        // ============================================================
+        // 통합 스테이지 출격/시작 함수 (재출격, 다음 스테이지 연동)
+        // ============================================================
+        function launchStage(stageId) {
+            audio.init();
+            document.getElementById('start-modal').style.display = 'none';
             document.getElementById('stage-modal').style.display = 'none';
-            TARGET_KILLS = selectedKills;
+            document.getElementById('gameover-modal').style.display = 'none';
+            const optModal = document.getElementById('options-modal');
+            if (optModal) optModal.style.display = 'none';
 
-            // 1. 스테이지 배경(사막/바다/도시) 및 랜덤 시간대(주간/일몰/야간) 동적 설정
+            selectedStageId = stageId;
+            if (stageId === 1) {
+                selectedStageName = 'OP: CANYON SCOUT';
+                selectedKills = 10;
+                selectedSpawnCount = 5;
+            } else if (stageId === 2) {
+                selectedStageName = 'OP: OCEAN TRIDENT';
+                selectedKills = 20;
+                selectedSpawnCount = 7;
+            } else {
+                selectedStageName = 'OP: METROPOLIS SHIELD';
+                selectedKills = 30;
+                selectedSpawnCount = 8;
+            }
+
+            TARGET_KILLS = selectedKills;
+            currentKills = 0;
+            const targetCountEl = document.getElementById('target-count');
+            if (targetCountEl) targetCountEl.textContent = TARGET_KILLS;
+
+            // 1. 스테이지 배경(사막/바다/도시) 및 환경 설정
             setupStageEnvironment(selectedStageId);
 
             // 2. 작전 정보 갱신 (시간대 및 배경 테마 표시)
@@ -4356,17 +4573,29 @@
                 targetKills: selectedKills,
                 initialSpawn: selectedSpawnCount
             };
+            const missionNameEl = document.getElementById('mission-name');
+            if (missionNameEl) missionNameEl.textContent = fullOpName;
 
-            // 3. 기체 위치 및 상태 리셋
+            // 3. 기체 위치 및 상태 완전 리셋
             playerMesh.position.set(0, 600, 1200);
             playerMesh.quaternion.set(0, 0, 0, 1);
             playerFlight.speed = 550;
             playerFlight.throttlePercent = 50;
+            playerFlight.health = 100;
+            playerFlight.maxHealth = 100;
             playerFlight.missileCount = 100;
             playerFlight.stdBursts = 2;
             playerFlight.stdReloadTimer = 0;
             playerFlight.multiBursts = 4;
             playerFlight.multiReloadTimer = 0;
+
+            // 잔여 발사체 및 침몰 함선 초기화
+            bullets.forEach(b => scene.remove(b));
+            bullets.length = 0;
+            missiles.forEach(m => scene.remove(m.mesh));
+            missiles.length = 0;
+            activeSinkingShips.forEach(s => { if (s.shipMesh) scene.remove(s.shipMesh); });
+            activeSinkingShips.length = 0;
 
             // 카메라 피봇 및 둘러보기 각도 초기화
             cameraConfig.freelookYaw = 0;
@@ -4382,14 +4611,45 @@
             isGamePaused = false;
             requestGamePointerLock(); // 게임 출격과 동시에 마우스 포인터 락 적용
 
-            // 4. 출격 시작과 동시에 비행 오디오(엔진음 및 BGM) 활성화 및 무기 HUD 갱신
+            // 4. 출격 시작과 동시에 비행 오디오 및 무기/체력 HUD 갱신
             audio.startFlightAudio();
             updateWeaponHUD();
+        }
+
+        // 스테이지 선택 완료 후 출격
+        document.getElementById('btn-start-selected-stage').addEventListener('click', () => {
+            launchStage(selectedStageId);
         });
 
-        document.getElementById('btn-restart').addEventListener('click', () => {
-            window.location.reload();
-        });
+        // 미션 클리어 후 [다음 스테이지] 버튼
+        const btnNextStage = document.getElementById('btn-next-stage');
+        if (btnNextStage) {
+            btnNextStage.addEventListener('click', () => {
+                if (selectedStageId < 3) {
+                    launchStage(selectedStageId + 1);
+                }
+            });
+        }
+
+        // 미션 [재도전 / 다시 하기] 버튼
+        const btnRestart = document.getElementById('btn-restart');
+        if (btnRestart) {
+            btnRestart.addEventListener('click', () => {
+                launchStage(selectedStageId);
+            });
+        }
+
+        // [메인 메뉴] 버튼: 첫 화면으로 복귀
+        const btnMainMenu = document.getElementById('btn-main-menu');
+        if (btnMainMenu) {
+            btnMainMenu.addEventListener('click', () => {
+                isGameRunning = false;
+                audio.stopFlightAudio();
+                releaseGamePointerLock();
+                document.getElementById('gameover-modal').style.display = 'none';
+                document.getElementById('start-modal').style.display = 'flex';
+            });
+        }
 
         function animate() {
             requestAnimationFrame(animate);
