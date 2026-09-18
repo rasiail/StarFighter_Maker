@@ -2066,16 +2066,16 @@
             score: 0,
             missileCount: 100, // 사용 가능 미사일 100개
             cannonCooldown: 0,
-            // 표준 미사일(1번): 최대 2발 연속 발사 후 재장전 (2.0초)
+            // 표준 미사일(1번): 최대 2발 연속 발사 후 각 발마다 개별 재장전 (2.2초)
             stdBursts: 2,
             stdMaxBursts: 2,
             stdShotCooldown: 0,
-            stdReloadTimer: 0,
-            // 멀티 미사일(2번): 최대 4발 연속/일제 발사 후 재장전 (3.0초)
+            stdReloadTimers: [],
+            // 멀티 미사일(2번): 최대 4발 연속/일제 발사 후 각 발마다 개별 재장전 (3.0초)
             multiBursts: 4,
             multiMaxBursts: 4,
             multiShotCooldown: 0,
-            multiReloadTimer: 0
+            multiReloadTimers: []
         };
 
         // Inputs State
@@ -2103,22 +2103,24 @@
             const statEl = document.getElementById('missile-stat');
             if (!statEl) return;
             if (missileMode === 1) {
-                if (playerFlight.stdReloadTimer > 0) {
-                    statEl.textContent = `STD RELOAD (${playerFlight.stdReloadTimer.toFixed(1)}s) [${playerFlight.missileCount}]`;
+                const burstPips = 'I'.repeat(playerFlight.stdBursts) + '.'.repeat(playerFlight.stdMaxBursts - playerFlight.stdBursts);
+                if (playerFlight.stdReloadTimers.length > 0) {
+                    const minT = Math.min(...playerFlight.stdReloadTimers);
+                    statEl.textContent = `STD RELOAD (${minT.toFixed(1)}s) [${playerFlight.missileCount}] [${burstPips}]`;
                     statEl.style.color = '#ffcc00';
                 } else {
-                    const burstPips = 'I'.repeat(playerFlight.stdBursts) || '-';
                     statEl.textContent = `STD READY [${playerFlight.missileCount}] [${burstPips}]`;
-                    statEl.style.color = '#ff6b6b';
+                    statEl.style.color = '#4df58a';
                 }
             } else {
-                if (playerFlight.multiReloadTimer > 0) {
-                    statEl.textContent = `MULTI RELOAD (${playerFlight.multiReloadTimer.toFixed(1)}s) [${playerFlight.missileCount}]`;
+                const burstPips = 'I'.repeat(playerFlight.multiBursts) + '.'.repeat(playerFlight.multiMaxBursts - playerFlight.multiBursts);
+                if (playerFlight.multiReloadTimers.length > 0) {
+                    const minT = Math.min(...playerFlight.multiReloadTimers);
+                    statEl.textContent = `MULTI RELOAD (${minT.toFixed(1)}s) [${playerFlight.missileCount}] [${burstPips}]`;
                     statEl.style.color = '#ffcc00';
                 } else {
-                    const burstPips = 'I'.repeat(playerFlight.multiBursts) || '-';
                     statEl.textContent = `MULTI READY [${playerFlight.missileCount}] [${burstPips}]`;
-                    statEl.style.color = '#ff9933';
+                    statEl.style.color = '#4df58a';
                 }
             }
         }
@@ -2263,7 +2265,6 @@
 
             if (missileMode === 2) {
                 // [모드 2] 멀티 미사일: 최대 4발 연속/동시 발사 가능
-                if (playerFlight.multiReloadTimer > 0) return;
                 if (playerFlight.multiShotCooldown > 0) return;
 
                 // 락온 완료된 적기들 추출
@@ -2286,14 +2287,13 @@
                 if (fired > 0) {
                     playerFlight.multiBursts -= fired;
                     playerFlight.multiShotCooldown = 0.35;
-                    if (playerFlight.multiBursts <= 0) {
-                        playerFlight.multiReloadTimer = 3.0; // 4발 모두 소진 시 3초 재장전 쿨다운
+                    for (let i = 0; i < fired; i++) {
+                        playerFlight.multiReloadTimers.push(3.0); // 한 발당 3초 개별 장전
                     }
                     updateWeaponHUD();
                 }
             } else {
                 // [모드 1] 표준 미사일: 최대 2발 연속 발사 가능
-                if (playerFlight.stdReloadTimer > 0) return;
                 if (playerFlight.stdShotCooldown > 0) return;
 
                 if (playerFlight.stdBursts > 0) {
@@ -2301,9 +2301,7 @@
                     fireMissile(lockedTarget, true, playerMesh);
                     playerFlight.stdBursts--;
                     playerFlight.stdShotCooldown = 0.30;
-                    if (playerFlight.stdBursts <= 0) {
-                        playerFlight.stdReloadTimer = 2.2; // 2발 모두 소진 시 2.2초 재장전 쿨다운
-                    }
+                    playerFlight.stdReloadTimers.push(2.2); // 한 발당 2.2초 개별 장전
                     updateWeaponHUD();
                 }
             }
@@ -2951,29 +2949,43 @@
                 cameraPivot.rotation.y = THREE.MathUtils.euclideanModulo(cameraPivot.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
 
             } else {
-                // 2. 디폴트 시점 복귀 모드 (전투기 후방 정면 뷰)
-                // 타깃 포커싱 해제 시 전투기 후방 디폴트 시점(0, 0, 0)으로 즉시/신속 복귀
-                cameraConfig.freelookYaw = 0;
-                cameraConfig.freelookPitch = 0;
-                cameraConfig.freelookIdleTimer = 0;
+                // 2. 프리룩 및 디폴트 시점 복귀 모드
+                if (cameraConfig.freelookIdleTimer > 0) {
+                    cameraConfig.freelookIdleTimer -= delta;
+                    
+                    // 마우스 이동으로 쌓인 freelook 회전 각도로 카메라 피봇을 부드럽게 보간
+                    const camLerpFactor = 1.0 - Math.exp(-15.0 * delta);
+                    let diffYaw = cameraConfig.freelookYaw - cameraPivot.rotation.y;
+                    while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+                    while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+                    
+                    cameraPivot.rotation.y += diffYaw * camLerpFactor;
+                    cameraPivot.rotation.x = THREE.MathUtils.lerp(cameraPivot.rotation.x, cameraConfig.freelookPitch, camLerpFactor);
+                    cameraPivot.rotation.z = 0;
+                    
+                    cameraPivot.rotation.y = THREE.MathUtils.euclideanModulo(cameraPivot.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
+                } else {
+                    // 3. 타이머 종료 시: 전투기 후방 정면 뷰로 자동 복귀
+                    cameraConfig.freelookYaw = 0;
+                    cameraConfig.freelookPitch = 0;
 
-                // 현재 각도를 [-PI, PI] 범위로 보정
-                let currentYaw = THREE.MathUtils.euclideanModulo(cameraPivot.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
-                cameraPivot.rotation.y = currentYaw;
+                    let currentYaw = THREE.MathUtils.euclideanModulo(cameraPivot.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
+                    cameraPivot.rotation.y = currentYaw;
 
-                let diffYaw = -currentYaw;
-                while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
-                while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+                    let diffYaw = -currentYaw;
+                    while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+                    while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
 
-                // 신속하고 매끄럽게 정면 복귀 (약 0.15초 이내)
-                const returnLerpFactor = 1.0 - Math.exp(-22.0 * delta);
-                cameraPivot.rotation.y += diffYaw * returnLerpFactor;
-                cameraPivot.rotation.x = THREE.MathUtils.lerp(cameraPivot.rotation.x, 0, returnLerpFactor);
-                cameraPivot.rotation.z = 0;
+                    // 신속하고 매끄럽게 정면 복귀
+                    const returnLerpFactor = 1.0 - Math.exp(-22.0 * delta);
+                    cameraPivot.rotation.y += diffYaw * returnLerpFactor;
+                    cameraPivot.rotation.x = THREE.MathUtils.lerp(cameraPivot.rotation.x, 0, returnLerpFactor);
+                    cameraPivot.rotation.z = 0;
 
-                // 정면에 충분히 가까워지면 즉각 0으로 완전 고정
-                if (Math.abs(diffYaw) < 0.001) cameraPivot.rotation.y = 0;
-                if (Math.abs(cameraPivot.rotation.x) < 0.001) cameraPivot.rotation.x = 0;
+                    // 정면에 충분히 가까워지면 즉각 0으로 완전 고정
+                    if (Math.abs(diffYaw) < 0.001) cameraPivot.rotation.y = 0;
+                    if (Math.abs(cameraPivot.rotation.x) < 0.001) cameraPivot.rotation.x = 0;
+                }
             }
         }
 
@@ -3132,8 +3144,12 @@
 
                 enemy.distToPlayer = Math.round(dist);
                 enemy.dotForward = dot;
-                // 전투기 기수 전방 약 36도 이내(dot > 0.80) & 유효 사거리 9000m 이내
-                enemy.inCone = (dot > 0.80 && dist <= 9000);
+                
+                // 미사일 종류에 따른 사거리(락온 거리) 분리: 표준 2000m, 멀티 3000m
+                const maxLockRange = (missileMode === 1) ? 2000 : 3000;
+                // 전투기 기수 전방 약 36도 이내(dot > 0.80) & 유효 사거리 이내
+                enemy.inCone = (dot > 0.80 && dist <= maxLockRange);
+                
                 enemy.isLocked = false;
                 enemy.isMultiLock = false;
             });
@@ -3664,26 +3680,41 @@
             // Weapon cooldown & reload ticks
             playerFlight.cannonCooldown -= delta;
 
-            // 1. 표준 미사일 쿨다운 및 재장전 타이머 관리
+            // 1. 표준 미사일 쿨다운 및 개별 재장전 타이머 관리
             if (playerFlight.stdShotCooldown > 0) playerFlight.stdShotCooldown -= delta;
-            if (playerFlight.stdReloadTimer > 0) {
-                playerFlight.stdReloadTimer -= delta;
-                if (playerFlight.stdReloadTimer <= 0) {
-                    playerFlight.stdBursts = playerFlight.stdMaxBursts; // 2발 완전 재장전
-                    updateWeaponHUD();
-                } else {
+            if (playerFlight.stdReloadTimers.length > 0) {
+                let reloaded = false;
+                for (let i = playerFlight.stdReloadTimers.length - 1; i >= 0; i--) {
+                    playerFlight.stdReloadTimers[i] -= delta;
+                    if (playerFlight.stdReloadTimers[i] <= 0) {
+                        playerFlight.stdReloadTimers.splice(i, 1);
+                        if (playerFlight.stdBursts < playerFlight.stdMaxBursts) {
+                            playerFlight.stdBursts++;
+                            reloaded = true;
+                        }
+                    }
+                }
+                // 타이머 숫자가 변할 때마다(소수점 첫째자리 기준) HUD 갱신
+                if (reloaded || (playerFlight.stdReloadTimers.length > 0 && Math.floor((playerFlight.stdReloadTimers[0] + delta) * 10) !== Math.floor(playerFlight.stdReloadTimers[0] * 10))) {
                     updateWeaponHUD();
                 }
             }
 
-            // 2. 멀티 미사일 쿨다운 및 재장전 타이머 관리
+            // 2. 멀티 미사일 쿨다운 및 개별 재장전 타이머 관리
             if (playerFlight.multiShotCooldown > 0) playerFlight.multiShotCooldown -= delta;
-            if (playerFlight.multiReloadTimer > 0) {
-                playerFlight.multiReloadTimer -= delta;
-                if (playerFlight.multiReloadTimer <= 0) {
-                    playerFlight.multiBursts = playerFlight.multiMaxBursts; // 4발 완전 재장전
-                    updateWeaponHUD();
-                } else {
+            if (playerFlight.multiReloadTimers.length > 0) {
+                let reloaded = false;
+                for (let i = playerFlight.multiReloadTimers.length - 1; i >= 0; i--) {
+                    playerFlight.multiReloadTimers[i] -= delta;
+                    if (playerFlight.multiReloadTimers[i] <= 0) {
+                        playerFlight.multiReloadTimers.splice(i, 1);
+                        if (playerFlight.multiBursts < playerFlight.multiMaxBursts) {
+                            playerFlight.multiBursts++;
+                            reloaded = true;
+                        }
+                    }
+                }
+                if (reloaded || (playerFlight.multiReloadTimers.length > 0 && Math.floor((playerFlight.multiReloadTimers[0] + delta) * 10) !== Math.floor(playerFlight.multiReloadTimers[0] * 10))) {
                     updateWeaponHUD();
                 }
             }
@@ -3863,26 +3894,28 @@
                 enemy.mesh.translateZ(-enemy.speed * speedMultiplier * delta);
 
                 // =============================================
-                // 적기 최저 고도 제어: 바닥 비행 원천 차단 (최저 650m & 지형 위 350m 유지)
+                // 적기 지형 충돌 방지 제어 (자연스러운 전투기 비행 유지)
                 // =============================================
                 const groundY = getSurfaceHeight(enemy.mesh.position.x, enemy.mesh.position.z);
-                const minSafeAlt = Math.max(650, groundY + 350);
-                const altitude = enemy.mesh.position.y;
+                const minSafeAlt = groundY + 150; // 절대 고도 하한선(650m)을 없애고 지형 위 150m 유지로 변경
 
-                if (altitude < minSafeAlt) {
-                    // 저고도 지면 회피: 강력한 기수 상승
+                if (enemy.mesh.position.y < minSafeAlt) {
+                    // 저고도 지면 회피: 급격한 상승이 아닌 멀리 앞을 보며 완만한 기수 상승 유도
                     const skyTarget = enemy.mesh.position.clone();
-                    skyTarget.y = minSafeAlt + 350;
-                    skyTarget.add(enemyFwd.clone().multiplyScalar(400));
-                    steerTowards(enemy.mesh, skyTarget, 4.5 * delta);
-                    if (enemy.mesh.position.y < groundY + 100) enemy.mesh.position.y = groundY + 100;
-                } else if (altitude > 1600 || Math.abs(altitude - playerMesh.position.y) > 400) {
-                    // 고도 차가 너무 크면 플레이어 고도 쪽으로 기수 하강/조정
-                    const targetAlt = Math.max(minSafeAlt + 50, Math.min(1300, playerMesh.position.y));
+                    skyTarget.y = minSafeAlt + 300;
+                    skyTarget.add(enemyFwd.clone().multiplyScalar(600));
+                    steerTowards(enemy.mesh, skyTarget, 2.0 * delta); // 4.5 -> 2.0으로 부드럽게 깎음
+
+                    // 물리적 최소 하한선 보정 (뚝뚝 끊기는 강제 텔레포트 대신 선형 보간으로 부드럽게 밀어올림)
+                    if (enemy.mesh.position.y < groundY + 50) {
+                        enemy.mesh.position.y += (groundY + 50 - enemy.mesh.position.y) * 8.0 * delta;
+                    }
+                } else if (enemy.mesh.position.y > 2500) {
+                    // 지나치게 우주로 가는 것만 방지
                     const altTarget = enemy.mesh.position.clone();
-                    altTarget.y = targetAlt;
-                    altTarget.add(enemyFwd.clone().multiplyScalar(500));
-                    steerTowards(enemy.mesh, altTarget, 2.2 * delta);
+                    altTarget.y = 2000;
+                    altTarget.add(enemyFwd.clone().multiplyScalar(600));
+                    steerTowards(enemy.mesh, altTarget, 1.5 * delta);
                 }
 
                 // 롤이 너무 극단적으로 기울지 않도록 제한
@@ -4316,7 +4349,11 @@
             if (code === 'KeyQ') keys.yawLeft = true;
             if (code === 'KeyE') keys.yawRight = true;
             if (code === 'ShiftLeft' || code === 'ShiftRight') keys.throttleUp = true;
-            if (code === 'ControlLeft' || code === 'ControlRight') keys.throttleDown = true;
+            // 감속 키를 Ctrl에서 Alt로 변경하고, Alt 키의 브라우저 메뉴 진입(기본 동작)을 막음
+            if (code === 'AltLeft' || code === 'AltRight') {
+                e.preventDefault();
+                keys.throttleDown = true;
+            }
             if (code === 'Space') {
                 keys.fireCannon = true;
                 keys.spaceKey = true;
@@ -4357,8 +4394,15 @@
             if (code === 'KeyD') keys.rollRight = false;
             if (code === 'KeyQ') keys.yawLeft = false;
             if (code === 'KeyE') keys.yawRight = false;
-            if (code === 'ShiftLeft' || code === 'ShiftRight') keys.throttleUp = false;
-            if (code === 'ControlLeft' || code === 'ControlRight') keys.throttleDown = false;
+            if (code === 'ShiftLeft' || code === 'ShiftRight') {
+                keys.throttleUp = false;
+                playerFlight.cruiseSpeed = 550; // 키 해제 시 기존 디폴트 속도로 초기화
+            }
+            if (code === 'AltLeft' || code === 'AltRight') {
+                e.preventDefault();
+                keys.throttleDown = false;
+                playerFlight.cruiseSpeed = 550; // 키 해제 시 기존 디폴트 속도로 초기화
+            }
             if (code === 'Space') {
                 keys.fireCannon = false;
                 keys.spaceKey = false;
@@ -4372,6 +4416,22 @@
 
         // Mouse Controls: Right click prevent context menu
         window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Mouse Wheel: 비행 시뮬레이터 스로틀 기능 (기준 속도 조정)
+        window.addEventListener('wheel', (e) => {
+            if (!isGameRunning || isGamePaused) return;
+            
+            // 휠 스크롤 한 칸당 80kts 증감 (기존 대비 2배 빠르게 조절)
+            const scrollStep = 80; 
+            
+            // e.deltaY < 0 이면 휠을 위로 올림 (가속)
+            // e.deltaY > 0 이면 휠을 아래로 내림 (감속)
+            if (e.deltaY < 0) {
+                playerFlight.cruiseSpeed = Math.min(playerFlight.maxSpeed, playerFlight.cruiseSpeed + scrollStep);
+            } else if (e.deltaY > 0) {
+                playerFlight.cruiseSpeed = Math.max(playerFlight.minSpeed, playerFlight.cruiseSpeed - scrollStep);
+            }
+        }, { passive: true });
 
         // Window Blur: 창 포커스를 잃었을 때 입력 상태 초기화
         window.addEventListener('blur', () => {
@@ -4508,6 +4568,16 @@
                 virtualMouse.x = Math.max(16, Math.min(window.innerWidth - 16, virtualMouse.x + e.movementX));
                 virtualMouse.y = Math.max(16, Math.min(window.innerHeight - 16, virtualMouse.y + e.movementY));
                 updateVirtualCursorPos();
+                
+                // 마우스 이동을 통한 자유 시점(Freelook) 카메라 회전 적용
+                if (!keys.targetCam) {
+                    cameraConfig.freelookYaw -= e.movementX * 0.0035;
+                    cameraConfig.freelookPitch -= e.movementY * 0.0035;
+                    // 상하 시야 한계 제한 (±80도)
+                    cameraConfig.freelookPitch = THREE.MathUtils.clamp(cameraConfig.freelookPitch, -Math.PI * 0.45, Math.PI * 0.45);
+                    // 마우스를 움직이면 타이머를 리셋하여 복귀를 지연시킴
+                    cameraConfig.freelookIdleTimer = 1.2; 
+                }
             } else {
                 virtualMouse.x = e.clientX;
                 virtualMouse.y = e.clientY;
@@ -4951,10 +5021,10 @@
             playerFlight.health = 100;
             playerFlight.maxHealth = 100;
             playerFlight.missileCount = 100;
-            playerFlight.stdBursts = 2;
-            playerFlight.stdReloadTimer = 0;
-            playerFlight.multiBursts = 4;
-            playerFlight.multiReloadTimer = 0;
+            playerFlight.stdBursts = playerFlight.stdMaxBursts;
+            playerFlight.stdReloadTimers = [];
+            playerFlight.multiBursts = playerFlight.multiMaxBursts;
+            playerFlight.multiReloadTimers = [];
 
             // 잔여 발사체 및 침몰 함선 초기화
             bullets.forEach(b => scene.remove(b));
