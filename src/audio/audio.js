@@ -27,7 +27,7 @@ class SoundEngine {
         // 인게임 전투 전용 BGM (Sound/StarFighter.mp3)
         this.combatBgm = new Audio('Sound/StarFighter.mp3');
         this.combatBgm.loop = true;
-        this.combatBgm.volume = this.bgmVolume;
+        this.combatBgm.volume = this.bgmVolume * 0.6;
     }
 
     playTitleBGM() {
@@ -58,7 +58,7 @@ class SoundEngine {
     playCombatBGM() {
         if (!this.combatBgm) return;
         this.stopTitleBGM(); // 타이틀 BGM 정지 후 전투 BGM 재생
-        this.combatBgm.volume = this.bgmVolume;
+        this.combatBgm.volume = this.bgmVolume * 0.6;
         if (this.combatBgm.paused) {
             const playPromise = this.combatBgm.play();
             if (playPromise && playPromise.catch) {
@@ -83,7 +83,7 @@ class SoundEngine {
     resumeCombatBGM() {
         if (!this.combatBgm) return;
         if (this.flightAudioActive && this.combatBgm.paused) {
-            this.combatBgm.volume = this.bgmVolume;
+            this.combatBgm.volume = this.bgmVolume * 0.6;
             this.combatBgm.play().catch(() => {});
         }
     }
@@ -187,7 +187,7 @@ class SoundEngine {
             this.titleBgm.volume = this.bgmVolume;
         }
         if (this.combatBgm) {
-            this.combatBgm.volume = this.bgmVolume;
+            this.combatBgm.volume = this.bgmVolume * 0.6;
         }
         if (this.masterBgmGain && this.ctx) {
             this.masterBgmGain.gain.setTargetAtTime(this.bgmVolume, this.ctx.currentTime, 0.05);

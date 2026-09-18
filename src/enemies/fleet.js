@@ -2,7 +2,7 @@
 import { gameState } from '../core/state.js';
 import { createBattleshipMesh, createTankMesh } from './models.js';
 import { scene } from '../rendering/scene.js';
-import { getSurfaceHeight } from '../world/environment.js';
+import { getSurfaceHeight, currentEnvironment } from '../world/environment.js';
 import { createDroneMesh } from './drone.js';
 import { playerMesh } from '../player/player.js';
 
@@ -169,18 +169,32 @@ export function clearFleet() {
 }
 
 export function spawnFormation(count, options = {}) {
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
-    const base = Math.atan2(forward.x, forward.z);
     for (let i = 0; i < count; i++) {
-        // Squadrons of six spread across the forward sector, in depth.
-        const group = Math.floor(i / 6);
-        const angle = base + ((group % 5) - 2) * 0.20 + (i % 6 - 2.5) * 0.055;
-        const range = 1400 + group * 130 + (i % 2) * 80;
-        const pos = new THREE.Vector3(playerMesh.position.x + Math.sin(angle) * range, playerMesh.position.y + 180 + group * 35, playerMesh.position.z + Math.cos(angle) * range);
-        const enemy = spawnEnemy(pos, options);
-        enemy.mesh.lookAt(playerMesh.position);
-        enemy.mesh.rotateY(Math.PI); // Aircraft nose points along local -Z.
-        enemy.state = 'INTERCEPT';
+        // 플레이어 주변 사방 1500m ~ 3500m 반경에서 랜덤하게 스폰 (각도 및 거리 무작위)
+        const angle = Math.random() * Math.PI * 2;
+        const range = 1500 + Math.random() * 2000;
+        const px = playerMesh.position.x + Math.sin(angle) * range;
+        const pz = playerMesh.position.z + Math.cos(angle) * range;
+
+        // 보스가 아니고 약 25% 확률로 지상(또는 해상) 병력 스폰
+        if (!options.boss && Math.random() < 0.25) {
+            const isOcean = (currentEnvironment && currentEnvironment.theme === 'ocean');
+            if (isOcean) {
+                // 해상 테마에서는 전함 스폰
+                spawnBattleship(new THREE.Vector3(px, 0, pz), Math.random() * Math.PI * 2);
+            } else {
+                // 그 외 테마에서는 탱크 스폰
+                spawnGroundTank(new THREE.Vector3(px, 0, pz));
+            }
+        } else {
+            // 공중 병력 스폰 (하늘에서 스폰)
+            const py = playerMesh.position.y + (Math.random() - 0.5) * 1000;
+            const pos = new THREE.Vector3(px, Math.max(750, py), pz);
+            const enemy = spawnEnemy(pos, options);
+            enemy.mesh.lookAt(playerMesh.position);
+            enemy.mesh.rotateY(Math.PI); // Aircraft nose points along local -Z.
+            enemy.state = 'INTERCEPT';
+        }
     }
 }
 

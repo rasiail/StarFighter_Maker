@@ -5,8 +5,8 @@ import { STAGES, getStage } from '../config/stages.js';
 import { createEncounter, recordEncounterKill, advanceEncounter, reinforcementCount } from './encounter.js';
 import { createPlayerFlight, replenishPlayerForSortie } from '../player/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
-import { resetProgression } from '../progression/runtime.js';
-import { refreshProgressionUI } from '../ui/upgrades.js';
+import { resetProgression, progression } from '../progression/runtime.js';
+import { refreshProgressionUI, openUpgrades } from '../ui/upgrades.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
 import { clearCombatInput } from '../input/controls.js';
 import { audio } from '../audio/audio.js';
@@ -75,6 +75,11 @@ export function updateMission(delta) {
             gameState.phase = 'boss';
             boss = spawnBoss(encounter.stage);
         } else if (encounter.phase === 'hangar') enterHangar();
+        
+        // 웨이브/페이즈 클리어 시 선택 안 한 스킬 카드가 있으면 창을 자동으로 띄움
+        if (progression.pending > 0 && gameState.phase !== 'hangar') {
+            openUpgrades();
+        }
     }
     if (encounter.phase === 'waves') {
         reinforcementTimer -= delta;
