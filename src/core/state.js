@@ -1,0 +1,20 @@
+// 여러 시스템이 공유하는 세션/조준 상태. 기체·적·발사체 데이터는 각 기능 모듈이 소유합니다.
+// 객체 자체를 교체하지 않아 모든 모듈이 같은 상태를 관찰하도록 유지합니다.
+export const gameState = {
+    phase: 'menu',
+    activeModal: null,
+    isGameRunning: false,
+    isGamePaused: false,
+    isPointerLockEnabled: true,
+    wasPointerLocked: false,
+    retroFilterEnabled: true,
+    TARGET_KILLS: 3,
+    currentKills: 0,
+    currentStageInfo: null, // initEnemies에서 초기화, launchStage에서 작전 설정 적용
+    lockedEnemyIndex: 0,
+    missileMode: 1,
+    isGunAimOnTarget: false,
+    currentGunLeadPredictedPos: null,
+    cameraPivot: null,
+    jetExhaustSystem: null,
+};

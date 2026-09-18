@@ -1,0 +1,12 @@
+{
+  "name": "starfighter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.js",
+    "check": "node tools/check.js",
+    "test": "node --test",
+    "test:smoke": "node tools/smoke.cjs"
+  }
+}

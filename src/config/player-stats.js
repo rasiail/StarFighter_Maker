@@ -1,0 +1,20 @@
+// 기체 밸런스 기본값. 성장/카드 시스템은 복사한 유효 스탯을 변경하며 이 정의는 유지합니다.
+export const PLAYER_BASE_STATS = Object.freeze({
+    minSpeed: 150,
+    cruiseSpeed: 550,
+    maxSpeed: 950,
+    acceleration: 85,
+    maxPitchRate: 1.45,
+    maxRollRate: 2.85,
+    maxYawRate: 0.55,
+    maxHealth: 100,
+    damageMultiplier: 1,
+    stabilityMultiplier: 1,
+    lockRangeMultiplier: 1,
+    missileTurnMultiplier: 1,
+    multiLockCount: 4,
+    stdMaxBursts: 2,
+    multiMaxBursts: 4,
+    stdReloadSeconds: 2.2,
+    multiReloadSeconds: 3.0,
+});

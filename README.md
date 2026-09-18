@@ -8,8 +8,8 @@ Three.js를 기반으로 한 3D 전투기(F-104 Starfighter) 비행 슈팅 시�
 ## 1. 빠른 시작 (Quick Start)
 
 ### 주요 특징
-- **단일 파일 구조**: 게임 엔진, 3D 렌더링, 물리 엔진, 적기 AI, HUD, 사운드, 파티클 UI가 `index.html` 하나에 통합되어 있어 실행이 매우 간편합니다.
-- **Three.js & Web Audio API**: 외부 서버 통신 없이 순수 웹 기술(Three.js r128 및 Web Audio API)로 구동됩니다.
+- **기능별 모듈 구조**: HTML·CSS와 비행, 무장, AI, HUD, 오디오를 분리했습니다. 빌드 없이 브라우저 ES Modules로 실행합니다.
+- **Three.js & Web Audio API**: Three.js r128, fflate, FBXLoader 및 폰트는 기존 CDN에서 로드하며 인터넷 연결이 필요합니다.
 - **로컬 서버 환경 권장**: 텍스처(`Pic/`) 및 사운드(`Sound/`) 에셋 로딩을 위해 로컬 웹 서버 환경에서 실행해야 합니다.
 
 ### 실행 방법
@@ -20,6 +20,7 @@ Three.js를 기반으로 한 3D 전투기(F-104 Starfighter) 비행 슈팅 시�
    python -m http.server 8000
    ```
    브라우저에서 `http://localhost:8000` 접속.
+3. **Node.js로 실행**: `npm start` (의존성 설치 불필요). ES Modules를 사용하므로 HTML 직접 열기 대신 HTTP 서버를 사용합니다.
 
 ---
 
@@ -27,7 +28,26 @@ Three.js를 기반으로 한 3D 전투기(F-104 Starfighter) 비행 슈팅 시�
 
 ```text
 StarFighter/
-├─ index.html               # 메인 게임 소스 (HTML, CSS, Three.js 로직, AI, HUD, 사운드)
+├─ index.html               # 화면 마크업 / 모듈 진입점
+├─ styles/game.css          # 스타일
+├─ src/
+│  ├─ main.js               # 초기화 순서
+│  ├─ config/               # 기체 기본 스탯 / 스테이지 설정
+│  ├─ core/                 # 공유 상태 / 이벤트 / 게임 루프
+│  ├─ player/               # 기체 상태 / 비행 물리
+│  ├─ combat/               # 무장 / 발사체 / 타깃 선택
+│  ├─ enemies/              # 적 모델 / 생성 / AI / 격추·리스폰
+│  ├─ game/                 # 미션 시작·종료·재출격
+│  ├─ input/                # 키보드·마우스·터치 / 포인터 락
+│  ├─ ui/                   # HUD·레이더 / 메뉴
+│  ├─ camera/               # 카메라 제어
+│  ├─ rendering/            # 씬 / 레트로 셰이더
+│  ├─ world/                # 지형 / 환경
+│  ├─ assets/               # F-104 로더
+│  └─ effects/              # 배기 / 폭발·연기
+├─ docs/ARCHITECTURE.md      # 확장 가이드와 상태 소유 규칙
+├─ tools/                   # 개발 서버 / 모듈 검사 / 브라우저 검증
+├─ tests/                   # 상태 / 이벤트 테스트
 ├─ Play_Game.bat            # 게임 로컬 서버 구동 및 실행 배치 파일
 ├─ README.md                # 게임 설명서 및 업데이트 내역
 ├─ F104/
@@ -39,6 +59,8 @@ StarFighter/
     └─ StarFighter.mp3      # 인게임 전투 배경음악 (기본 60% 볼륨)
 ```
 
+개발 전 [구조 및 스탯·레벨·카드 확장 가이드](docs/ARCHITECTURE.md)를 참고하세요. `npm run check`와 `npm test`로 기본 검증을 실행할 수 있습니다.
+
 ---
 
 ## 3. 조작 방법 (Controls)
@@ -49,7 +71,7 @@ StarFighter/
 | | **A / D** | 기체 좌/우 회전 (Roll Left / Right) |
 | | **Q / E** | 기수 좌/우 틀기 (Yaw Rudder) |
 | **속도 제어** | **마우스 휠 (위/아래)** | 스로틀(기본 순항 속도) 80kts 단위 연속 조절 및 유지 |
-| | **Shift / Alt** | 누르는 동안 최대 가속(Shift) / 최대 감속(Alt). 떼면 기본 순항 속도(550kts)로 즉시 복귀 |
+| | **Shift / Alt** | 누르는 동안 최대 가속(Shift) / 최대 감속(Alt). 떼면 기본 순항 속도(550kts)로 점진적으로 복귀 |
 | **무장/전투** | **Space / 마우스 좌클릭 홀드 (0.18초 이상)** | 20mm 기관포 발사 (사거리 1000m) |
 | | **마우스 좌클릭 탭 (0.18초 미만)** | 유도 미사일 발사 |
 | | **F** | 유도 미사일 발사 (키보드 전용) |
@@ -83,9 +105,9 @@ StarFighter/
 ### 4) 스테이지 구성
 | 스테이지 | 전장 배경 | 등장 적 | 클리어 조건 |
 | :--- | :--- | :--- | :--- |
-| **STAGE 01: CANYON SCOUT** | 사막 협곡 | T-80 탱크 6기 | 5기 파괴 |
-| **STAGE 02: OCEAN TRIDENT** | 해상 | 해상 함대 3척 (선체+포탑 3개 타깃) | 7개 파괴 |
-| **STAGE 03: METROPOLIS SHIELD** | 도시 | 고고도 전투기 8기 | 8기 격추 |
+| **STAGE 01: CANYON SCOUT** | 사막 협곡 | 공중 적 5기 + T-80 탱크 6기 | 10기 파괴 |
+| **STAGE 02: OCEAN TRIDENT** | 해상 | 공중 적 7기 + 함대 3척 (선체+포탑 총 9개 타깃) | 20개 파괴 |
+| **STAGE 03: METROPOLIS SHIELD** | 도시 | 공중 적 8기 + 탱크 8기 | 30기 파괴 |
 
 ---
 
