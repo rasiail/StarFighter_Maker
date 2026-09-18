@@ -140,7 +140,10 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, rgba(2, 8, 14, 0.48) 0%, rgba(3, 14, 10, 0.65) 100%),
-                        url('Pic/StarFighterTitle.jpeg') center center / cover no-repeat;
+            background-image: linear-gradient(135deg, rgba(2, 8, 14, 0.48) 0%, rgba(3, 14, 10, 0.65) 100%), url('./Pic/StarFighterTitle.jpeg?v=2');
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -2086,10 +2089,12 @@
             yawRight: false,   // E
             throttleUp: false, // Shift
             throttleDown: false,// Ctrl
-            fireCannon: false, // Space / Mouse Left
+            fireCannon: false, // Space / Mouse Left Hold
             fireMissile: false,// F
-            targetCam: false,  // Mouse Right hold
-            targetCycle: false // Mouse Right click / C
+            targetCam: false,  // Mouse Right Hold
+            targetCycle: false,// Mouse Right Click / C
+            spaceKey: false,   // Space (기관포 마우스 안전장치 구분용)
+            targetCamKey: false// T key (타깃캠 마우스 안전장치 구분용)
         };
 
         // 무기 모드: 1 = 표준 미사일(최대 2연발), 2 = 멀티 미사일(최대 4연발/일제)
@@ -2126,9 +2131,10 @@
         const missiles = [];
         const particles = [];
 
-        // Bullet tracer reusable geometry
+        // Bullet tracer reusable geometry & material
         const bulletGeom = new THREE.CylinderGeometry(0.2, 0.2, 12, 6);
         bulletGeom.rotateX(Math.PI / 2);
+        const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffee88 }); // 20mm 예광탄 황백색
         let isGunAimOnTarget = false;
         let currentGunLeadPredictedPos = null;
 
@@ -2314,7 +2320,10 @@
 
         function triggerExplosion(pos, count = 40, size = 1.0) {
             audio.playExplosion();
-            for (let i = 0; i < count; i++) {
+            // 파티클 상한선 체크: 너무 많은 폭발이 동시에 발생하면 성능 보호를 위해 일부 제한
+            const available = Math.max(0, 500 - particles.length);
+            const spawnCount = Math.min(count, available);
+            for (let i = 0; i < spawnCount; i++) {
                 const pMesh = new THREE.Mesh(
                     new THREE.SphereGeometry(size * (0.8 + Math.random() * 1.8), 6, 6),
                     new THREE.MeshBasicMaterial({
@@ -3249,124 +3258,121 @@
                 }
             });
 
-            // 4.4 Ace Combat Dynamic Gun Lead Reticle (LCOS 기총 유효 에임 시스템)
+            // 4.4 Gun Boresight Reticle System
+            // ─── 구조 ─────────────────────────────────────────────────────────────────
+            // [보어사이트 원] = 기수가 향하는 방향을 원형 레티클로 표시
+            //   내부 아크 게이지 = 적까지 잔여 거리 비율
+            //   SHOOT 조건 = 보어사이트 원이 탄착 예측점(predictedInterceptPos)과
+            //                일정 픽셀 이내로 정렬될 때 (판정 넉넉)
+            // ──────────────────────────────────────────────────────────────────────────
             isGunAimOnTarget = false;
             currentGunLeadPredictedPos = null;
+
+            const GUN_RANGE = 1000; // 기총 유효 사거리 기본값 (m)
 
             if (currentLockedEnemy && currentLockedEnemy.alive) {
                 const pPos = playerMesh.position;
                 const ePos = currentLockedEnemy.mesh.position;
                 const gunTargetDist = pPos.distanceTo(ePos);
 
-                // 기총 유효 사거리 이내(2200m)일 때 LCOS 조준선 계산 및 표시
-                if (gunTargetDist <= 2200) {
-                    const muzzleVel = 1600; // 20mm M61A2 발칸 탄속 (m/s)
+                // 기총 사거리 이내일 때만 UI 표시
+                if (gunTargetDist <= GUN_RANGE) {
+                    const muzzleVel = 1600; // 20mm M61A2 탄속 m/s
                     const flightTime = gunTargetDist / muzzleVel;
 
-                    // 적기 비행 속도 벡터 추정
+                    // 적기 실제 이동 속도 벡터
                     const eFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(currentLockedEnemy.mesh.quaternion);
-                    const eSpeed = currentLockedEnemy.speed ? (currentLockedEnemy.speed * (currentLockedEnemy.state === 'INTERCEPT' ? 0.65 : 0.50)) : 160;
-                    const eVel = eFwd.multiplyScalar(eSpeed);
+                    const speedMultiplier = (currentLockedEnemy.state === 'INTERCEPT') ? 0.65 : 0.50;
+                    const eSpeedMs = (currentLockedEnemy.speed || 340) * speedMultiplier;
+                    const eVel = eFwd.clone().multiplyScalar(eSpeedMs);
 
-                    // 탄착 미래 예측 지점 (인터셉트 좌표)
+                    // 탄착 미래 예측 지점
                     const predictedInterceptPos = ePos.clone().addScaledVector(eVel, flightTime);
                     currentGunLeadPredictedPos = predictedInterceptPos;
 
-                    // 플레이어 기수 전방 벡터
+                    // 예측 지점 화면 투영 (SHOOT 판정 기준점)
+                    const pipperProj = predictedInterceptPos.clone().project(camera);
+                    const ppX = (pipperProj.x * 0.5 + 0.5) * hudCanvas.width;
+                    const ppY = (-(pipperProj.y * 0.5) + 0.5) * hudCanvas.height;
+
+                    // ── 보어사이트: 기수 전방 200m 고정 투영 ─────────────────────────
                     const playerFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+                    const boresightWorld = pPos.clone().addScaledVector(playerFwd, 200);
+                    const boresightProj = boresightWorld.clone().project(camera);
 
-                    // LCOS (Lead Computing Optical Sight) 원리:
-                    // 피퍼(조준원)를 적기 위치에 올렸을 때 플레이어 기수가 미래 인터셉트 지점을 정확히 지향하도록 역오프셋 계산
-                    const worldPipperPos = pPos.clone().addScaledVector(playerFwd, gunTargetDist).sub(eVel.clone().multiplyScalar(flightTime));
+                    if (boresightProj.z < 1.0) {
+                        const bsX = (boresightProj.x * 0.5 + 0.5) * hudCanvas.width;
+                        const bsY = (-(boresightProj.y * 0.5) + 0.5) * hudCanvas.height;
 
-                    // 카메라를 통해 스크린 좌표로 투영
-                    const pipperProj = worldPipperPos.clone().project(camera);
-                    const enemyProj = ePos.clone().project(camera);
-
-                    // 카메라 전방에 있을 때만 HUD에 렌더링
-                    if (pipperProj.z < 1.0) {
-                        const px = (pipperProj.x * 0.5 + 0.5) * hudCanvas.width;
-                        const py = (-(pipperProj.y * 0.5) + 0.5) * hudCanvas.height;
-
-                        const ex = (enemyProj.x * 0.5 + 0.5) * hudCanvas.width;
-                        const ey = (-(enemyProj.y * 0.5) + 0.5) * hudCanvas.height;
-
-                        // 피퍼와 적기간의 화면상 픽셀 거리 계산
-                        const aimDistPx = Math.hypot(px - ex, py - ey);
-                        const isAimAligned = (aimDistPx < 32); // 32px 이내로 피퍼와 적기가 일치하면 유효 조준
+                        // ── SHOOT 판정: 보어사이트 원이 예측 탄착점 근처에 있는지 ──────
+                        // aimDistPx < shootThreshold 이면 맞는 각도 — 판정을 충분히 넉넉하게
+                        const aimDistPx = Math.hypot(bsX - ppX, bsY - ppY);
+                        const shootThreshold = 55; // 넉넉한 판정 반경 (px)
+                        const isAimAligned = (aimDistPx < shootThreshold && pipperProj.z < 1.0);
                         isGunAimOnTarget = isAimAligned;
 
                         hudCtx.save();
 
-                        // 1) 기수 에임(cx, cy)과 기총 에임 피퍼(px, py)를 잇는 점선 디렉터 라인 (Lead Director Line)
-                        hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.75)' : 'rgba(77, 245, 138, 0.45)';
-                        hudCtx.lineWidth = 1.6;
-                        hudCtx.setLineDash([4, 4]);
-                        hudCtx.beginPath();
-                        hudCtx.moveTo(cx, cy);
-                        hudCtx.lineTo(px, py);
-                        hudCtx.stroke();
-                        hudCtx.setLineDash([]); // 점선 해제
-
-                        // 2) 기총 조준원 (Gun Lead Pipper)
-                        const pipperRadius = 18;
+                        // ── 보어사이트 원형 레티클 렌더링 ────────────────────────────
+                        const pipperRadius = 22;
                         const mainColor = isAimAligned ? '#ff3344' : '#4df58a';
                         hudCtx.strokeStyle = mainColor;
                         hudCtx.fillStyle = mainColor;
-                        hudCtx.lineWidth = isAimAligned ? 3.0 : 2.0;
-                        hudCtx.shadowBlur = isAimAligned ? 14 : 6;
+                        hudCtx.shadowBlur = isAimAligned ? 18 : 5;
                         hudCtx.shadowColor = mainColor;
 
-                        // 외부 조준원 원형 링
+                        // 외부 원형 링
+                        hudCtx.lineWidth = isAimAligned ? 3.2 : 2.0;
                         hudCtx.beginPath();
-                        hudCtx.arc(px, py, pipperRadius, 0, Math.PI * 2);
+                        hudCtx.arc(bsX, bsY, pipperRadius, 0, Math.PI * 2);
                         hudCtx.stroke();
 
-                        // 중앙 조준 도트
+                        // 중앙 도트
                         hudCtx.beginPath();
-                        hudCtx.arc(px, py, isAimAligned ? 3.0 : 2.0, 0, Math.PI * 2);
+                        hudCtx.arc(bsX, bsY, isAimAligned ? 3.5 : 2.5, 0, Math.PI * 2);
                         hudCtx.fill();
 
-                        // 4방향 십자 틱 마크 (외곽)
-                        const tickInner = pipperRadius + 2;
-                        const tickOuter = pipperRadius + 7;
+                        // 4방향 외곽 틱 마크
+                        const tickInner = pipperRadius + 3;
+                        const tickOuter = pipperRadius + 9;
+                        hudCtx.lineWidth = isAimAligned ? 2.5 : 1.8;
                         hudCtx.beginPath();
-                        // Top
-                        hudCtx.moveTo(px, py - tickInner); hudCtx.lineTo(px, py - tickOuter);
-                        // Bottom
-                        hudCtx.moveTo(px, py + tickInner); hudCtx.lineTo(px, py + tickOuter);
-                        // Left
-                        hudCtx.moveTo(px - tickInner, py); hudCtx.lineTo(px - tickOuter, py);
-                        // Right
-                        hudCtx.moveTo(px + tickInner, py); hudCtx.lineTo(px + tickOuter, py);
+                        hudCtx.moveTo(bsX, bsY - tickInner); hudCtx.lineTo(bsX, bsY - tickOuter);
+                        hudCtx.moveTo(bsX, bsY + tickInner); hudCtx.lineTo(bsX, bsY + tickOuter);
+                        hudCtx.moveTo(bsX - tickInner, bsY); hudCtx.lineTo(bsX - tickOuter, bsY);
+                        hudCtx.moveTo(bsX + tickInner, bsY); hudCtx.lineTo(bsX + tickOuter, bsY);
                         hudCtx.stroke();
 
-                        // 거리 비율 아크 게이지 (기총 최대사거리 2000m 기준 잔여거리)
-                        const rangeRatio = Math.max(0, Math.min(1, gunTargetDist / 2000));
+                        // 잔여 거리 아크 게이지 (GUN_RANGE 기준, 가까울수록 아크 채워짐)
+                        const rangeRatio = Math.max(0, Math.min(1, gunTargetDist / GUN_RANGE));
+                        hudCtx.lineWidth = 3.0;
+                        hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : 'rgba(77, 245, 138, 0.75)';
                         hudCtx.beginPath();
-                        hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : 'rgba(77, 245, 138, 0.8)';
-                        hudCtx.lineWidth = 2.5;
-                        hudCtx.arc(px, py, pipperRadius - 4, -Math.PI * 0.5, -Math.PI * 0.5 + (Math.PI * 2 * (1 - rangeRatio)));
+                        hudCtx.arc(bsX, bsY, pipperRadius - 5,
+                            -Math.PI * 0.5,
+                            -Math.PI * 0.5 + Math.PI * 2 * (1 - rangeRatio));
                         hudCtx.stroke();
 
-                        // 3) 정보 텍스트 및 SHOOT 경고
-                        hudCtx.font = 'bold 12px "Share Tech Mono", monospace';
+                        // ── SHOOT 경고 & 거리 텍스트 ─────────────────────────────────
                         hudCtx.textAlign = 'center';
-
                         if (isAimAligned) {
-                            // 유효 조준 시 깜빡이는 SHOOT 경고 발광 표시
-                            const blink = Math.floor(Date.now() / 150) % 2 === 0;
+                            const blink = Math.floor(Date.now() / 140) % 2 === 0;
                             if (blink) {
                                 hudCtx.fillStyle = '#ff2233';
-                                hudCtx.font = 'bold 14px "Share Tech Mono", monospace';
-                                hudCtx.fillText('SHOOT', px, py - pipperRadius - 10);
+                                hudCtx.font = 'bold 15px "Share Tech Mono", monospace';
+                                hudCtx.shadowBlur = 20;
+                                hudCtx.shadowColor = '#ff2233';
+                                hudCtx.fillText('SHOOT', bsX, bsY - pipperRadius - 12);
                             }
+                            hudCtx.shadowBlur = 0;
                             hudCtx.fillStyle = '#ff6677';
                             hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
-                            hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, px, py + pipperRadius + 16);
+                            hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, bsX, bsY + pipperRadius + 17);
                         } else {
+                            hudCtx.shadowBlur = 0;
                             hudCtx.fillStyle = '#4df58a';
-                            hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, px, py + pipperRadius + 16);
+                            hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
+                            hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, bsX, bsY + pipperRadius + 17);
                         }
 
                         hudCtx.restore();
@@ -4046,7 +4052,7 @@
             // 3. Particles
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
-                p.position = p.mesh.position.addScaledVector(p.velocity, delta);
+                p.mesh.position.addScaledVector(p.velocity, delta);
                 p.life -= delta;
 
                 const lifeRatio = p.life / p.maxLife;
@@ -4216,6 +4222,10 @@
             enemy.evadeTimer = 0;
             enemy.evadeDir = null;
             enemy.missileCooldown = 3 + Math.random() * 3;
+            // HUD 락온 상태 플래그 초기화
+            enemy.isLocked = false;
+            enemy.isMultiLock = false;
+            enemy.inCone = false;
             scene.add(enemy.mesh);
         }
 
@@ -4581,6 +4591,34 @@
             touchThrToggle = !touchThrToggle;
             keys.throttleUp = touchThrToggle;
             keys.throttleDown = !touchThrToggle;
+        });
+
+        // ── 브라우저 탭 닫힘 방어 & 포인터 락 안전 해제 ─────────────────────────────────
+        // Ctrl+W 등으로 탭이 갑자기 닫히는 것을 방지
+        window.addEventListener('beforeunload', (e) => {
+            if (isGameRunning) {
+                e.preventDefault();
+                e.returnValue = ''; // 브라우저 표준 경고창(탭 닫기 확인) 트리거
+                // 탭 닫기 직전 마우스 커서 이탈 버그를 막기 위해 포인터 락 강제 해제
+                if (document.pointerLockElement) {
+                    document.exitPointerLock();
+                }
+            }
+        });
+
+        // 탭/창 포커스를 잃었을 때 (다른 탭으로 이동, 창 내리기 등)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // 키 입력 및 마우스 버튼 상태 초기화 (계속 눌려있는 현상 방지)
+                keys.throttleUp = false;
+                keys.throttleDown = false;
+                keys.fireCannon = false;
+                keys.targetCam = false;
+                // 포인터 락 안전 해제
+                if (document.pointerLockElement) {
+                    document.exitPointerLock();
+                }
+            }
         });
 
         // Window resize event
