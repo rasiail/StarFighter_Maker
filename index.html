@@ -576,9 +576,9 @@
                     <div style="width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <span style="font-weight: bold; color: #ffffff; font-size: 13px;">BGM / MUSIC</span>
-                            <span id="opt-bgm-val" style="color: #4df58a; font-weight: bold; font-family: monospace;">70%</span>
+                            <span id="opt-bgm-val" style="color: #4df58a; font-weight: bold; font-family: monospace;">60%</span>
                         </div>
-                        <input type="range" id="opt-bgm-slider" min="0" max="100" value="70" class="retro-slider">
+                        <input type="range" id="opt-bgm-slider" min="0" max="100" value="60" class="retro-slider">
                     </div>
                 </div>
 
@@ -642,7 +642,7 @@
                 this.engineOsc = null;
                 this.initialized = false;
                 this.lastBeepTime = 0;
-                this.bgmVolume = 0.7;
+                this.bgmVolume = 0.6; // 기본 음악 볼륨 60% 적용
                 this.sfxVolume = 0.8;
                 this.bgmPlaying = false;
                 this.bgmTimer = null;
@@ -652,10 +652,16 @@
                 this.titleBgm = new Audio('Sound/DancingSky.mp3');
                 this.titleBgm.loop = true;
                 this.titleBgm.volume = this.bgmVolume;
+
+                // 인게임 전투 전용 BGM (Sound/StarFighter.mp3)
+                this.combatBgm = new Audio('Sound/StarFighter.mp3');
+                this.combatBgm.loop = true;
+                this.combatBgm.volume = this.bgmVolume;
             }
 
             playTitleBGM() {
                 if (!this.titleBgm) return;
+                this.stopCombatBGM(); // 인게임 전투 BGM 정지 후 타이틀 BGM 재생
                 this.titleBgm.volume = this.bgmVolume;
                 if (this.titleBgm.paused) {
                     const playPromise = this.titleBgm.play();
@@ -676,6 +682,39 @@
             pauseTitleBGM() {
                 if (!this.titleBgm) return;
                 this.titleBgm.pause();
+            }
+
+            playCombatBGM() {
+                if (!this.combatBgm) return;
+                this.stopTitleBGM(); // 타이틀 BGM 정지 후 전투 BGM 재생
+                this.combatBgm.volume = this.bgmVolume;
+                if (this.combatBgm.paused) {
+                    const playPromise = this.combatBgm.play();
+                    if (playPromise && playPromise.catch) {
+                        playPromise.catch(() => {
+                            // 브라우저의 오디오 자동재생 정책에 의해 차단 시 사용자 제스처 대기
+                        });
+                    }
+                }
+            }
+
+            stopCombatBGM() {
+                if (!this.combatBgm) return;
+                this.combatBgm.pause();
+                this.combatBgm.currentTime = 0;
+            }
+
+            pauseCombatBGM() {
+                if (!this.combatBgm) return;
+                this.combatBgm.pause();
+            }
+
+            resumeCombatBGM() {
+                if (!this.combatBgm) return;
+                if (this.flightAudioActive && this.combatBgm.paused) {
+                    this.combatBgm.volume = this.bgmVolume;
+                    this.combatBgm.play().catch(() => {});
+                }
             }
 
             init() {
@@ -741,8 +780,11 @@
                     this.ctx.resume();
                 }
                 this.flightAudioActive = true;
-                // 사용자 요청: 인게임에는 아직 BGM을 넣지 않음
-                // this.startProceduralBGM();
+                
+                // 인게임 전투 전용 BGM (StarFighter.mp3) 재생
+                this.stopTitleBGM();
+                this.playCombatBGM();
+
                 if (this.engineGain && this.ctx) {
                     this.engineGain.gain.cancelScheduledValues(this.ctx.currentTime);
                     this.engineGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
@@ -752,6 +794,7 @@
 
             stopFlightAudio() {
                 this.flightAudioActive = false;
+                this.stopCombatBGM(); // 전투 BGM 정지
                 this.stopProceduralBGM();
                 if (this.engineGain && this.ctx) {
                     this.engineGain.gain.cancelScheduledValues(this.ctx.currentTime);
@@ -771,6 +814,9 @@
                 this.bgmVolume = Math.max(0, Math.min(1, val));
                 if (this.titleBgm) {
                     this.titleBgm.volume = this.bgmVolume;
+                }
+                if (this.combatBgm) {
+                    this.combatBgm.volume = this.bgmVolume;
                 }
                 if (this.masterBgmGain && this.ctx) {
                     this.masterBgmGain.gain.setTargetAtTime(this.bgmVolume, this.ctx.currentTime, 0.05);
@@ -1983,6 +2029,7 @@
         const playerMesh = createF104Mesh(false);
         playerMesh.position.set(0, 600, 1200);
         scene.add(playerMesh);
+        window.player = playerMesh; // 안전 별칭 할당
 
         // 전투기 하위 카메라 피봇 생성 (전투기 중심을 피봇 축으로 지정하여 유격 0 실현)
         cameraPivot = new THREE.Group();
@@ -2082,7 +2129,8 @@
         // Bullet tracer reusable geometry
         const bulletGeom = new THREE.CylinderGeometry(0.2, 0.2, 12, 6);
         bulletGeom.rotateX(Math.PI / 2);
-        const bulletMat = new THREE.MeshBasicMaterial({ color: 0xfff370 });
+        let isGunAimOnTarget = false;
+        let currentGunLeadPredictedPos = null;
 
         function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
             const bullet = new THREE.Mesh(bulletGeom, bulletMat);
@@ -2093,8 +2141,16 @@
             bullet.quaternion.copy(sourceMesh.quaternion);
 
             // Forward speed vector
-            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
+            let forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
             const muzzleSpeed = 1600;
+
+            // 에이스컴뱃 스타일 기총 유효 에임(Gun Lead Pipper) 정렬 시 탄도 수렴 보정
+            if (isPlayer && isGunAimOnTarget && currentGunLeadPredictedPos) {
+                const toLead = currentGunLeadPredictedPos.clone().sub(spawnPos).normalize();
+                forward.lerp(toLead, 0.42).normalize();
+                bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), forward);
+            }
+
             bullet.velocity = forward.multiplyScalar(muzzleSpeed);
             bullet.life = 1.4; // Seconds
             bullet.isPlayer = isPlayer;
@@ -3193,6 +3249,131 @@
                 }
             });
 
+            // 4.4 Ace Combat Dynamic Gun Lead Reticle (LCOS 기총 유효 에임 시스템)
+            isGunAimOnTarget = false;
+            currentGunLeadPredictedPos = null;
+
+            if (currentLockedEnemy && currentLockedEnemy.alive) {
+                const pPos = playerMesh.position;
+                const ePos = currentLockedEnemy.mesh.position;
+                const gunTargetDist = pPos.distanceTo(ePos);
+
+                // 기총 유효 사거리 이내(2200m)일 때 LCOS 조준선 계산 및 표시
+                if (gunTargetDist <= 2200) {
+                    const muzzleVel = 1600; // 20mm M61A2 발칸 탄속 (m/s)
+                    const flightTime = gunTargetDist / muzzleVel;
+
+                    // 적기 비행 속도 벡터 추정
+                    const eFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(currentLockedEnemy.mesh.quaternion);
+                    const eSpeed = currentLockedEnemy.speed ? (currentLockedEnemy.speed * (currentLockedEnemy.state === 'INTERCEPT' ? 0.65 : 0.50)) : 160;
+                    const eVel = eFwd.multiplyScalar(eSpeed);
+
+                    // 탄착 미래 예측 지점 (인터셉트 좌표)
+                    const predictedInterceptPos = ePos.clone().addScaledVector(eVel, flightTime);
+                    currentGunLeadPredictedPos = predictedInterceptPos;
+
+                    // 플레이어 기수 전방 벡터
+                    const playerFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+
+                    // LCOS (Lead Computing Optical Sight) 원리:
+                    // 피퍼(조준원)를 적기 위치에 올렸을 때 플레이어 기수가 미래 인터셉트 지점을 정확히 지향하도록 역오프셋 계산
+                    const worldPipperPos = pPos.clone().addScaledVector(playerFwd, gunTargetDist).sub(eVel.clone().multiplyScalar(flightTime));
+
+                    // 카메라를 통해 스크린 좌표로 투영
+                    const pipperProj = worldPipperPos.clone().project(camera);
+                    const enemyProj = ePos.clone().project(camera);
+
+                    // 카메라 전방에 있을 때만 HUD에 렌더링
+                    if (pipperProj.z < 1.0) {
+                        const px = (pipperProj.x * 0.5 + 0.5) * hudCanvas.width;
+                        const py = (-(pipperProj.y * 0.5) + 0.5) * hudCanvas.height;
+
+                        const ex = (enemyProj.x * 0.5 + 0.5) * hudCanvas.width;
+                        const ey = (-(enemyProj.y * 0.5) + 0.5) * hudCanvas.height;
+
+                        // 피퍼와 적기간의 화면상 픽셀 거리 계산
+                        const aimDistPx = Math.hypot(px - ex, py - ey);
+                        const isAimAligned = (aimDistPx < 32); // 32px 이내로 피퍼와 적기가 일치하면 유효 조준
+                        isGunAimOnTarget = isAimAligned;
+
+                        hudCtx.save();
+
+                        // 1) 기수 에임(cx, cy)과 기총 에임 피퍼(px, py)를 잇는 점선 디렉터 라인 (Lead Director Line)
+                        hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.75)' : 'rgba(77, 245, 138, 0.45)';
+                        hudCtx.lineWidth = 1.6;
+                        hudCtx.setLineDash([4, 4]);
+                        hudCtx.beginPath();
+                        hudCtx.moveTo(cx, cy);
+                        hudCtx.lineTo(px, py);
+                        hudCtx.stroke();
+                        hudCtx.setLineDash([]); // 점선 해제
+
+                        // 2) 기총 조준원 (Gun Lead Pipper)
+                        const pipperRadius = 18;
+                        const mainColor = isAimAligned ? '#ff3344' : '#4df58a';
+                        hudCtx.strokeStyle = mainColor;
+                        hudCtx.fillStyle = mainColor;
+                        hudCtx.lineWidth = isAimAligned ? 3.0 : 2.0;
+                        hudCtx.shadowBlur = isAimAligned ? 14 : 6;
+                        hudCtx.shadowColor = mainColor;
+
+                        // 외부 조준원 원형 링
+                        hudCtx.beginPath();
+                        hudCtx.arc(px, py, pipperRadius, 0, Math.PI * 2);
+                        hudCtx.stroke();
+
+                        // 중앙 조준 도트
+                        hudCtx.beginPath();
+                        hudCtx.arc(px, py, isAimAligned ? 3.0 : 2.0, 0, Math.PI * 2);
+                        hudCtx.fill();
+
+                        // 4방향 십자 틱 마크 (외곽)
+                        const tickInner = pipperRadius + 2;
+                        const tickOuter = pipperRadius + 7;
+                        hudCtx.beginPath();
+                        // Top
+                        hudCtx.moveTo(px, py - tickInner); hudCtx.lineTo(px, py - tickOuter);
+                        // Bottom
+                        hudCtx.moveTo(px, py + tickInner); hudCtx.lineTo(px, py + tickOuter);
+                        // Left
+                        hudCtx.moveTo(px - tickInner, py); hudCtx.lineTo(px - tickOuter, py);
+                        // Right
+                        hudCtx.moveTo(px + tickInner, py); hudCtx.lineTo(px + tickOuter, py);
+                        hudCtx.stroke();
+
+                        // 거리 비율 아크 게이지 (기총 최대사거리 2000m 기준 잔여거리)
+                        const rangeRatio = Math.max(0, Math.min(1, gunTargetDist / 2000));
+                        hudCtx.beginPath();
+                        hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : 'rgba(77, 245, 138, 0.8)';
+                        hudCtx.lineWidth = 2.5;
+                        hudCtx.arc(px, py, pipperRadius - 4, -Math.PI * 0.5, -Math.PI * 0.5 + (Math.PI * 2 * (1 - rangeRatio)));
+                        hudCtx.stroke();
+
+                        // 3) 정보 텍스트 및 SHOOT 경고
+                        hudCtx.font = 'bold 12px "Share Tech Mono", monospace';
+                        hudCtx.textAlign = 'center';
+
+                        if (isAimAligned) {
+                            // 유효 조준 시 깜빡이는 SHOOT 경고 발광 표시
+                            const blink = Math.floor(Date.now() / 150) % 2 === 0;
+                            if (blink) {
+                                hudCtx.fillStyle = '#ff2233';
+                                hudCtx.font = 'bold 14px "Share Tech Mono", monospace';
+                                hudCtx.fillText('SHOOT', px, py - pipperRadius - 10);
+                            }
+                            hudCtx.fillStyle = '#ff6677';
+                            hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
+                            hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, px, py + pipperRadius + 16);
+                        } else {
+                            hudCtx.fillStyle = '#4df58a';
+                            hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, px, py + pipperRadius + 16);
+                        }
+
+                        hudCtx.restore();
+                    }
+                }
+            }
+
             // 4.5 Target Direction Locator Arrow (에이스컴뱃 스타일 타깃 방향 지시 화살표)
             if (currentLockedEnemy && !isCurrentTargetOnScreenCenter) {
                 const localPos = currentLockedEnemy.mesh.position.clone();
@@ -4127,7 +4308,10 @@
             if (code === 'KeyE') keys.yawRight = true;
             if (code === 'ShiftLeft' || code === 'ShiftRight') keys.throttleUp = true;
             if (code === 'ControlLeft' || code === 'ControlRight') keys.throttleDown = true;
-            if (code === 'Space') keys.fireCannon = true;
+            if (code === 'Space') {
+                keys.fireCannon = true;
+                keys.spaceKey = true;
+            }
             if (code === 'KeyF') {
                 keys.fireMissile = true;
                 tryFireMissile();
@@ -4166,7 +4350,10 @@
             if (code === 'KeyE') keys.yawRight = false;
             if (code === 'ShiftLeft' || code === 'ShiftRight') keys.throttleUp = false;
             if (code === 'ControlLeft' || code === 'ControlRight') keys.throttleDown = false;
-            if (code === 'Space') keys.fireCannon = false;
+            if (code === 'Space') {
+                keys.fireCannon = false;
+                keys.spaceKey = false;
+            }
             if (code === 'KeyF') keys.fireMissile = false;
             if (code === 'KeyT') {
                 keys.targetCam = false;
@@ -4204,27 +4391,34 @@
         let rightClickTimeout = null;
         let isRightClickHeld = false;
 
+        const MOUSE_HOLD_THRESHOLD = 180; // 0.18초 (단발 탭 vs 홀드 기준값)
+
         window.addEventListener('mousedown', (e) => {
-            if (e.button === 0) { // Left click
+            if (e.button === 0) { // Left click: 짧은 탭은 미사일, 길게 누르면 기관총
                 leftClickTime = performance.now();
                 isLeftClickHeld = false;
                 
-                // 0.3초(300ms) 이상 누르고 있을 때만 기관포 발사 시작 (홀드 판정)
                 if (leftClickTimeout) clearTimeout(leftClickTimeout);
+                // 0.18초 이상 홀딩 시 즉각 기관총 연속 사격 모드 진입
                 leftClickTimeout = setTimeout(() => {
                     isLeftClickHeld = true;
                     keys.fireCannon = true; // 홀드 시 기관포 발사 시작
-                }, 300);
-            } else if (e.button === 2) { // Right click
+                    if (isGameRunning && !isGamePaused) {
+                        fireCannon(true, playerMesh);
+                        playerFlight.cannonCooldown = 0.05;
+                    }
+                }, MOUSE_HOLD_THRESHOLD);
+
+            } else if (e.button === 2) { // Right click: 짧은 탭은 타깃 전환, 길게 누르면 타깃 캠
                 rightClickTime = performance.now();
                 isRightClickHeld = false;
-                keys.targetCam = false; // 즉시 활성화하지 않고 0.2초 홀드 검사
+                keys.targetCam = false;
                 if (rightClickTimeout) clearTimeout(rightClickTimeout);
-                // 0.2초(200ms) 이상 홀드 시 비로소 타깃 캠 활성화
+                // 0.18초 이상 홀드 시 타깃 캠 활성화
                 rightClickTimeout = setTimeout(() => {
                     isRightClickHeld = true;
                     keys.targetCam = true;
-                }, 200);
+                }, MOUSE_HOLD_THRESHOLD);
             }
         });
 
@@ -4235,14 +4429,15 @@
                     clearTimeout(leftClickTimeout);
                     leftClickTimeout = null;
                 }
-                keys.fireCannon = false; // 기관포 발사 중지
+                keys.fireCannon = false; // 마우스 떼면 기관포 발사 중지
                 
-                // 0.3초(300ms) 미만으로 짧게 클릭(Tap)했을 경우에만 미사일 발사 (기관포는 발사되지 않음)
                 const clickDuration = performance.now() - leftClickTime;
-                if (!isLeftClickHeld && clickDuration < 300) {
+                // 단발 클릭(0.18초 미만으로 짧게 탭)했을 경우에만 미사일 발사 (기관포는 발사되지 않음)
+                if (!isLeftClickHeld && clickDuration < MOUSE_HOLD_THRESHOLD) {
                     tryFireMissile();
                 }
                 isLeftClickHeld = false;
+
             } else if (e.button === 2) { // Right click
                 // 타이머 취소 및 타깃 캠 해제
                 if (rightClickTimeout) {
@@ -4255,8 +4450,8 @@
                 cameraConfig.freelookIdleTimer = 0;
                 
                 const clickDuration = performance.now() - rightClickTime;
-                // 0.2초(200ms) 미만의 짧은 탭 클릭 시에만 타깃 순환
-                if (!isRightClickHeld && clickDuration < 200) {
+                // 0.18초 미만의 짧은 탭 클릭 시에만 타깃 순환
+                if (!isRightClickHeld && clickDuration < MOUSE_HOLD_THRESHOLD) {
                     cycleTarget();
                 }
                 isRightClickHeld = false;
@@ -4265,7 +4460,14 @@
 
         // PointerUp 안전장치 (브라우저 마우스업 이벤트 누락 방어)
         window.addEventListener('pointerup', (e) => {
-            if (e.button === 2) {
+            if (e.button === 0) {
+                if (leftClickTimeout) {
+                    clearTimeout(leftClickTimeout);
+                    leftClickTimeout = null;
+                }
+                keys.fireCannon = false;
+                isLeftClickHeld = false;
+            } else if (e.button === 2) {
                 if (rightClickTimeout) {
                     clearTimeout(rightClickTimeout);
                     rightClickTimeout = null;
@@ -4302,7 +4504,15 @@
                 virtualMouse.y = e.clientY;
             }
 
-            // 안전장치: 마우스 우클릭을 뗐는데도 targetCam이 켜져 있는 상태라면 강제 해제
+            // 안전장치: 마우스 버튼을 뗐는데도 플래그가 유지되고 있다면 강제 해제
+            if (keys.fireCannon && !keys.spaceKey && (e.buttons & 1) === 0) {
+                keys.fireCannon = false;
+                isLeftClickHeld = false;
+                if (leftClickTimeout) {
+                    clearTimeout(leftClickTimeout);
+                    leftClickTimeout = null;
+                }
+            }
             if (keys.targetCam && !keys.targetCamKey && (e.buttons & 2) === 0) {
                 keys.targetCam = false;
                 isRightClickHeld = false;
@@ -4778,31 +4988,41 @@
             const delta = Math.min(0.08, clock.getDelta());
 
             if (isGameRunning && !isGamePaused) {
-                updatePlayerFlight(delta);
-                updateEnemies(delta);
-                updateSinkingShips(delta);
-                updateProjectiles(delta);
-                updateCamera(delta);
-                renderHUD();
-                
-                // 로우폴리곤 제트 쓰러스터 파티클 물리 갱신
-                if (jetExhaustSystem) {
-                    jetExhaustSystem.update(delta);
-                }
+                try {
+                    updatePlayerFlight(delta);
+                    updateEnemies(delta);
+                    updateSinkingShips(delta);
+                    updateProjectiles(delta);
+                    updateCamera(delta);
+                    renderHUD();
+                    
+                    // 로우폴리곤 제트 쓰러스터 파티클 물리 갱신
+                    if (jetExhaustSystem) {
+                        jetExhaustSystem.update(delta);
+                    }
 
-                // 스카이 돔이 플레이어 기체를 매 프레임 따라다니게 하여 구의 경계를 절대 벗어나지 않게 처리
-                skyMesh.position.copy(playerMesh.position);
+                    // 스카이 돔이 플레이어 기체를 매 프레임 따라다니게 하여 구의 경계를 절대 벗어나지 않게 처리
+                    if (skyMesh && playerMesh) {
+                        skyMesh.position.copy(playerMesh.position);
+                    }
+                } catch (err) {
+                    console.error("Simulation loop error:", err);
+                }
             }
 
             // 렌더링: 레트로 픽셀 아트 필터 활성화 여부에 따라 포스트프로세싱 분기
-            if (retroFilterEnabled && retroRenderTarget && retroPostScene && retroPostCamera) {
-                renderer.setRenderTarget(retroRenderTarget);
-                renderer.render(scene, camera);
-                renderer.setRenderTarget(null);
-                renderer.render(retroPostScene, retroPostCamera);
-            } else {
-                renderer.setRenderTarget(null);
-                renderer.render(scene, camera);
+            try {
+                if (retroFilterEnabled && retroRenderTarget && retroPostScene && retroPostCamera) {
+                    renderer.setRenderTarget(retroRenderTarget);
+                    renderer.render(scene, camera);
+                    renderer.setRenderTarget(null);
+                    renderer.render(retroPostScene, retroPostCamera);
+                } else {
+                    renderer.setRenderTarget(null);
+                    renderer.render(scene, camera);
+                }
+            } catch (err) {
+                console.error("Render error:", err);
             }
         }
 
