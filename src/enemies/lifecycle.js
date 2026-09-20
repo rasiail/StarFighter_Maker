@@ -8,6 +8,7 @@ import { playerFlight, playerMesh } from '../player/player.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
 import { getSurfaceHeight } from '../world/environment.js';
+import { BALANCE } from '../data/generated/balance.js';
 
 
 export function updateSinkingShips(delta) {
@@ -57,8 +58,7 @@ export function killEnemy(enemy) {
             if (enemy.turretEnemies) {
                 enemy.turretEnemies.forEach(turretEnemy => {
                     if (turretEnemy.alive) {
-                        turretEnemy.alive = false;
-                        triggerExplosion(turretEnemy.mesh.position, 45, 1.8);
+                        killEnemy(turretEnemy); // Award target progress and XP for collateral turret kills too.
                     }
                 });
             }
@@ -77,7 +77,7 @@ export function killEnemy(enemy) {
                 });
             }
 
-            playerFlight.score += 3500; // 거대 전함 격침 대량 보너스 점수
+            playerFlight.score += BALANCE.enemies.ship_hull.scoreReward;
         } else if (enemy.shipPart === 'TURRET') {
             // [함포 단독 파괴] 해당 포탑만 검게 그을리고 포신이 힘없이 처짐 (사격 정지)
             if (enemy.turretMesh) {
@@ -92,11 +92,11 @@ export function killEnemy(enemy) {
                 });
                 enemy.turretMesh.rotation.x = 0.22; // 포신이 힘없이 처짐
             }
-            playerFlight.score += 1000;
+            playerFlight.score += BALANCE.enemies.ship_turret.scoreReward;
         }
     } else {
         scene.remove(enemy.mesh); // 공중 적기나 탱크는 일반 제거
-        playerFlight.score += 1500;
+        playerFlight.score += (enemy.isBoss ? BALANCE.enemies.boss : (enemy.isGround ? BALANCE.enemies.tank : BALANCE.enemies.stage_aircraft)).scoreReward;
     }
 
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');

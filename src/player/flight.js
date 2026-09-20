@@ -1,7 +1,9 @@
 // player/flight: imports are side-effect free; main.js controls initialization.
+import { tickMagazines } from '../combat/magazine.js';
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from './player.js';
 import { keys } from '../input/state.js';
+import { padInput } from '../input/gamepad-state.js';
 import { fbxModelTemplate, isFBXReady } from '../assets/aircraft.js';
 import { audio } from '../audio/audio.js';
 import { getSurfaceHeight } from '../world/environment.js';
@@ -19,10 +21,10 @@ export function updatePlayerFlight(delta) {
     const minSpd    = playerFlight.minSpeed;    // 150 kts (THR 0% 최저 실속 한계)
     const maxSpd    = playerFlight.maxSpeed;    // 950 kts (THR 100% 최대 애프터버너)
 
-    if (keys.throttleUp) {
+    if (keys.throttleUp || padInput.throttleUp) {
         // 가속: 점진적이고 적절한 증가 (초당 약 +85kts)
         playerFlight.speed = Math.min(maxSpd, playerFlight.speed + delta * playerFlight.acceleration);
-    } else if (keys.throttleDown) {
+    } else if (keys.throttleDown || padInput.throttleDown) {
         // 감속: 점진적이고 적절한 감소 (초당 약 -85kts)
         playerFlight.speed = Math.max(minSpd, playerFlight.speed - delta * playerFlight.acceleration);
     } else {
@@ -40,7 +42,7 @@ export function updatePlayerFlight(delta) {
     playerFlight.throttlePercent = Math.round(speedRatio * 100);
 
     playerFlight.isAfterburner = playerFlight.speed > 800; // 800kts (약 THR 81%) 이상에서 애프터버너 점화
-    playerFlight.isAirbrake    = keys.throttleDown && playerFlight.speed < 320; // 320kts 이하 감속 중 에어브레이크
+    playerFlight.isAirbrake    = (keys.throttleDown || padInput.throttleDown) && playerFlight.speed < 320; // 320kts 이하 감속 중 에어브레이크
 
     // Thruster visual update: 내부 노즐 코어 발광 및 로우폴리곤 덩어리 파티클 방출
     if (playerMesh.baseGlow) {
@@ -76,17 +78,21 @@ export function updatePlayerFlight(delta) {
     const maxYawRate = playerFlight.maxYawRate;
 
     // W: Pitch Down (기수 하강 / Dive), S: Pitch Up (기수 상승 / Climb)
-    let targetPitch = 0;
+    let targetPitch = padInput.pitch * maxPitchRate;
     if (keys.pitchDown) targetPitch -= maxPitchRate; // W: 기수 하강 (음수 회전 = Dive)
     if (keys.pitchUp) targetPitch += maxPitchRate;   // S: 기수 상승 (양수 회전 = Climb)
 
-    let targetRoll = 0;
+    let targetRoll = padInput.roll * maxRollRate;
     if (keys.rollLeft) targetRoll += maxRollRate;    // A: 롤 좌측
     if (keys.rollRight) targetRoll -= maxRollRate;   // D: 롤 우측
 
-    let targetYaw = 0;
+    let targetYaw = padInput.yaw * maxYawRate;
     if (keys.yawLeft) targetYaw += maxYawRate;       // Q: 요 좌측
     if (keys.yawRight) targetYaw -= maxYawRate;      // E: 요 우측
+
+    targetPitch = Math.max(-maxPitchRate, Math.min(maxPitchRate, targetPitch));
+    targetRoll = Math.max(-maxRollRate, Math.min(maxRollRate, targetRoll));
+    targetYaw = Math.max(-maxYawRate, Math.min(maxYawRate, targetYaw));
 
     playerFlight.pitchRate += (targetPitch - playerFlight.pitchRate) * Math.min(1, delta * 7.0 * ((targetPitch === 0 || Math.sign(targetPitch) !== Math.sign(playerFlight.pitchRate)) ? playerFlight.stabilityMultiplier : 1));
     playerFlight.rollRate += (targetRoll - playerFlight.rollRate) * Math.min(1, delta * 9.0 * ((targetRoll === 0 || Math.sign(targetRoll) !== Math.sign(playerFlight.rollRate)) ? playerFlight.stabilityMultiplier : 1));
@@ -116,51 +122,14 @@ export function updatePlayerFlight(delta) {
     // Weapon cooldown & reload ticks
     playerFlight.cannonCooldown -= delta;
 
-    // 1. 표준 미사일 쿨다운 및 개별 재장전 타이머 관리
-    if (playerFlight.stdShotCooldown > 0) playerFlight.stdShotCooldown -= delta;
-    if (playerFlight.stdReloadTimers.length > 0) {
-        let reloaded = false;
-        for (let i = playerFlight.stdReloadTimers.length - 1; i >= 0; i--) {
-            playerFlight.stdReloadTimers[i] -= delta;
-            if (playerFlight.stdReloadTimers[i] <= 0) {
-                playerFlight.stdReloadTimers.splice(i, 1);
-                if (playerFlight.stdBursts < playerFlight.stdMaxBursts) {
-                    playerFlight.stdBursts++;
-                    reloaded = true;
-                }
-            }
-        }
-        // 타이머 숫자가 변할 때마다(소수점 첫째자리 기준) HUD 갱신
-        if (reloaded || (playerFlight.stdReloadTimers.length > 0 && Math.floor((playerFlight.stdReloadTimers[0] + delta) * 10) !== Math.floor(playerFlight.stdReloadTimers[0] * 10))) {
-            updateWeaponHUD();
-        }
-    }
+    if (tickMagazines(playerFlight, delta)) updateWeaponHUD();
 
-    // 2. 멀티 미사일 쿨다운 및 개별 재장전 타이머 관리
-    if (playerFlight.multiShotCooldown > 0) playerFlight.multiShotCooldown -= delta;
-    if (playerFlight.multiReloadTimers.length > 0) {
-        let reloaded = false;
-        for (let i = playerFlight.multiReloadTimers.length - 1; i >= 0; i--) {
-            playerFlight.multiReloadTimers[i] -= delta;
-            if (playerFlight.multiReloadTimers[i] <= 0) {
-                playerFlight.multiReloadTimers.splice(i, 1);
-                if (playerFlight.multiBursts < playerFlight.multiMaxBursts) {
-                    playerFlight.multiBursts++;
-                    reloaded = true;
-                }
-            }
-        }
-        if (reloaded || (playerFlight.multiReloadTimers.length > 0 && Math.floor((playerFlight.multiReloadTimers[0] + delta) * 10) !== Math.floor(playerFlight.multiReloadTimers[0] * 10))) {
-            updateWeaponHUD();
-        }
-    }
-
-    if (keys.fireCannon && playerFlight.cannonCooldown <= 0) {
+    if ((keys.fireCannon || padInput.fireCannon) && playerFlight.cannonCooldown <= 0) {
         fireCannon(true, playerMesh);
         playerFlight.cannonCooldown = 0.05; // 20 rounds per sec
     }
 
-    // ─── 미사일 연속 발사 제어 (표준 최대 2발, 멀티 최대 4발) ─────────────────────
+    // ─── 미사일 연속 발사 제어 (표준 1발씩 20발, 멀티 최대 4발씩 16발) ─────────────────────
     if (keys.fireMissile) {
         tryFireMissile();
     }

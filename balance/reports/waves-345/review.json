@@ -1,0 +1,473 @@
+{
+  "modelVersion": 3,
+  "dataSha256": "236df4811c640f5ed65f3a8a3eac3a2dad1e7b362da9c51bf3c5b1e15fb624e7",
+  "targetMinutes": 20,
+  "multiRatioLimit": 1.2,
+  "assumptions": {
+    "runs": 1000,
+    "seed": 104,
+    "cannonAccuracy": 0.32,
+    "missileAccuracy": 0.82,
+    "cannonUptime": 0.28,
+    "standardMissileShare": 0.35,
+    "multiMissileShare": 0.65,
+    "engagementSecondsPerTarget": 1.15,
+    "waveTransitionSeconds": 5,
+    "hangarSeconds": 25,
+    "enemyCountScale": 1,
+    "multiReloadScale": 1
+  },
+  "baseline": {
+    "minutes": 19.555847117601992,
+    "p10Minutes": 19.289732199706414,
+    "p90Minutes": 19.883262810324677,
+    "level": 44.338,
+    "selections": 43.338,
+    "targets": 633
+  },
+  "recommended": {
+    "multiReloadScale": 1,
+    "enemyCountScale": 1,
+    "reloadSeconds": 20,
+    "minutes": 19.555847117601992,
+    "p10Minutes": 19.289732199706414,
+    "p90Minutes": 19.883262810324677,
+    "level": 44.338,
+    "selections": 43.338,
+    "targets": 633,
+    "multiToStandardRatio": 0.5966745843230403,
+    "errorMinutes": 0.4441528823980079,
+    "waves": [
+      {
+        "stageId": 1,
+        "targets": [
+          35,
+          40,
+          45
+        ]
+      },
+      {
+        "stageId": 2,
+        "targets": [
+          45,
+          50,
+          55,
+          60
+        ]
+      },
+      {
+        "stageId": 3,
+        "targets": [
+          50,
+          55,
+          60,
+          65,
+          70
+        ]
+      }
+    ]
+  },
+  "closestTimeCandidate": {
+    "multiReloadScale": 1,
+    "enemyCountScale": 1,
+    "reloadSeconds": 20,
+    "minutes": 19.555847117601992,
+    "p10Minutes": 19.289732199706414,
+    "p90Minutes": 19.883262810324677,
+    "level": 44.338,
+    "selections": 43.338,
+    "targets": 633,
+    "multiToStandardRatio": 0.5966745843230403,
+    "errorMinutes": 0.4441528823980079,
+    "waves": [
+      {
+        "stageId": 1,
+        "targets": [
+          35,
+          40,
+          45
+        ]
+      },
+      {
+        "stageId": 2,
+        "targets": [
+          45,
+          50,
+          55,
+          60
+        ]
+      },
+      {
+        "stageId": 3,
+        "targets": [
+          50,
+          55,
+          60,
+          65,
+          70
+        ]
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 1,
+      "reloadSeconds": 20,
+      "minutes": 19.555847117601992,
+      "p10Minutes": 19.289732199706414,
+      "p90Minutes": 19.883262810324677,
+      "level": 44.338,
+      "selections": 43.338,
+      "targets": 633,
+      "multiToStandardRatio": 0.5966745843230403,
+      "errorMinutes": 0.4441528823980079,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            35,
+            40,
+            45
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            45,
+            50,
+            55,
+            60
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            50,
+            55,
+            60,
+            65,
+            70
+          ]
+        }
+      ]
+    }
+  ],
+  "strategies": {
+    "balanced": {
+      "minutes": 19.555847117601992,
+      "p10Minutes": 19.289732199706414,
+      "p90Minutes": 19.883262810324677,
+      "level": 44.338,
+      "selections": 43.338,
+      "targets": 633
+    },
+    "offense": {
+      "minutes": 18.62122614667554,
+      "p10Minutes": 18.409050375161986,
+      "p90Minutes": 18.848577903899205,
+      "level": 44.294,
+      "selections": 43.294,
+      "targets": 633
+    },
+    "survival": {
+      "minutes": 23.650170423220963,
+      "p10Minutes": 22.813733580727046,
+      "p90Minutes": 24.530998858468923,
+      "level": 44.321,
+      "selections": 43.321,
+      "targets": 633
+    },
+    "random": {
+      "minutes": 21.004750631785065,
+      "p10Minutes": 19.761500950590946,
+      "p90Minutes": 22.467889656493174,
+      "level": 44.291,
+      "selections": 43.291,
+      "targets": 633
+    }
+  },
+  "sensitivity": [
+    {
+      "engagementScale": 0.75,
+      "minutes": 16.522722117602026,
+      "p10Minutes": 16.256607199706412,
+      "p90Minutes": 16.85013781032468,
+      "level": 44.338,
+      "selections": 43.338,
+      "targets": 633
+    },
+    {
+      "engagementScale": 1,
+      "minutes": 19.555847117601992,
+      "p10Minutes": 19.289732199706414,
+      "p90Minutes": 19.883262810324677,
+      "level": 44.338,
+      "selections": 43.338,
+      "targets": 633
+    },
+    {
+      "engagementScale": 1.25,
+      "minutes": 22.588972117602015,
+      "p10Minutes": 22.322857199706412,
+      "p90Minutes": 22.916387810324682,
+      "level": 44.338,
+      "selections": 43.338,
+      "targets": 633
+    }
+  ],
+  "cardEffects": [
+    {
+      "id": "mobility",
+      "name": "기동력",
+      "prerequisites": {},
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    },
+    {
+      "id": "stability",
+      "name": "안정성",
+      "prerequisites": {},
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    },
+    {
+      "id": "speed",
+      "name": "속도",
+      "prerequisites": {},
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    },
+    {
+      "id": "defense",
+      "name": "방어력",
+      "prerequisites": {},
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    },
+    {
+      "id": "power",
+      "name": "화력",
+      "prerequisites": {},
+      "firstRankDpsPercent": 19.99999999999997,
+      "coverage": "직접 화력 효과"
+    },
+    {
+      "id": "control",
+      "name": "관제력",
+      "prerequisites": {},
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    },
+    {
+      "id": "standardRack",
+      "name": "표준 미사일 랙 확장",
+      "prerequisites": {},
+      "firstRankDpsPercent": 1.8915428162257886,
+      "coverage": "직접 화력 효과"
+    },
+    {
+      "id": "multiRack",
+      "name": "멀티 미사일 랙 확장",
+      "prerequisites": {},
+      "firstRankDpsPercent": 3.7546893116774394,
+      "coverage": "직접 화력 효과"
+    },
+    {
+      "id": "reload",
+      "name": "신속 재장전",
+      "prerequisites": {},
+      "firstRankDpsPercent": 5.860149148788563,
+      "coverage": "직접 화력 효과"
+    },
+    {
+      "id": "warhead",
+      "name": "고출력 탄두",
+      "prerequisites": {
+        "power": 3
+      },
+      "firstRankDpsPercent": 10.000000000000009,
+      "coverage": "직접 화력 효과"
+    },
+    {
+      "id": "guidance",
+      "name": "능동 유도 제어",
+      "prerequisites": {
+        "control": 3
+      },
+      "firstRankDpsPercent": 0,
+      "coverage": "기동·방어·유도 효과 미평가; 0%를 무가치로 해석하지 말 것"
+    }
+  ],
+  "selectedTimeline": [
+    {
+      "point": "START",
+      "stage": 0,
+      "wave": 0,
+      "elapsedSeconds": 0,
+      "level": 1,
+      "selections": 0,
+      "cumulativeTargets": 0,
+      "dps": 97.76853763408175
+    },
+    {
+      "point": "S1-W1",
+      "stage": 1,
+      "wave": 1,
+      "elapsedSeconds": 77.44195127761411,
+      "level": 8.669,
+      "selections": 7.669,
+      "cumulativeTargets": 35,
+      "dps": 159.87269925620348
+    },
+    {
+      "point": "S1-W2",
+      "stage": 1,
+      "wave": 2,
+      "elapsedSeconds": 151.5422183799475,
+      "level": 13,
+      "selections": 12,
+      "cumulativeTargets": 75,
+      "dps": 197.3071785190086
+    },
+    {
+      "point": "S1-W3",
+      "stage": 1,
+      "wave": 3,
+      "elapsedSeconds": 229.32847602445963,
+      "level": 17,
+      "selections": 16,
+      "cumulativeTargets": 120,
+      "dps": 230.0420743169876
+    },
+    {
+      "point": "S1-BOSS",
+      "stage": 1,
+      "wave": 4,
+      "elapsedSeconds": 241.22184468047584,
+      "level": 17.927,
+      "selections": 16.927,
+      "cumulativeTargets": 121,
+      "dps": 237.74064842675918
+    },
+    {
+      "point": "S2-W1",
+      "stage": 2,
+      "wave": 1,
+      "elapsedSeconds": 348.68653991025485,
+      "level": 21.844,
+      "selections": 20.844,
+      "cumulativeTargets": 166,
+      "dps": 269.56128431644214
+    },
+    {
+      "point": "S2-W2",
+      "stage": 2,
+      "wave": 2,
+      "elapsedSeconds": 436.21407578697614,
+      "level": 25.757,
+      "selections": 24.757,
+      "cumulativeTargets": 216,
+      "dps": 298.15086641572475
+    },
+    {
+      "point": "S2-W3",
+      "stage": 2,
+      "wave": 3,
+      "elapsedSeconds": 529.2970106535142,
+      "level": 29.522,
+      "selections": 28.522,
+      "cumulativeTargets": 271,
+      "dps": 319.23240233582436
+    },
+    {
+      "point": "S2-W4",
+      "stage": 2,
+      "wave": 4,
+      "elapsedSeconds": 628.4921167393634,
+      "level": 33.167,
+      "selections": 32.167,
+      "cumulativeTargets": 331,
+      "dps": 339.3402678966592
+    },
+    {
+      "point": "S2-BOSS",
+      "stage": 2,
+      "wave": 5,
+      "elapsedSeconds": 641.1300370847518,
+      "level": 33.54,
+      "selections": 32.54,
+      "cumulativeTargets": 332,
+      "dps": 341.11742444139645
+    },
+    {
+      "point": "S3-W1",
+      "stage": 3,
+      "wave": 1,
+      "elapsedSeconds": 746.2638290646751,
+      "level": 35.503,
+      "selections": 34.503,
+      "cumulativeTargets": 382,
+      "dps": 350.2007115677524
+    },
+    {
+      "point": "S3-W2",
+      "stage": 3,
+      "wave": 2,
+      "elapsedSeconds": 833.3979482356893,
+      "level": 37.546,
+      "selections": 36.546,
+      "cumulativeTargets": 437,
+      "dps": 367.06115014183166
+    },
+    {
+      "point": "S3-W3",
+      "stage": 3,
+      "wave": 3,
+      "elapsedSeconds": 927.0462814144146,
+      "level": 39.644,
+      "selections": 38.644,
+      "cumulativeTargets": 497,
+      "dps": 387.61113202081606
+    },
+    {
+      "point": "S3-W4",
+      "stage": 3,
+      "wave": 4,
+      "elapsedSeconds": 1026.9308903593687,
+      "level": 41.819,
+      "selections": 40.819,
+      "cumulativeTargets": 562,
+      "dps": 398.01963661005504
+    },
+    {
+      "point": "S3-W5",
+      "stage": 3,
+      "wave": 5,
+      "elapsedSeconds": 1133.546410048756,
+      "level": 44.041,
+      "selections": 43.041,
+      "cumulativeTargets": 632,
+      "dps": 415.935206325032
+    },
+    {
+      "point": "S3-BOSS",
+      "stage": 3,
+      "wave": 6,
+      "elapsedSeconds": 1148.3508270561201,
+      "level": 44.338,
+      "selections": 43.338,
+      "cumulativeTargets": 633,
+      "dps": 416.9090214860417
+    }
+  ],
+  "limitations": [
+    "완주 조건부 예상 시간이며 사망률은 계산하지 않음",
+    "표적 탐색 시간은 실측으로 보정되지 않은 가정",
+    "표적별 과잉 피해·탄착·락온 시간과 실제 증원 제한 생략",
+    "생존 카드 효용과 실제 멀티 조작 편의성 미평가",
+    "비율 제한은 초기 무강화 지속 DPS 기준이며 설계자가 정한 목표; 보편적인 정답 아님",
+    "백분위는 적 구성과 카드 추첨 변동만 포함; 모델 오차 범위가 아님",
+    "원본 XLSX는 수정하지 않음"
+  ]
+}

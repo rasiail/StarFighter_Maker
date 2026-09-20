@@ -1,0 +1,14 @@
+﻿card_id,display_name_ko,category,max_rank,draw_weight,is_stat,description_ko
+mobility,기동력,stat,5,100,True,피치·롤·요 최대 회전속도 +8%
+stability,안정성,stat,5,100,True,회전 정리·역입력 응답 +15%
+speed,속도,stat,5,100,True,순항 +20 / 최고 +40 kts · 가속 +8
+defense,방어력,stat,5,100,True,최대 체력 +20 · 증가분 회복
+power,화력,stat,5,100,True,기본 무기 피해 배율 +20%
+control,관제력,stat,5,100,True,락온 거리 +10% · 유도 선회 +8%
+standardRack,표준 미사일 랙 확장,equipment,3,100,False,표준 미사일 탄창 +4발
+multiRack,멀티 미사일 랙 확장,equipment,3,100,False,멀티 미사일 탄창 +4발
+reload,신속 재장전,equipment,5,100,False,두 미사일의 기본 재장전 시간 -10%
+warhead,고출력 탄두,equipment,3,100,False,화력 보정 후 무기 피해 +10% · 화력 3 필요
+guidance,능동 유도 제어,equipment,3,100,False,미사일 유도 선회 성능 +15% · 관제력 3 필요
+repair,긴급 정비,fallback,,0,False,체력 30% 회복 · 점수 +500
+multiSalvo,멀티 관제 확장,equipment,2,100,False,멀티 동시 락온·발사 +2 (4→6→8발) · 관제력 2 필요

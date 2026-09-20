@@ -4,9 +4,11 @@ import { getStage } from '../src/config/stages.js';
 import { createEncounter, recordEncounterKill, advanceEncounter, reinforcementCount } from '../src/game/encounter.js';
 import { scheduleCombat, updateCombatSchedule, clearCombatSchedule } from '../src/core/scheduler.js';
 
-test('5개의 목표를 각각 달성해야 보스가 등장하며 보스 처치만 정비창을 연다', () => {
-    const encounter = createEncounter(getStage(1));
-    for (let wave = 0; wave < 5; wave++) {
+test('3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 정비창을 연다', () => {
+ for(const stageId of [1,2,3]) {
+    const encounter = createEncounter(getStage(stageId));
+    assert.equal(encounter.stage.waves.length, stageId + 2);
+    for (let wave = 0; wave < encounter.stage.waves.length; wave++) {
         assert.equal(encounter.wave, wave);
         assert.equal(encounter.phase, 'waves');
         for (let kill = 0; kill < encounter.stage.waves[wave]; kill++) recordEncounterKill(encounter, false);
@@ -21,6 +23,7 @@ test('5개의 목표를 각각 달성해야 보스가 등장하며 보스 처치
     recordEncounterKill(encounter, true);
     advanceEncounter(encounter);
     assert.equal(encounter.phase, 'hangar');
+ }
 });
 test('증원은 동시 적 수와 웨이브 전체 목표를 초과하지 않는다', () => {
     const e = createEncounter(getStage(1));
@@ -28,9 +31,9 @@ test('증원은 동시 적 수와 웨이브 전체 목표를 초과하지 않는
     assert.equal(reinforcementCount(e, 0), 30);
     e.spawned = 30;
     assert.equal(reinforcementCount(e, 25), 5);
-    e.spawned = 39;
+    e.spawned = e.stage.waves[e.wave] - 1;
     assert.equal(reinforcementCount(e, 20), 1);
-    e.spawned = 40;
+    e.spawned = e.stage.waves[e.wave];
     assert.equal(reinforcementCount(e, 0), 0);
 });
 test('전투 예약 작업은 시뮬레이션 시간에만 진행하며 새 런에서 제거된다', () => {

@@ -72,7 +72,7 @@
             <div class="run-panel">
                 <p class="run-eyebrow">FLIGHT SYSTEM UPGRADE</p>
                 <h2 id="upgrade-title">기체 강화</h2>
-                <p id="upgrade-remaining"></p>
+                <p id="upgrade-remaining"></p><p class="run-note">패드: 방향키 이동 · × / ○ 선택</p>
                 <div id="upgrade-cards"></div>
                 <p class="run-note">선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다.</p>
             </div>
@@ -84,7 +84,7 @@
                 <p id="hangar-build"></p>
                 <p>기체 수리와 미사일 장전을 완료했습니다.<br>미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다.</p>
                 <button id="hangar-upgrade" class="start-btn"></button>
-                <button id="hangar-depart" class="start-btn">다음 전장으로 출격</button>
+                <p class="run-note">패드: × 강화 · 방향키 이동 · ○ 선택/출격</p><button id="hangar-depart" class="start-btn">다음 전장으로 출격</button>
             </div>
         </div>
         <div id="wave-status" hidden></div>
@@ -110,7 +110,7 @@
                     <div><span class="control-key">W / S</span> : PITCH DOWN / UP</div>
                     <div><span class="control-key">A / D</span> : ROLL LEFT / RIGHT</div>
                     <div><span class="control-key">Q / E</span> : YAW (RUDDER)</div>
-                    <div><span class="control-key">SHIFT / CTRL</span> : THROTTLE / AIRBRAKE</div>
+                    <div><span class="control-key">SHIFT / ALT</span> : THROTTLE / AIRBRAKE</div>
                     <div><span class="control-key">SPACE / L-CLICK (HOLD)</span> : 20mm VULCAN CANNON</div>
                     <div><span class="control-key">F / L-CLICK (TAP)</span> : AAM-GUIDED MISSILE</div>
                     <div><span class="control-key">1 / 2</span> : STD / MULTI MISSILE</div>
@@ -120,6 +120,7 @@
                 <p style="font-size: 13px; color: #a6f2c7; line-height: 1.4; margin-bottom: 12px;">
                     적기를 전방 락온 콘 안에 포착하여 미사일을 유도 격추하거나 고속 기관포로 제압하십시오.
                 </p>
+                <p class="run-note">PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포<br>L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화<br>왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션<br>메뉴: 방향키 이동 · ×/○ 선택</p>
                 <button class="start-btn" id="btn-sortie">SORTIE (SELECT MISSION STAGE)</button>
             </div>
         </div>

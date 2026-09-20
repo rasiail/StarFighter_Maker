@@ -3,6 +3,7 @@ import { gameState } from '../core/state.js';
 import { enemies } from '../enemies/fleet.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { camera } from '../rendering/scene.js';
+import { BALANCE } from '../data/generated/balance.js';
 
 
 export function acquireNextBestTarget() {
@@ -112,7 +113,8 @@ export function updateTargeting() {
         enemy.dotForward = dot;
 
         // 미사일 종류에 따른 사거리(락온 거리) 분리: 표준 2000m, 멀티 3000m
-        const maxLockRange = ((gameState.missileMode === 1) ? 2000 : 3000) * playerFlight.lockRangeMultiplier;
+        const weapon = gameState.missileMode === 1 ? BALANCE.weapons.standard_missile : BALANCE.weapons.multi_missile;
+        const maxLockRange = weapon.lockRangeM * playerFlight.lockRangeMultiplier;
         // 전투기 기수 전방 약 36도 이내(dot > 0.80) & 유효 사거리 이내
         enemy.inCone = (dot > 0.80 && dist <= maxLockRange);
 

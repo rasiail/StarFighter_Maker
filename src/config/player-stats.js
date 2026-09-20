@@ -1,4 +1,9 @@
-// 기체 밸런스 기본값. 성장/카드 시스템은 복사한 유효 스탯을 변경하며 이 정의는 유지합니다.
+import { BALANCE } from '../data/generated/balance.js';
+
+const standardMissile = BALANCE.weapons.standard_missile;
+const multiMissile = BALANCE.weapons.multi_missile;
+
+// 기체 밸런스 기본값. 무기 관련 값은 balance/weapons.xlsx에서 생성됩니다.
 export const PLAYER_BASE_STATS = Object.freeze({
     minSpeed: 150,
     cruiseSpeed: 550,
@@ -13,8 +18,8 @@ export const PLAYER_BASE_STATS = Object.freeze({
     lockRangeMultiplier: 1,
     missileTurnMultiplier: 1,
     multiLockCount: 4,
-    stdMaxBursts: 2,
-    multiMaxBursts: 4,
-    stdReloadSeconds: 2.2,
-    multiReloadSeconds: 3.0,
+    stdMaxBursts: standardMissile.readySlots,
+    multiMaxBursts: multiMissile.readySlots,
+    stdReloadSeconds: standardMissile.reloadSec,
+    multiReloadSeconds: multiMissile.reloadSec,
 });

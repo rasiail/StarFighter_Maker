@@ -1,3 +1,4 @@
+import { updateGamepad } from '../input/gamepad.js';
 // core/loop: imports are side-effect free; main.js controls initialization.
 import { gameState } from './state.js';
 import { updatePlayerFlight } from '../player/flight.js';
@@ -40,6 +41,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     const delta = Math.min(0.08, clock.getDelta());
+    updateGamepad(delta);
 
     if (gameState.isGameRunning && !gameState.isGamePaused) {
         try {

@@ -18,6 +18,7 @@ import { clearFleet, spawnFormation, spawnBoss, enemies } from '../enemies/fleet
 import { cameraConfig } from '../camera/camera.js';
 import { updateTargeting } from '../combat/targeting.js';
 import { renderHUD } from '../ui/hud.js';
+import { BALANCE } from '../data/generated/balance.js';
 
 export let encounter = null;
 let selectedStageId = 1;
@@ -55,7 +56,7 @@ function beginWave() {
 function updateMissionUI() {
     const status = document.getElementById('wave-status');
     status.hidden = !gameState.isGameRunning;
-    status.textContent = encounter?.phase === 'boss' ? 'BOSS ENGAGEMENT' : `WAVE ${(encounter?.wave || 0) + 1} / 5`;
+    status.textContent = encounter?.phase === 'boss' ? 'BOSS ENGAGEMENT' : `WAVE ${(encounter?.wave || 0) + 1} / ${encounter?.stage.waves.length || 0}`;
     document.getElementById('target-count').textContent = encounter?.phase === 'boss' ? 'BOSS' : Math.max(0, gameState.TARGET_KILLS - (encounter?.kills || 0));
     const bar = document.getElementById('boss-status');
     bar.hidden = !boss?.alive || !gameState.isGameRunning;
@@ -83,7 +84,7 @@ export function updateMission(delta) {
     }
     if (encounter.phase === 'waves') {
         reinforcementTimer -= delta;
-        if (reinforcementTimer <= 0) { fillWave(); reinforcementTimer = 1.0; }
+        if (reinforcementTimer <= 0) { fillWave(); reinforcementTimer = BALANCE.spawnRules.reinforcement_interval.value; }
     }
     updateMissionUI();
 }
@@ -183,7 +184,7 @@ export function initMissions() {
     }));
     cards.forEach(card => {
         const stage = getStage(Number(card.dataset.stage));
-        card.querySelector('.stage-objective').textContent = `5 WAVES · ${stage.waves.reduce((a, b) => a + b, 0)}기 + BOSS`;
+        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)}기 + BOSS`;
     });
     document.getElementById('btn-start-selected-stage').addEventListener('click', () => launchStage(selectedStageId));
     document.getElementById('hangar-depart').addEventListener('click', departHangar);

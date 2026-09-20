@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createProgression, grantExperience, calculateStats, applyStats } from '../src/progression/model.js';
+import { createProgression, grantExperience, calculateStats, applyStats, xpToNextLevel } from '../src/progression/model.js';
 import { drawCards, selectCard, CARDS, eligibleCards } from '../src/progression/cards.js';
 import { createPlayerFlight } from '../src/player/state.js';
 
 test('경험치가 여러 레벨을 넘으면 잔여 경험치와 선택권을 모두 적립한다', () => {
     const build = createProgression();
-    assert.equal(grantExperience(build, 180), 3);
+    assert.equal(grantExperience(build, xpToNextLevel(1) + xpToNextLevel(2) + xpToNextLevel(3) + 15), 3);
     assert.equal(build.level, 4);
     assert.equal(build.pending, 3);
     assert.equal(build.xp, 15);
@@ -48,16 +48,16 @@ test('후보는 중복되지 않으며 스탯 보정은 반복 계산해도 누�
 test('슬롯 확장은 준비 탄수만 늘리고 진행 중 재장전과 체력 증가는 보존한다', () => {
     const build = createProgression();
     const flight = createPlayerFlight({});
-    flight.stdBursts = 1;
-    flight.stdReloadTimers = [1.1];
+    flight.stdBursts = 0;
+    flight.stdReloadTimers = [5];
     flight.health = 45;
     build.cards.standardRack = 1;
     build.cards.reload = 1;
     build.ranks.defense = 1;
     applyStats(flight, calculateStats(build));
-    assert.equal(flight.stdMaxBursts, 4);
-    assert.equal(flight.stdBursts, 3);
-    assert.ok(Math.abs(flight.stdReloadTimers[0] - 0.99) < 1e-8);
+    assert.equal(flight.stdMaxBursts, 24);
+    assert.equal(flight.stdBursts, 0);
+    assert.ok(Math.abs(flight.stdReloadTimers[0] - 4.5) < 1e-8);
     assert.equal(flight.health, 65);
     assert.equal(flight.maxHealth, 120);
 });

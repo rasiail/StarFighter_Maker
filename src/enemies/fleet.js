@@ -5,6 +5,11 @@ import { scene } from '../rendering/scene.js';
 import { getSurfaceHeight, currentEnvironment } from '../world/environment.js';
 import { createDroneMesh } from './drone.js';
 import { playerMesh } from '../player/player.js';
+import { BALANCE } from '../data/generated/balance.js';
+import { formationKind } from './formation.js';
+
+const enemyData = BALANCE.enemies;
+const spawnRules = Object.fromEntries(Object.entries(BALANCE.spawnRules).map(([key, rule]) => [key, rule.value]));
 
 export let enemies;
 export let activeSinkingShips;
@@ -26,8 +31,8 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
     const hullEnemy = {
         mesh: hullTargetMesh,
         shipMesh: shipMesh,
-        health: 300,
-        maxHealth: 300,
+        health: enemyData.ship_hull.health,
+        maxHealth: enemyData.ship_hull.health,
         speed: 0,
         velocity: new THREE.Vector3(0, 0, 0),
         state: 'DEFEND',
@@ -39,7 +44,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         sinkSpeed: 0,
         turretEnemies: [],
         callsign: `${callsign} [HULL]`,
-        hitRadius: 38.0 // 거대 선체 피격 판정 반경
+        hitRadius: enemyData.ship_hull.hitRadiusM
     };
 
     // 2. 전방 함포 타깃 (GUN-A)
@@ -53,8 +58,8 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         turretMesh: shipMesh.fwdTurret,
         shipMesh: shipMesh,
         parentHullEnemy: hullEnemy,
-        health: 100,
-        maxHealth: 100,
+        health: enemyData.ship_turret.health,
+        maxHealth: enemyData.ship_turret.health,
         speed: 0,
         velocity: new THREE.Vector3(0, 0, 0),
         state: 'DEFEND',
@@ -64,7 +69,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         alive: true,
         fireCooldown: 1.5 + Math.random() * 2.0,
         callsign: `${callsign} [GUN-A]`,
-        hitRadius: 18.0
+        hitRadius: enemyData.ship_turret.hitRadiusM
     };
 
     // 3. 후방 함포 타깃 (GUN-B)
@@ -78,8 +83,8 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         turretMesh: shipMesh.aftTurret,
         shipMesh: shipMesh,
         parentHullEnemy: hullEnemy,
-        health: 100,
-        maxHealth: 100,
+        health: enemyData.ship_turret.health,
+        maxHealth: enemyData.ship_turret.health,
         speed: 0,
         velocity: new THREE.Vector3(0, 0, 0),
         state: 'DEFEND',
@@ -89,7 +94,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         alive: true,
         fireCooldown: 2.2 + Math.random() * 2.0,
         callsign: `${callsign} [GUN-B]`,
-        hitRadius: 18.0
+        hitRadius: enemyData.ship_turret.hitRadiusM
     };
 
     hullEnemy.turretEnemies = [fwdGunEnemy, aftGunEnemy];
@@ -105,8 +110,8 @@ function spawnGroundTank(pos, callsign) {
 
     const enemy = {
         mesh: tankMesh,
-        health: 120,
-        maxHealth: 120,
+        health: enemyData.tank.health,
+        maxHealth: enemyData.tank.health,
         speed: 0,
         velocity: new THREE.Vector3(0, 0, 0),
         state: 'DEFEND',
@@ -116,7 +121,8 @@ function spawnGroundTank(pos, callsign) {
         fireCooldown: 1.5 + Math.random() * 2.0,
         alive: true,
         callsign: callsign || `TANK-0${enemies.filter(e => e.isGround && !e.isShip).length + 1} [GND]`,
-        turret: tankMesh.turret
+        turret: tankMesh.turret,
+        hitRadius: enemyData.tank.hitRadiusM
     };
     enemies.push(enemy);
     return enemy;
@@ -137,7 +143,7 @@ export function spawnEnemy(pos, { health = 80, boss = false } = {}) {
         health,
         maxHealth: health,
         isBoss: boss,
-        hitRadius: boss ? 65 : 20,
+        hitRadius: boss ? enemyData.boss.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
         speed: boss ? 240 : 340,
         velocity: new THREE.Vector3(0, 0, -1),
         state: 'PATROL', // PATROL, INTERCEPT, ENGAGE, EVADE
@@ -172,16 +178,18 @@ export function spawnFormation(count, options = {}) {
     for (let i = 0; i < count; i++) {
         // 플레이어 주변 사방 1500m ~ 3500m 반경에서 랜덤하게 스폰 (각도 및 거리 무작위)
         const angle = Math.random() * Math.PI * 2;
-        const range = 1500 + Math.random() * 2000;
+        const range = spawnRules.spawn_range_min + Math.random() * (spawnRules.spawn_range_max - spawnRules.spawn_range_min);
         const px = playerMesh.position.x + Math.sin(angle) * range;
         const pz = playerMesh.position.z + Math.cos(angle) * range;
 
         // 보스가 아니고 약 25% 확률로 지상(또는 해상) 병력 스폰
-        if (!options.boss && Math.random() < 0.25) {
-            const isOcean = (currentEnvironment && currentEnvironment.theme === 'ocean');
-            if (isOcean) {
+        const kind = options.boss ? 'aircraft' : formationKind(count - i, currentEnvironment?.theme === 'OCEAN', Math.random());
+        if (kind !== 'aircraft') {
+            const isOcean = (currentEnvironment && currentEnvironment.theme === 'OCEAN');
+            if (kind === 'ship') {
                 // 해상 테마에서는 전함 스폰
                 spawnBattleship(new THREE.Vector3(px, 0, pz), Math.random() * Math.PI * 2);
+                i += 2; // The hull and its two turrets consume three target slots.
             } else {
                 // 그 외 테마에서는 탱크 스폰
                 spawnGroundTank(new THREE.Vector3(px, 0, pz));

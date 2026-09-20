@@ -1,5 +1,6 @@
 // ui/hud: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
+import { BALANCE } from '../data/generated/balance.js';
 import { camera, hudCanvas, hudCtx } from '../rendering/scene.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { enemies } from '../enemies/fleet.js';
@@ -237,7 +238,7 @@ export function renderHUD() {
     gameState.isGunAimOnTarget = false;
     gameState.currentGunLeadPredictedPos = null;
 
-    const GUN_RANGE = 1000; // 기총 유효 사거리 기본값 (m)
+    const GUN_RANGE = BALANCE.weapons.player_cannon.lockRangeM;
 
     if (currentLockedEnemy && currentLockedEnemy.alive) {
         const pPos = playerMesh.position;

@@ -1,3 +1,4 @@
+import { initGamepad } from './input/gamepad.js';
 import { initAudio } from './audio/audio.js';
 import { initAircraft } from './assets/aircraft.js';
 import { initExhaust } from './effects/exhaust.js';
@@ -43,6 +44,7 @@ initProgression(); // Reward the final kill before any mission transition.
 initMissions();
 initMenus();
 initUpgrades();
+initGamepad();
 
 // Start the frame loop only after every system and listener is ready.
 initLoop();

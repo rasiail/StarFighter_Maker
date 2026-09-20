@@ -5,6 +5,10 @@ import { playerFlight, playerMesh } from '../player/player.js';
 import { scene } from '../rendering/scene.js';
 import { audio } from '../audio/audio.js';
 import { enemies } from '../enemies/fleet.js';
+import { BALANCE } from '../data/generated/balance.js';
+import { consumeMagazine } from './magazine.js';
+
+const weaponData = BALANCE.weapons;
 
 export let bullets;
 export let missiles;
@@ -17,7 +21,7 @@ export function updateWeaponHUD() {
     const statEl = document.getElementById('missile-stat');
     if (!statEl) return;
     if (gameState.missileMode === 1) {
-        const burstPips = 'I'.repeat(playerFlight.stdBursts) + '.'.repeat(playerFlight.stdMaxBursts - playerFlight.stdBursts);
+        const burstPips = `${playerFlight.stdBursts}/${playerFlight.stdMaxBursts}`;
         if (playerFlight.stdReloadTimers.length > 0) {
             const minT = Math.min(...playerFlight.stdReloadTimers);
             statEl.textContent = `STD RELOAD (${minT.toFixed(1)}s) [${burstPips}]`;
@@ -27,7 +31,7 @@ export function updateWeaponHUD() {
             statEl.style.color = '#4df58a';
         }
     } else {
-        const burstPips = 'I'.repeat(playerFlight.multiBursts) + '.'.repeat(playerFlight.multiMaxBursts - playerFlight.multiBursts);
+        const burstPips = `${playerFlight.multiBursts}/${playerFlight.multiMaxBursts}`;
         if (playerFlight.multiReloadTimers.length > 0) {
             const minT = Math.min(...playerFlight.multiReloadTimers);
             statEl.textContent = `MULTI RELOAD (${minT.toFixed(1)}s) [${burstPips}]`;
@@ -48,7 +52,8 @@ export function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
 
     // Forward speed vector
     let forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
-    const muzzleSpeed = 1600;
+    const config = isPlayer ? weaponData.player_cannon : weaponData.enemy_cannon;
+    const muzzleSpeed = config.projectileSpeedMps;
 
     // 에이스컴뱃 스타일 기총 유효 에임(Gun Lead Pipper) 정렬 시 탄도 수렴 보정
     if (isPlayer && gameState.isGunAimOnTarget && gameState.currentGunLeadPredictedPos) {
@@ -58,9 +63,9 @@ export function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
     }
 
     bullet.velocity = forward.multiplyScalar(muzzleSpeed);
-    bullet.life = 1.4; // Seconds
+    bullet.life = config.lifetimeSec;
     bullet.isPlayer = isPlayer;
-    bullet.damage = isPlayer ? 18 * playerFlight.damageMultiplier : 8;
+    bullet.damage = isPlayer ? config.damage * playerFlight.damageMultiplier : config.damage;
 
     scene.add(bullet);
     bullets.push(bullet);
@@ -85,11 +90,12 @@ export function fireAntiAirBullet(enemy) {
     const dir = targetPos.sub(spawnPos).normalize();
     bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), dir);
 
-    const muzzleSpeed = 1100; // 대공포 탄속
+    const config = weaponData.anti_air;
+    const muzzleSpeed = config.projectileSpeedMps;
     bullet.velocity = dir.multiplyScalar(muzzleSpeed);
-    bullet.life = 2.8; // 지상에서 상공까지 지속
+    bullet.life = config.lifetimeSec;
     bullet.isPlayer = false;
-    bullet.damage = 8;
+    bullet.damage = config.damage;
 
     scene.add(bullet);
     bullets.push(bullet);
@@ -140,16 +146,19 @@ export function fireMissile(target, isPlayer = true, sourceMesh = playerMesh) {
     mslMesh.quaternion.copy(sourceMesh.quaternion);
 
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
+    const config = isPlayer
+        ? (gameState.missileMode === 2 ? weaponData.multi_missile : weaponData.standard_missile)
+        : (sourceMesh.userData.isBoss ? weaponData.boss_missile : weaponData.enemy_missile);
     const missileData = {
         mesh: mslMesh,
         target: validTarget,
-        velocity: forward.clone().multiplyScalar(400),
-        speed: 450,
-        maxSpeed: 1400,
-        acceleration: 650,
-        turnRate: 3.2 * (isPlayer ? playerFlight.missileTurnMultiplier : 1), // Proportional Navigation tracking limit
-        life: 6.0,
-        damage: isPlayer ? 85 * playerFlight.damageMultiplier : (sourceMesh.userData.isBoss ? 20 : 35),
+        velocity: forward.clone().multiplyScalar(Math.min(400, config.projectileSpeedMps)),
+        speed: config.projectileSpeedMps,
+        maxSpeed: config.maxSpeedMps,
+        acceleration: config.accelerationMps2,
+        turnRate: config.turnRateRadSec * (isPlayer ? playerFlight.missileTurnMultiplier : 1),
+        life: config.lifetimeSec,
+        damage: isPlayer ? config.damage * playerFlight.damageMultiplier : config.damage,
         isPlayer: isPlayer
     };
 
@@ -166,13 +175,14 @@ export function tryFireMissile() {
     const lockedTarget = (currentEnemy && currentEnemy.alive && currentEnemy.isLocked) ? currentEnemy : null;
 
     if (gameState.missileMode === 2) {
-        // [모드 2] 멀티 미사일: 최대 4발 연속/동시 발사 가능
+        // 동시 발사는 멀티 관제 확장으로 4 → 6 → 8발까지 증가합니다.
         if (playerFlight.multiShotCooldown > 0) return;
 
         // 락온 완료된 적기들 추출
-        const lockedTargets = enemies.filter(e => e.alive && e.isLocked);
+        const lockedTargets = enemies.filter(e => e.alive && e.isLocked)
+            .sort((a, b) => Number(b === lockedTarget) - Number(a === lockedTarget) || b.dotForward - a.dotForward);
         let fired = 0;
-        const canFire = playerFlight.multiBursts;
+        const canFire = consumeMagazine(playerFlight, 'multi', Math.max(1, lockedTargets.length));
 
         if (lockedTargets.length > 0) {
             // 락온 완료된 타깃들을 향해 각각 호밍 미사일 발사
@@ -187,23 +197,17 @@ export function tryFireMissile() {
         }
 
         if (fired > 0) {
-            playerFlight.multiBursts -= fired;
-            playerFlight.multiShotCooldown = 0.35;
-            for (let i = 0; i < fired; i++) {
-                playerFlight.multiReloadTimers.push(playerFlight.multiReloadSeconds); // 한 발당 3초 개별 장전
-            }
+            playerFlight.multiShotCooldown = weaponData.multi_missile.fireIntervalSec;
             updateWeaponHUD();
         }
     } else {
-        // [모드 1] 표준 미사일: 최대 2발 연속 발사 가능
+        // 표준 미사일은 탄창에서 한 발씩 소모합니다.
         if (playerFlight.stdShotCooldown > 0) return;
 
-        if (playerFlight.stdBursts > 0) {
+        if (consumeMagazine(playerFlight, 'std', 1) > 0) {
             // 락온 완료된 적이 있으면 유도 미사일, 락온이 안 되어 있으면 무유도(null) 발사 (호밍 방지)
             fireMissile(lockedTarget, true, playerMesh);
-            playerFlight.stdBursts--;
-            playerFlight.stdShotCooldown = 0.30;
-            playerFlight.stdReloadTimers.push(playerFlight.stdReloadSeconds); // 한 발당 2.2초 개별 장전
+            playerFlight.stdShotCooldown = weaponData.standard_missile.fireIntervalSec;
             updateWeaponHUD();
         }
     }

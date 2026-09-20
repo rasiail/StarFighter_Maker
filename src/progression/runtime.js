@@ -4,6 +4,8 @@ import { playerFlight } from '../player/player.js';
 import { updateWeaponHUD } from '../combat/weapons.js';
 import { createProgression, grantExperience, calculateStats, applyStats } from './model.js';
 import { selectCard } from './cards.js';
+import { BALANCE } from '../data/generated/balance.js';
+import { enemyExperience } from './rewards.js';
 
 export const progression = createProgression();
 export function resetProgression() {
@@ -16,8 +18,10 @@ export function chooseUpgrade(id, offered) {
     const card = selectCard(progression, id, offered);
     applyStats(playerFlight, calculateStats(progression));
     if (card.id === 'repair') {
-        playerFlight.health = Math.min(playerFlight.maxHealth, playerFlight.health + playerFlight.maxHealth * 0.3);
-        playerFlight.score += 500;
+        const restore = card.effects?.find(effect => effect.effectKey === 'health_restore')?.value ?? 0.3;
+        const score = card.effects?.find(effect => effect.effectKey === 'score')?.value ?? 500;
+        playerFlight.health = Math.min(playerFlight.maxHealth, playerFlight.health + playerFlight.maxHealth * restore);
+        playerFlight.score += score;
     }
     updateWeaponHUD();
     gameEvents.emit(EVENTS.PROGRESSION_CHANGED);
@@ -25,7 +29,9 @@ export function chooseUpgrade(id, offered) {
 export function initProgression() {
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ enemyType, isBoss }) => {
         if (!gameState.isGameRunning) return;
-        grantExperience(progression, isBoss ? 200 : ({ aircraft: 20, tank: 25, turret: 20, ship: 80 }[enemyType] || 20));
+        const id = isBoss ? 'boss' : ({ aircraft: 'stage_aircraft', tank: 'tank', turret: 'ship_turret', ship: 'ship_hull' }[enemyType] || 'stage_aircraft');
+        const stage = BALANCE.stages.find(row => row.stageId === gameState.currentStageInfo?.stage);
+        grantExperience(progression, enemyExperience(id, stage));
         gameEvents.emit(EVENTS.PROGRESSION_CHANGED);
     });
 }

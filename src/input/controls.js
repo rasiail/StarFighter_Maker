@@ -1,3 +1,4 @@
+import { resetGamepad } from './gamepad.js';
 // input/controls: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { keys } from './state.js';
@@ -37,6 +38,7 @@ export function updateVirtualCursorPos() {
 }
 
 export function clearCombatInput() {
+    resetGamepad();
     Object.keys(keys).forEach(key => { keys[key] = false; });
     clearTimeout(leftClickTimeout);
     clearTimeout(rightClickTimeout);

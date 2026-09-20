@@ -1,0 +1,5 @@
+﻿rule_id,value,unit,notes
+ground_or_ship_probability,0.25,ratio,환경에 따라 전차 또는 전함
+spawn_range_min,1500,m,플레이어 기준
+spawn_range_max,3500,m,플레이어 기준
+reinforcement_interval,1,sec,증원 검사 간격

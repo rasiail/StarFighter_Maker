@@ -1,0 +1,4 @@
+﻿card_id,required_key,operator,value
+warhead,power,>=,3
+guidance,control,>=,3
+multiSalvo,control,>=,2

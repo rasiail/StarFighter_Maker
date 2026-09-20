@@ -1,0 +1,20 @@
+﻿card_id,effect_key,operation,value,unit_or_rule
+mobility,max_pitch_rate_multiplier,add_per_rank,0.08,ratio
+mobility,max_roll_rate_multiplier,add_per_rank,0.08,ratio
+mobility,max_yaw_rate_multiplier,add_per_rank,0.08,ratio
+stability,stability_multiplier,add_per_rank,0.15,ratio
+speed,cruise_speed,add_per_rank,20,kts
+speed,max_speed,add_per_rank,40,kts
+speed,acceleration,add_per_rank,8,kts_per_sec
+defense,max_health,add_per_rank,20,hp
+power,damage_multiplier,add_per_rank,0.2,ratio
+control,lock_range_multiplier,add_per_rank,0.1,ratio
+control,missile_turn_multiplier,add_per_rank,0.08,ratio
+standardRack,standard_ready_slots,add_per_rank,4,count
+multiRack,multi_ready_slots,add_per_rank,4,count
+reload,missile_reload_multiplier,subtract_per_rank,0.1,ratio
+warhead,damage_multiplier,multiply_add_per_rank,0.1,ratio
+guidance,missile_turn_multiplier,add_per_rank,0.15,ratio
+repair,health_restore,instant_ratio,0.3,max_health
+repair,score,instant_add,500,points
+multiSalvo,multi_lock_count,add_per_rank,2,count; max=8

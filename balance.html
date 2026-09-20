@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarFighter Balance Lab</title>
+    <link rel="stylesheet" href="styles/balance.css">
+</head>
+<body>
+    <header class="lab-header">
+        <div>
+            <p class="eyebrow">STARFIGHTER DEVELOPMENT TOOL</p>
+            <h1>Balance Lab</h1>
+            <p>현재 XLSX에서 생성된 데이터로 평균적인 런을 반복 계산합니다.</p>
+        </div>
+        <a class="game-link" href="index.html">게임으로 돌아가기</a>
+    </header>
+    <main>
+        <section class="control-panel" aria-labelledby="assumption-title">
+            <div class="section-heading">
+                <div><h2 id="assumption-title">시뮬레이션 가정</h2><p>실제 조작 실력이 아니라 데이터 수치의 상대적 균형을 비교하는 모델입니다.</p></div>
+                <button id="run-simulation" type="button">다시 계산</button>
+            </div>
+            <div class="controls">
+                <label>반복 횟수 <input id="runs" type="number" min="10" max="5000" step="10" value="300"></label>
+                <label>기관포 명중률 <input id="cannon-accuracy" type="range" min="5" max="90" value="32"><output>32%</output></label>
+                <label>미사일 명중률 <input id="missile-accuracy" type="range" min="10" max="100" value="82"><output>82%</output></label>
+                <label>기관포 사격 비중 <input id="cannon-uptime" type="range" min="0" max="80" value="28"><output>28%</output></label>
+                <label>멀티 미사일 사용 비중 <input id="multi-share" type="range" min="0" max="100" value="65"><output>65%</output></label>
+                <label>표적당 탐색·기동 시간 <input id="engagement-seconds" type="range" min="0" max="500" value="115"><output>1.15초</output></label>
+            </div>
+            <p id="validation-error" role="alert" hidden></p>
+        </section>
+
+        <section class="summary-grid" id="summary" aria-live="polite"></section>
+
+        <section class="chart-section">
+            <div class="section-heading">
+                <div><h2>런 성장 곡선</h2><p>그래프 전략을 선택하면 같은 가정에서 해당 AI의 평균 궤적을 표시합니다.</p></div>
+                <label>그래프 전략
+                    <select id="chart-strategy">
+                        <option value="balanced">균형</option><option value="offense">공격</option><option value="survival">생존</option><option value="random">무작위</option>
+                    </select>
+                </label>
+            </div>
+            <div class="charts">
+                <figure><figcaption>시간에 따른 레벨</figcaption><svg id="level-chart" role="img" aria-label="시간에 따른 평균 레벨 그래프"></svg></figure>
+                <figure><figcaption>시간에 따른 전투 DPS</figcaption><svg id="dps-chart" role="img" aria-label="시간에 따른 평균 전투 DPS 그래프"></svg></figure>
+                <figure><figcaption>시간에 따른 누적 표적 수</figcaption><svg id="enemy-chart" role="img" aria-label="시간에 따른 누적 표적 수 그래프"></svg></figure>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading"><div><h2>AI 빌드 전략 비교</h2><p>후보 카드 중 전략별 우선순위가 가장 높은 카드를 선택합니다.</p></div></div>
+            <div class="table-wrap"><table id="strategy-table"><thead><tr><th>전략</th><th>평균 시간</th><th>10~90% 범위</th><th>종료 레벨</th><th>카드 수</th><th>최종 DPS</th></tr></thead><tbody></tbody></table></div>
+        </section>
+
+        <section class="two-column">
+            <div>
+                <div class="section-heading"><div><h2>무기 밸런스</h2><p>선택한 전략의 최종 성장 상태와 입력한 명중률을 반영합니다.</p></div></div>
+                <div class="table-wrap"><table id="weapon-table"><thead><tr><th>무기</th><th>일제 피해</th><th>지속 DPS 기여</th><th>비중</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div>
+                <div class="section-heading"><div><h2>평균 적 구성</h2><p>총 3개 스테이지의 웨이브와 보스를 합산합니다.</p></div></div>
+                <div class="table-wrap"><table id="enemy-table"><thead><tr><th>적</th><th>평균 수</th><th>비중</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading"><div><h2>레벨 경험치 상승</h2><p>XLSX에 입력된 레벨별 요구 경험치와 누적 경험치입니다.</p></div></div>
+            <svg id="xp-chart" role="img" aria-label="레벨별 요구 경험치와 누적 경험치 그래프"></svg>
+        </section>
+
+        <section class="model-note">
+            <h2>모델 범위</h2>
+            <p>총 적 체력을 명중률이 반영된 지속 DPS로 나누고, 표적마다 탐색·기동 시간을 더합니다. 카드 선택은 웨이브와 보스 종료 시 처리합니다. 실제 비행 경로, 피격·사망, 적 공격 예산, 탄착 시간과 플레이어 판단은 아직 계산하지 않습니다.</p>
+        </section>
+    </main>
+    <script type="module" src="src/balance/app.js"></script>
+</body>
+</html>

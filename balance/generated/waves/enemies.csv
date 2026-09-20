@@ -1,0 +1,6 @@
+﻿enemy_id,display_name_ko,health,xp_reward,score_reward,hit_radius_m,counts_as_target,notes
+stage_aircraft,공중 적기,,20,1500,20,True,체력은 Stages.aircraft_health
+tank,전차,120,25,1500,18,True,
+ship_hull,전함 선체,300,80,3500,38,True,파괴 시 연결 함포 무력화
+ship_turret,전함 함포,100,20,1000,18,True,
+boss,보스,,200,1500,65,True,체력은 Stages.boss_health

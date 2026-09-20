@@ -420,3 +420,9 @@ input:checked + .slider:before {
 @media (pointer: coarse) {
     #touch-controls { display: flex; }
 }
+
+/* Make the current controller/keyboard menu selection visible. */
+button:focus, input:focus, .stage-card:focus {
+    outline: 3px solid #ffde59;
+    outline-offset: 4px;
+}

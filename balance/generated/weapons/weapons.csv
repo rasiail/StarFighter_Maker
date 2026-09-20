@@ -1,0 +1,8 @@
+﻿weapon_id,display_name_ko,owner,weapon_type,damage,fire_interval_sec,ready_slots,reload_sec,lock_range_m,projectile_speed_mps,max_speed_mps,acceleration_mps2,turn_rate_rad_sec,lifetime_sec,engine_key,notes
+player_cannon,20mm 기관포,player,cannon,18,0.05,,,1000,1600,,,,1.4,cannon,HUD 조준 보조 거리
+standard_missile,표준 미사일,player,missile,85,0.3,20,10,2000,450,1400,650,3.2,6,std,"1발씩 발사, 탄창 소진 후 전체 재장전"
+multi_missile,멀티 미사일,player,missile,85,0.35,16,20,3000,450,1400,650,3.2,6,multi,"기본 4발, 멀티 관제 확장으로 최대 8발 동시 발사. 탄창 소진 후 전체 재장전"
+enemy_cannon,적 기관포,enemy,cannon,8,,,,,1600,,,,1.4,enemyCannon,
+enemy_missile,적 미사일,enemy,missile,35,,,,,450,1400,650,3.2,6,enemyMissile,일반 적
+boss_missile,보스 미사일,enemy,missile,20,,,,,450,1400,650,3.2,6,bossMissile,
+anti_air,대공포,enemy,cannon,8,,,,,1100,,,,2.8,antiAir,탱크·함포

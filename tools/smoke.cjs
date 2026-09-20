@@ -27,27 +27,27 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         fs.mkdirSync('test-results', { recursive: true });
         await page.screenshot({ path: 'test-results/swarm.png' });
 
-        // Independent reload slots remain the only ammunition budget, including >100 shots.
+        // Standard missiles consume a 20-round magazine, then reload the whole magazine.
         const ammo = await page.evaluate(() => {
             const t = testGame, p = t.playerFlight;
             t.clearProjectiles();
             t.gameState.missileMode = 1;
-            p.stdBursts = 2; p.stdReloadTimers = []; p.stdShotCooldown = 0;
-            t.tryFireMissile(); p.stdShotCooldown = 0; t.tryFireMissile(); p.stdShotCooldown = 0;
+            p.stdBursts = p.stdMaxBursts; p.stdReloadTimers = []; p.stdShotCooldown = 0;
+            for (let shot = 0; shot < 20; shot++) { t.tryFireMissile(); p.stdShotCooldown = 0; }
             t.tryFireMissile();
-            const result = { fired: t.missiles.length, ready: p.stdBursts, timers: p.stdReloadTimers.length, total: 'missileCount' in p };
+            const result = { fired: t.missiles.length, ready: p.stdBursts, timers: p.stdReloadTimers.length };
             t.clearProjectiles();
             let shots = 0;
-            for (let cycle = 0; cycle < 55; cycle++) {
-                p.stdBursts = 2; p.stdReloadTimers = []; p.stdShotCooldown = 0;
-                t.tryFireMissile(); p.stdShotCooldown = 0; t.tryFireMissile();
+            for (let cycle = 0; cycle < 6; cycle++) {
+                p.stdBursts = p.stdMaxBursts; p.stdReloadTimers = []; p.stdShotCooldown = 0;
+                for (let shot = 0; shot < p.stdMaxBursts; shot++) { t.tryFireMissile(); p.stdShotCooldown = 0; }
                 shots += t.missiles.length; t.clearProjectiles();
             }
-            for (let i = 0; i < 50; i++) t.updatePlayerFlight(0.05);
+            for (let i = 0; i < 200; i++) t.updatePlayerFlight(0.05);
             result.shots = shots; result.reloaded = p.stdBursts;
             return result;
         });
-        assert.deepEqual(ammo, { fired: 2, ready: 0, timers: 2, total: false, shots: 110, reloaded: 2 });
+        assert.deepEqual(ammo, { fired: 20, ready: 0, timers: 1, shots: 120, reloaded: 20 });
 
         const awarded = await page.evaluate(() => {
             const t = testGame;
@@ -69,7 +69,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.screenshot({ path: 'test-results/cards.png' });
         const frozen = await page.evaluate(() => {
             const t = testGame;
-            const snapshot = () => JSON.stringify({ pos: t.playerMesh.position.toArray(), enemy: t.enemies.find(e => e.alive).mesh.position.toArray(), timers: t.playerFlight.stdReloadTimers, missiles: t.missiles.length, health: t.playerFlight.health, wave: t.encounter.wave });
+            const snapshot = () => JSON.stringify({ pos: t.playerMesh.position.toArray(), enemy: t.enemies.find(e => e.alive).mesh.position.toArray(), reload: t.playerFlight.stdReloadTimers, ammo: t.playerFlight.stdBursts, missiles: t.missiles.length, health: t.playerFlight.health, wave: t.encounter.wave });
             let timerFired = false;
             t.scheduleCombat(0.1, () => { timerFired = true; });
             const before = snapshot();
@@ -87,9 +87,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         for (let i = 0; i < 2; i++) await page.locator('#upgrade-cards button').first().click();
         assert.equal(await page.locator('#upgrade-modal').isVisible(), false);
         assert.equal(await page.evaluate(() => testGame.gameState.isGamePaused), false);
-        console.log('Ammo >100, independent reloads, XP banking, mandatory multi-card selection, pause/input guards OK');
+        console.log('20-round whole-magazine reload, ammo >100, XP banking, mandatory multi-card selection, pause/input guards OK');
 
-        // Defeat every actual spawned enemy across all five waves in a synchronous test step.
+        // Defeat every actual spawned enemy across all configured waves in a synchronous test step.
         for (const stage of [1, 2, 3]) {
             const waveResult = await page.evaluate(() => {
                 const t = testGame;
@@ -100,7 +100,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
                 }
                 return { phase: t.encounter.phase, wave: t.encounter.wave, boss: t.enemies.find(e => e.isBoss)?.health };
             });
-            assert.equal(waveResult.phase, 'boss'); assert.equal(waveResult.wave, 5); assert.ok(waveResult.boss >= 2200);
+            assert.equal(waveResult.phase, 'boss'); assert.equal(waveResult.wave, stage + 2); assert.ok(waveResult.boss >= 2200);
             await page.evaluate(() => {
                 const t = testGame;
                 t.killEnemy(t.enemies.find(e => e.isBoss));
@@ -131,11 +131,11 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
                 assert.equal(await page.evaluate(() => JSON.stringify(testGame.progression)), beforeDepart);
                 assert.equal(await page.evaluate(() => testGame.encounter.wave), 0);
             } else assert.match(await page.locator('#gameover-title').textContent(), /RUN COMPLETE/);
-            console.log(`Stage ${stage}: 5 waves, boss, hangar, build preservation/completion OK`);
+            console.log(`Stage ${stage}: ${stage + 2} waves, boss, hangar, build preservation/completion OK`);
         }
         await page.locator('#btn-restart').click();
         const reset = await page.evaluate(() => ({ level: testGame.progression.level, pending: testGame.progression.pending, maxHealth: testGame.playerFlight.maxHealth, std: testGame.playerFlight.stdMaxBursts, wave: testGame.encounter.wave }));
-        assert.deepEqual(reset, { level: 1, pending: 0, maxHealth: 100, std: 2, wave: 0 });
+        assert.deepEqual(reset, { level: 1, pending: 0, maxHealth: 100, std: 20, wave: 0 });
         await page.evaluate(() => { testGame.playerFlight.health = 1; testGame.playerMesh.position.y = -100; testGame.stepSimulation(0.05); });
         assert.match(await page.locator('#gameover-title').textContent(), /SHOT DOWN/);
         await page.locator('#btn-main-menu').click();

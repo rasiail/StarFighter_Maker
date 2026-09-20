@@ -4,6 +4,7 @@ import { playerFlight, playerMesh } from '../player/player.js';
 import { camera } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
 import { keys } from '../input/state.js';
+import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
 
 export let cameraConfig;
@@ -25,12 +26,12 @@ export function updateCamera(delta) {
     let targetEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
 
     // 타깃 캠(우클릭 홀드) 중인데 기존 타깃이 격추/무효화된 경우, 즉시 다른 생존 적기를 자동 획득
-    if (keys.targetCam && !targetEnemy) {
+    if ((keys.targetCam || padInput.targetCam) && !targetEnemy) {
         targetEnemy = acquireNextBestTarget();
     }
 
     // 1. 타깃 캠 모드 (우클릭 홀드 또는 T키 시 적기 방향으로 카메라 피봇 회전)
-    if (keys.targetCam && targetEnemy) {
+    if ((keys.targetCam || padInput.targetCam) && targetEnemy) {
         cameraConfig.freelookIdleTimer = 0;
 
         // 적기의 월드 좌표를 플레이어 로컬 공간으로 변환
