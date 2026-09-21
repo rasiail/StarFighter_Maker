@@ -47,9 +47,12 @@ def read_workbook(path: Path) -> dict[str, list[list[object]]]:
                 target = "xl/" + target
             root = ET.fromstring(archive.read(target))
             rows = []
-            for row in root.findall("m:sheetData/m:row", NS):
+            for row_node in root.findall("m:sheetData/m:row", NS):
+                row_index = int(row_node.attrib["r"]) - 1
+                while len(rows) < row_index:
+                    rows.append([])
                 values = []
-                for cell in row.findall("m:c", NS):
+                for cell in row_node.findall("m:c", NS):
                     index = cell_column(cell.attrib["r"])
                     values.extend([None] * (index - len(values)))
                     kind = cell.attrib.get("t")
@@ -73,7 +76,7 @@ def records(rows: list[list[object]], header_row: int = 3) -> list[dict[str, obj
         return []
     headers = [str(value or "").strip() for value in rows[header_row]]
     output = []
-    for row in rows[header_row + 1:]:
+    for row in rows[header_row + 2:]:
         padded = row + [None] * (len(headers) - len(row))
         record = {header: padded[i] for i, header in enumerate(headers) if header}
         if any(value not in (None, "") for value in record.values()):
@@ -119,7 +122,7 @@ def build():
         "levels": ("levels.xlsx", ["Levels"]),
         "weapons": ("weapons.xlsx", ["Weapons"]),
         "waves": ("waves_enemies.xlsx", ["Stages", "Waves", "Enemies", "SpawnRules"]),
-        "cards": ("cards.xlsx", ["Cards", "Effects", "Conditions"]),
+        "cards": ("cards.xlsx", ["Cards", "Conditions"]),
     }
     data = {}
     raw = {}
@@ -165,10 +168,10 @@ def build():
     if not isinstance(probability, (int, float)) or not 0 <= probability <= 1: raise ValueError("SpawnRules: probability must be between 0 and 1")
     if rules.get("spawn_range_min", 0) >= rules.get("spawn_range_max", 0): raise ValueError("SpawnRules: spawn_range_min must be lower than max")
 
-    cards, effects, conditions = raw["cards"]["Cards"], raw["cards"]["Effects"], raw["cards"]["Conditions"]
+    cards, conditions = raw["cards"]["Cards"], raw["cards"]["Conditions"]
     require_unique(cards, "card_id", "Cards")
     card_ids = {row["card_id"] for row in cards}
-    if any(row["card_id"] not in card_ids for row in effects + conditions): raise ValueError("Cards: effect/condition references unknown card_id")
+    if any(row["card_id"] not in card_ids for row in conditions): raise ValueError("Cards: condition references unknown card_id")
     if any(row.get("max_rank") is not None and row["max_rank"] <= 0 for row in cards): raise ValueError("Cards: max_rank must be positive or blank")
     if any(row.get("draw_weight", 0) < 0 for row in cards): raise ValueError("Cards: draw_weight must be nonnegative")
 
@@ -188,7 +191,21 @@ def build():
     card_data = []
     for card in cards:
         item = camel(card)
-        item["effects"] = [camel(row) for row in effects if row["card_id"] == card["card_id"]]
+        effects = []
+        for i in range(1, 4):
+            key = card.get(f"e{i}_key")
+            if not key: continue
+            effects.append({
+                "effectKey": key,
+                "operation": card.get(f"e{i}_op"),
+                "value": card.get(f"e{i}_val"),
+                "unitOrRule": card.get(f"e{i}_unit")
+            })
+            item.pop(f"e{i}Key", None)
+            item.pop(f"e{i}Op", None)
+            item.pop(f"e{i}Val", None)
+            item.pop(f"e{i}Unit", None)
+        item["effects"] = effects
         item["conditions"] = [camel(row) for row in conditions if row["card_id"] == card["card_id"]]
         card_data.append(item)
 

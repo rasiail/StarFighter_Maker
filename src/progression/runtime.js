@@ -29,7 +29,7 @@ export function chooseUpgrade(id, offered) {
 export function initProgression() {
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ enemyType, isBoss }) => {
         if (!gameState.isGameRunning) return;
-        const id = isBoss ? 'boss' : ({ aircraft: 'stage_aircraft', tank: 'tank', turret: 'ship_turret', ship: 'ship_hull' }[enemyType] || 'stage_aircraft');
+        const id = isBoss ? 'boss' : ({ aircraft: 'stage_aircraft', tank: 'tank', turret: 'ship_turret', ship: 'ship_hull', elite: 'elite' }[enemyType] || 'stage_aircraft');
         const stage = BALANCE.stages.find(row => row.stageId === gameState.currentStageInfo?.stage);
         grantExperience(progression, enemyExperience(id, stage));
         gameEvents.emit(EVENTS.PROGRESSION_CHANGED);

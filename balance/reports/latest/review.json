@@ -1,12 +1,12 @@
 {
   "modelVersion": 3,
-  "dataSha256": "aab11269d2c7e0e1a2e1c3838baf747ed57cb93db15234c6a84dc7138b644a50",
+  "dataSha256": "e0d39267d7583517886a7551e2df321d06428d73d52a8bc605ca60bc51692b39",
   "targetMinutes": 20,
   "searchRuns": 100,
-  "validationRuns": 1000,
+  "validationRuns": 100,
   "multiRatioLimit": 1.2,
   "assumptions": {
-    "runs": 1000,
+    "runs": 100,
     "seed": 104,
     "cannonAccuracy": 0.32,
     "missileAccuracy": 0.82,
@@ -28,1370 +28,110 @@
     "guidanceAccuracyBenefit": 0.1
   },
   "baseline": {
-    "minutes": 19.309046453593872,
-    "p10Minutes": 18.706524649924514,
-    "p90Minutes": 20.085839010075848,
-    "level": 15.005,
-    "selections": 14.005,
-    "targets": 583
+    "minutes": 19.41581956382525,
+    "p10Minutes": 18.494187186270487,
+    "p90Minutes": 20.610705128205105,
+    "level": 13.79,
+    "selections": 12.79,
+    "targets": 467
   },
   "recommended": {
-    "multiReloadScale": 2,
+    "multiReloadScale": 1.5,
     "enemyCountScale": 1,
-    "reloadSeconds": 40,
-    "minutes": 20.03509696370717,
-    "p10Minutes": 19.41728120978119,
-    "p90Minutes": 20.88314560439558,
-    "level": 15,
-    "selections": 14,
-    "targets": 583,
-    "multiToStandardRatio": 0.3059683313032886,
-    "errorMinutes": 0.03509696370716853,
+    "reloadSeconds": 45,
+    "minutes": 20.066420754301426,
+    "p10Minutes": 19.041547619047602,
+    "p90Minutes": 21.410824175824153,
+    "level": 13.79,
+    "selections": 12.79,
+    "targets": 467,
+    "multiToStandardRatio": 0.2812387612387613,
+    "errorMinutes": 0.06642075430142569,
     "waves": [
       {
         "stageId": 1,
         "targets": [
-          35,
-          40,
-          45
+          28,
+          32,
+          36
         ]
       },
       {
         "stageId": 2,
         "targets": [
-          45,
-          50,
-          55,
-          60
+          36,
+          40,
+          44,
+          48
         ]
       },
       {
         "stageId": 3,
         "targets": [
+          32,
+          36,
           40,
-          45,
-          50,
-          55,
-          60
+          44,
+          48
         ]
       }
     ]
   },
   "closestTimeCandidate": {
-    "multiReloadScale": 2,
+    "multiReloadScale": 1.5,
     "enemyCountScale": 1,
-    "reloadSeconds": 40,
-    "minutes": 20.03509696370717,
-    "p10Minutes": 19.41728120978119,
-    "p90Minutes": 20.88314560439558,
-    "level": 15,
-    "selections": 14,
-    "targets": 583,
-    "multiToStandardRatio": 0.3059683313032886,
-    "errorMinutes": 0.03509696370716853,
+    "reloadSeconds": 45,
+    "minutes": 20.066420754301426,
+    "p10Minutes": 19.041547619047602,
+    "p90Minutes": 21.410824175824153,
+    "level": 13.79,
+    "selections": 12.79,
+    "targets": 467,
+    "multiToStandardRatio": 0.2812387612387613,
+    "errorMinutes": 0.06642075430142569,
     "waves": [
       {
         "stageId": 1,
         "targets": [
-          35,
-          40,
-          45
+          28,
+          32,
+          36
         ]
       },
       {
         "stageId": 2,
         "targets": [
-          45,
-          50,
-          55,
-          60
+          36,
+          40,
+          44,
+          48
         ]
       },
       {
         "stageId": 3,
         "targets": [
+          32,
+          36,
           40,
-          45,
-          50,
-          55,
-          60
+          44,
+          48
         ]
       }
     ]
   },
   "candidates": [
     {
-      "multiReloadScale": 2,
-      "enemyCountScale": 1,
-      "reloadSeconds": 40,
-      "minutes": 20.03509696370717,
-      "p10Minutes": 19.41728120978119,
-      "p90Minutes": 20.88314560439558,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 0.03509696370716853,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 1,
-      "reloadSeconds": 35,
-      "minutes": 19.947758868469084,
-      "p10Minutes": 19.351286963325503,
-      "p90Minutes": 20.842431318681292,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 0.05224113153091636,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2.5,
-      "enemyCountScale": 1,
-      "reloadSeconds": 50,
-      "minutes": 20.147785058945267,
-      "p10Minutes": 19.457918362501676,
-      "p90Minutes": 21.16452414281268,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 0.14778505894526717,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 3,
-      "enemyCountScale": 1,
-      "reloadSeconds": 60,
-      "minutes": 20.16918505894527,
-      "p10Minutes": 19.459465981549293,
-      "p90Minutes": 21.236242885174857,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 0.16918505894527058,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
       "multiReloadScale": 1.5,
       "enemyCountScale": 1,
-      "reloadSeconds": 30,
-      "minutes": 19.708614820850034,
-      "p10Minutes": 19.017694003527318,
-      "p90Minutes": 20.58490440163531,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 0.291385179149966,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.25,
-      "enemyCountScale": 1,
-      "reloadSeconds": 25,
-      "minutes": 19.425014820850038,
-      "p10Minutes": 18.870253357753345,
-      "p90Minutes": 20.241309857098393,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 0.5749851791499623,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1,
-      "enemyCountScale": 1,
-      "reloadSeconds": 20,
-      "minutes": 19.32913029704052,
-      "p10Minutes": 18.798383699633682,
-      "p90Minutes": 20.15573773496865,
-      "level": 15,
-      "selections": 14,
-      "targets": 583,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 0.6708697029594788,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            35,
-            40,
-            45
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            45,
-            50,
-            55,
-            60
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            40,
-            45,
-            50,
-            55,
-            60
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2.5,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 50,
-      "minutes": 19.30126782642799,
-      "p10Minutes": 18.574387464387446,
-      "p90Minutes": 20.325758716592027,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 0.6987321735720116,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 3,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 60,
-      "minutes": 19.280054731189903,
-      "p10Minutes": 18.57151376595484,
-      "p90Minutes": 20.218086080586055,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 0.7199452688100969,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 40,
-      "minutes": 19.203041635951795,
-      "p10Minutes": 18.582142857142845,
-      "p90Minutes": 19.960074385477313,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 0.796958364048205,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 35,
-      "minutes": 19.13365473118989,
-      "p10Minutes": 18.455929487179468,
-      "p90Minutes": 19.943809523809495,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 0.866345268810111,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.5,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 30,
-      "minutes": 18.92744163595181,
-      "p10Minutes": 18.27211996336995,
-      "p90Minutes": 19.671845793576704,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 1.0725583640481915,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.25,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 25,
-      "minutes": 18.60474520738038,
-      "p10Minutes": 17.962586996336984,
-      "p90Minutes": 19.415779005989055,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 1.395254792619621,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1,
-      "enemyCountScale": 0.95,
-      "reloadSeconds": 20,
-      "minutes": 18.545542826427997,
-      "p10Minutes": 17.907228280514985,
-      "p90Minutes": 19.400917791398705,
-      "level": 15,
-      "selections": 14,
-      "targets": 555,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 1.4544571735720027,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            33,
-            38,
-            43
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            43,
-            48,
-            52,
-            57
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            38,
-            43,
-            48,
-            52,
-            57
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 3,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 60,
-      "minutes": 18.489787966241384,
-      "p10Minutes": 17.808251883875787,
-      "p90Minutes": 19.40635267953887,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 1.5102120337586165,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2.5,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 50,
-      "minutes": 18.488305823384234,
-      "p10Minutes": 17.831086182336165,
-      "p90Minutes": 19.297548070269944,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 1.5116941766157659,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 40,
-      "minutes": 18.419848680527092,
-      "p10Minutes": 17.79595741304767,
-      "p90Minutes": 19.213020478221924,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 1.5801513194729075,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 35,
-      "minutes": 18.374242728146132,
-      "p10Minutes": 17.774811931895247,
-      "p90Minutes": 19.196922907339555,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 1.6257572718538675,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.5,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 30,
-      "minutes": 18.203051061479478,
-      "p10Minutes": 17.63500503209529,
-      "p90Minutes": 18.855481108397758,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 1.7969489385205222,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.25,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 25,
-      "minutes": 17.954117728146148,
-      "p10Minutes": 17.43776195713586,
-      "p90Minutes": 18.64536206077871,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 2.045882271853852,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1,
-      "enemyCountScale": 0.9,
-      "reloadSeconds": 20,
-      "minutes": 17.856664156717567,
-      "p10Minutes": 17.28351648351647,
-      "p90Minutes": 18.688258573460026,
-      "level": 14.3,
-      "selections": 13.3,
-      "targets": 528,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 2.1433358432824328,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            32,
-            36,
-            41
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            41,
-            45,
-            50,
-            54
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            36,
-            41,
-            45,
-            50,
-            54
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 3,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 60,
-      "minutes": 17.59437064382191,
-      "p10Minutes": 16.915504595712907,
-      "p90Minutes": 18.59698260073258,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 2.405629356178089,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2.5,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 50,
-      "minutes": 17.577939691440967,
-      "p10Minutes": 16.90842506715466,
-      "p90Minutes": 18.595459486501127,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 2.4220603085590326,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 40,
-      "minutes": 17.534113500964757,
-      "p10Minutes": 16.916391941391925,
-      "p90Minutes": 18.390860466693777,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 2.4658864990352427,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 35,
-      "minutes": 17.511800405726675,
-      "p10Minutes": 16.902569578507066,
-      "p90Minutes": 18.359468864468845,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 2.4881995942733255,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.5,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 30,
-      "minutes": 17.390444453345722,
-      "p10Minutes": 16.792738095238086,
-      "p90Minutes": 18.18391025641024,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 2.6095555466542777,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.25,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 25,
-      "minutes": 17.130862310488574,
-      "p10Minutes": 16.569761916684943,
-      "p90Minutes": 17.874069069069055,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 2.869137689511426,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1,
-      "enemyCountScale": 0.85,
-      "reloadSeconds": 20,
-      "minutes": 17.01810516763143,
-      "p10Minutes": 16.48482769536061,
-      "p90Minutes": 17.67456077872743,
-      "level": 14,
-      "selections": 13,
-      "targets": 497,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 2.981894832368571,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            30,
-            34,
-            38
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            38,
-            43,
-            47,
-            51
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            34,
-            38,
-            43,
-            47,
-            51
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 3,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 60,
-      "minutes": 16.632146944777638,
-      "p10Minutes": 16.006538585503044,
-      "p90Minutes": 17.49981931609746,
+      "reloadSeconds": 45,
+      "minutes": 20.066420754301426,
+      "p10Minutes": 19.041547619047602,
+      "p90Minutes": 21.410824175824153,
       "level": 13.79,
       "selections": 12.79,
       "targets": 467,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 3.367853055222362,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            28,
-            32,
-            36
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            36,
-            40,
-            44,
-            48
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            32,
-            36,
-            40,
-            44,
-            48
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2.5,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 50,
-      "minutes": 16.565350516206205,
-      "p10Minutes": 15.88880049026495,
-      "p90Minutes": 17.5730062205062,
-      "level": 13.79,
-      "selections": 12.79,
-      "targets": 467,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 3.4346494837937946,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            28,
-            32,
-            36
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            36,
-            40,
-            44,
-            48
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            32,
-            36,
-            40,
-            44,
-            48
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 2,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 40,
-      "minutes": 16.5427255162062,
-      "p10Minutes": 15.919151651651642,
-      "p90Minutes": 17.351396520146498,
-      "level": 13.79,
-      "selections": 12.79,
-      "targets": 467,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 3.4572744837937996,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 0.06642075430142569,
       "waves": [
         {
           "stageId": 1,
@@ -1424,16 +164,16 @@
     },
     {
       "multiReloadScale": 1.75,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 35,
-      "minutes": 16.53196004001573,
-      "p10Minutes": 15.893772639838485,
-      "p90Minutes": 17.383006220506203,
+      "enemyCountScale": 1,
+      "reloadSeconds": 52.5,
+      "minutes": 20.139331468587148,
+      "p10Minutes": 19.031659810437947,
+      "p90Minutes": 21.582685462922186,
       "level": 13.79,
       "selections": 12.79,
       "targets": 467,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 3.468039959984271,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 0.13933146858714807,
       "waves": [
         {
           "stageId": 1,
@@ -1465,17 +205,17 @@
       ]
     },
     {
-      "multiReloadScale": 1.5,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 30,
-      "minutes": 16.442083849539543,
-      "p10Minutes": 15.860242334825658,
-      "p90Minutes": 17.16558825027583,
+      "multiReloadScale": 2,
+      "enemyCountScale": 1,
+      "reloadSeconds": 60,
+      "minutes": 20.21336956382525,
+      "p10Minutes": 19.024752871217313,
+      "p90Minutes": 21.77211080586078,
       "level": 13.79,
       "selections": 12.79,
       "targets": 467,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 3.557916150460457,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 0.21336956382524974,
       "waves": [
         {
           "stageId": 1,
@@ -1508,16 +248,16 @@
     },
     {
       "multiReloadScale": 1.25,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 25,
-      "minutes": 16.248732659063347,
-      "p10Minutes": 15.713159034050095,
-      "p90Minutes": 16.894523809523793,
+      "enemyCountScale": 1,
+      "reloadSeconds": 37.5,
+      "minutes": 19.720331468587144,
+      "p10Minutes": 18.78091541174872,
+      "p90Minutes": 20.948928571428542,
       "level": 13.79,
       "selections": 12.79,
       "targets": 467,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 3.7512673409366535,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 0.27966853141285597,
       "waves": [
         {
           "stageId": 1,
@@ -1549,17 +289,17 @@
       ]
     },
     {
-      "multiReloadScale": 1,
-      "enemyCountScale": 0.8,
-      "reloadSeconds": 20,
-      "minutes": 16.129670754301447,
-      "p10Minutes": 15.62218254232768,
-      "p90Minutes": 16.844244505494487,
+      "multiReloadScale": 2.5,
+      "enemyCountScale": 1,
+      "reloadSeconds": 75,
+      "minutes": 20.292570754301426,
+      "p10Minutes": 19.13083333333331,
+      "p90Minutes": 21.812133699633684,
       "level": 13.79,
       "selections": 12.79,
       "targets": 467,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 3.870329245698553,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 0.2925707543014262,
       "waves": [
         {
           "stageId": 1,
@@ -1592,21 +332,21 @@
     },
     {
       "multiReloadScale": 3,
-      "enemyCountScale": 0.75,
-      "reloadSeconds": 60,
-      "minutes": 15.978759213951118,
-      "p10Minutes": 15.264104192085117,
-      "p90Minutes": 16.799785230266146,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 90,
+      "minutes": 19.63225925300103,
+      "p10Minutes": 18.455595238095217,
+      "p90Minutes": 20.909024725274705,
       "level": 13,
       "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 4.021240786048882,
+      "targets": 444,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 0.36774074699896886,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            26,
+            27,
             30,
             34
           ]
@@ -1616,8 +356,8 @@
           "targets": [
             34,
             38,
-            41,
-            45
+            42,
+            46
           ]
         },
         {
@@ -1626,8 +366,1268 @@
             30,
             34,
             38,
-            41,
-            45
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 3,
+      "enemyCountScale": 1,
+      "reloadSeconds": 90,
+      "minutes": 20.401135040015724,
+      "p10Minutes": 19.19820742948557,
+      "p90Minutes": 22.093649267399243,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 0.4011350400157241,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            28,
+            32,
+            36
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            36,
+            40,
+            44,
+            48
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            32,
+            36,
+            40,
+            44,
+            48
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2.5,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 75,
+      "minutes": 19.569385443477238,
+      "p10Minutes": 18.348540905971554,
+      "p90Minutes": 20.931171822005123,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 0.43061455652276237,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 60,
+      "minutes": 19.45945449109626,
+      "p10Minutes": 18.426348321206792,
+      "p90Minutes": 20.6701395180771,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 0.5405455089037403,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 52.5,
+      "minutes": 19.449079491096263,
+      "p10Minutes": 18.38845238095235,
+      "p90Minutes": 20.545219441052744,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 0.5509205089037366,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 1,
+      "reloadSeconds": 30,
+      "minutes": 19.41581956382525,
+      "p10Minutes": 18.494187186270487,
+      "p90Minutes": 20.610705128205105,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 0.5841804361747513,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            28,
+            32,
+            36
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            36,
+            40,
+            44,
+            48
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            32,
+            36,
+            40,
+            44,
+            48
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.5,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 45,
+      "minutes": 19.36791996728674,
+      "p10Minutes": 18.261066849816828,
+      "p90Minutes": 20.465139518077095,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 0.6320800327132616,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.25,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 37.5,
+      "minutes": 19.029700919667693,
+      "p10Minutes": 18.06233058608056,
+      "p90Minutes": 20.053829994267574,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 0.9702990803323068,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 3,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 90,
+      "minutes": 19.01450394312461,
+      "p10Minutes": 17.76729641500472,
+      "p90Minutes": 20.169349816849785,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 0.985496056875391,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2.5,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 75,
+      "minutes": 18.845519419315075,
+      "p10Minutes": 17.405551265551246,
+      "p90Minutes": 20.01999999999998,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 1.1544805806849254,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 60,
+      "minutes": 18.75230513360079,
+      "p10Minutes": 17.558355267569834,
+      "p90Minutes": 19.913095238095206,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 1.2476948663992111,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 0.95,
+      "reloadSeconds": 30,
+      "minutes": 18.687594967286746,
+      "p10Minutes": 17.796439000813976,
+      "p90Minutes": 19.73748134581465,
+      "level": 13,
+      "selections": 12,
+      "targets": 444,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 1.3124050327132544,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            27,
+            30,
+            34
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            34,
+            38,
+            42,
+            46
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            30,
+            34,
+            38,
+            42,
+            46
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 52.5,
+      "minutes": 18.68288132407698,
+      "p10Minutes": 17.47214285714284,
+      "p90Minutes": 19.903452380952352,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 1.3171186759230196,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.5,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 45,
+      "minutes": 18.632767038362704,
+      "p10Minutes": 17.48486758114789,
+      "p90Minutes": 19.765119047619017,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 1.3672329616372956,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.25,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 37.5,
+      "minutes": 18.33992656217223,
+      "p10Minutes": 17.22161172161169,
+      "p90Minutes": 19.38926205792321,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 1.6600734378277693,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 3,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 90,
+      "minutes": 18.30670538563828,
+      "p10Minutes": 17.09191655941653,
+      "p90Minutes": 19.574395604395583,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 1.6932946143617187,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2.5,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 75,
+      "minutes": 18.12770300468591,
+      "p10Minutes": 16.97488333130692,
+      "p90Minutes": 19.41312728937726,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 1.872296995314091,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 0.9,
+      "reloadSeconds": 30,
+      "minutes": 17.995920609791273,
+      "p10Minutes": 16.93059523809522,
+      "p90Minutes": 19.13583333333331,
+      "level": 13,
+      "selections": 12,
+      "targets": 420,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 2.0040793902087266,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            25,
+            29,
+            32
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            32,
+            36,
+            40,
+            43
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            29,
+            32,
+            36,
+            40,
+            43
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 60,
+      "minutes": 17.99188633801923,
+      "p10Minutes": 16.804432234432213,
+      "p90Minutes": 19.21178571428569,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 2.0081136619807687,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 52.5,
+      "minutes": 17.953531576114475,
+      "p10Minutes": 16.682164055080698,
+      "p90Minutes": 19.12059523809521,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 2.046468423885525,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.5,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 45,
+      "minutes": 17.923378004685915,
+      "p10Minutes": 16.71559523809521,
+      "p90Minutes": 19.06821428571426,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 2.0766219953140848,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.25,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 37.5,
+      "minutes": 17.665182766590657,
+      "p10Minutes": 16.585944749694725,
+      "p90Minutes": 18.618743831724736,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 2.3348172334093427,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 3,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 90,
+      "minutes": 17.46359084871834,
+      "p10Minutes": 16.35136904761902,
+      "p90Minutes": 18.810676441697563,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 2.53640915128166,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 0.85,
+      "reloadSeconds": 30,
+      "minutes": 17.35446490944781,
+      "p10Minutes": 16.40310439560437,
+      "p90Minutes": 18.385410498391412,
+      "level": 12.32,
+      "selections": 11.32,
+      "targets": 398,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 2.6455350905521904,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            24,
+            27,
+            31
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            31,
+            34,
+            37,
+            41
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            27,
+            31,
+            34,
+            37,
+            41
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2.5,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 75,
+      "minutes": 17.240127753480255,
+      "p10Minutes": 16.17799871299869,
+      "p90Minutes": 18.606323938407247,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 2.7598722465197447,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 2,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 60,
+      "minutes": 17.145475372527862,
+      "p10Minutes": 16.069638833869746,
+      "p90Minutes": 18.51378171211502,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 2.854524627472138,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 52.5,
+      "minutes": 17.102439658242147,
+      "p10Minutes": 16.00426506724598,
+      "p90Minutes": 18.4708333333333,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 2.8975603417578526,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.5,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 45,
+      "minutes": 17.038105134432627,
+      "p10Minutes": 16.03416666666665,
+      "p90Minutes": 18.201919176502486,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 2.9618948655673734,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.25,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 37.5,
+      "minutes": 16.851456324908813,
+      "p10Minutes": 15.947619047619025,
+      "p90Minutes": 17.97222406074518,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 3.1485436750911866,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 0.8,
+      "reloadSeconds": 30,
+      "minutes": 16.592144420146916,
+      "p10Minutes": 15.728622908622889,
+      "p90Minutes": 17.651043616876926,
+      "level": 12,
+      "selections": 11,
+      "targets": 374,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 3.4078555798530843,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            22,
+            26,
+            29
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            29,
+            32,
+            35,
+            38
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            26,
+            29,
+            32,
+            35,
+            38
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 3,
+      "enemyCountScale": 0.75,
+      "reloadSeconds": 90,
+      "minutes": 16.54824623229733,
+      "p10Minutes": 15.458928571428551,
+      "p90Minutes": 17.761172161172137,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 3.4517537677026695,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            21,
+            24,
+            27
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            27,
+            30,
+            33,
+            36
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            24,
+            27,
+            30,
+            33,
+            36
           ]
         }
       ]
@@ -1635,41 +1635,41 @@
     {
       "multiReloadScale": 2.5,
       "enemyCountScale": 0.75,
-      "reloadSeconds": 50,
-      "minutes": 15.86494611871302,
-      "p10Minutes": 15.122738095238082,
-      "p90Minutes": 16.676892038733442,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 4.13505388128698,
+      "reloadSeconds": 75,
+      "minutes": 16.336005756106854,
+      "p10Minutes": 15.216294922581733,
+      "p90Minutes": 17.607607549152153,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 3.6639942438931463,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            26,
-            30,
-            34
+            21,
+            24,
+            27
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            34,
-            38,
-            41,
-            45
+            27,
+            30,
+            33,
+            36
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            24,
+            27,
             30,
-            34,
-            38,
-            41,
-            45
+            33,
+            36
           ]
         }
       ]
@@ -1677,83 +1677,41 @@
     {
       "multiReloadScale": 2,
       "enemyCountScale": 0.75,
-      "reloadSeconds": 40,
-      "minutes": 15.857710404427305,
-      "p10Minutes": 15.131858974358964,
-      "p90Minutes": 16.642847985347963,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 4.142289595572695,
+      "reloadSeconds": 60,
+      "minutes": 16.25538194658305,
+      "p10Minutes": 15.109381868131846,
+      "p90Minutes": 17.604516302016275,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 3.74461805341695,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            26,
-            30,
-            34
+            21,
+            24,
+            27
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            34,
-            38,
-            41,
-            45
+            27,
+            30,
+            33,
+            36
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            24,
+            27,
             30,
-            34,
-            38,
-            41,
-            45
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.75,
-      "reloadSeconds": 35,
-      "minutes": 15.825322309189216,
-      "p10Minutes": 15.119302874302864,
-      "p90Minutes": 16.690347985347962,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 4.174677690810784,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            26,
-            30,
-            34
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            34,
-            38,
-            41,
-            45
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            30,
-            34,
-            38,
-            41,
-            45
+            33,
+            36
           ]
         }
       ]
@@ -1761,41 +1719,83 @@
     {
       "multiReloadScale": 1.5,
       "enemyCountScale": 0.75,
-      "reloadSeconds": 30,
-      "minutes": 15.754737785379687,
-      "p10Minutes": 15.091168599918587,
-      "p90Minutes": 16.511643772893756,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 4.245262214620313,
+      "reloadSeconds": 45,
+      "minutes": 16.20362718467828,
+      "p10Minutes": 15.031905948989264,
+      "p90Minutes": 17.579932505765807,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 3.796372815321721,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            26,
-            30,
-            34
+            21,
+            24,
+            27
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            34,
-            38,
-            41,
-            45
+            27,
+            30,
+            33,
+            36
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            24,
+            27,
             30,
-            34,
-            38,
-            41,
-            45
+            33,
+            36
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.75,
+      "reloadSeconds": 52.5,
+      "minutes": 16.166161708487813,
+      "p10Minutes": 14.903608966108946,
+      "p90Minutes": 17.593557692307666,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 3.833838291512187,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            21,
+            24,
+            27
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            27,
+            30,
+            33,
+            36
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            24,
+            27,
+            30,
+            33,
+            36
           ]
         }
       ]
@@ -1803,83 +1803,41 @@
     {
       "multiReloadScale": 1.25,
       "enemyCountScale": 0.75,
-      "reloadSeconds": 25,
-      "minutes": 15.570544928236837,
-      "p10Minutes": 14.956666666666655,
-      "p90Minutes": 16.240325283381807,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 4.429455071763163,
+      "reloadSeconds": 37.5,
+      "minutes": 16.039440279916384,
+      "p10Minutes": 15.00874999999998,
+      "p90Minutes": 17.23495363410596,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 3.960559720083616,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            26,
-            30,
-            34
+            21,
+            24,
+            27
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            34,
-            38,
-            41,
-            45
+            27,
+            30,
+            33,
+            36
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            24,
+            27,
             30,
-            34,
-            38,
-            41,
-            45
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1,
-      "enemyCountScale": 0.75,
-      "reloadSeconds": 20,
-      "minutes": 15.478081832998734,
-      "p10Minutes": 14.904876662376658,
-      "p90Minutes": 16.063255494505487,
-      "level": 13,
-      "selections": 12,
-      "targets": 439,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 4.521918167001266,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
-            26,
-            30,
-            34
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
-            34,
-            38,
-            41,
-            45
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            30,
-            34,
-            38,
-            41,
-            45
+            33,
+            36
           ]
         }
       ]
@@ -1887,41 +1845,83 @@
     {
       "multiReloadScale": 3,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 60,
-      "minutes": 15.025416550853212,
-      "p10Minutes": 14.330773809523802,
-      "p90Minutes": 15.9017857142857,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 4.974583449146788,
+      "reloadSeconds": 90,
+      "minutes": 15.832813299208793,
+      "p10Minutes": 14.866486486486467,
+      "p90Minutes": 16.97360805860803,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 4.167186700791207,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            25,
+            28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1,
+      "enemyCountScale": 0.75,
+      "reloadSeconds": 30,
+      "minutes": 15.778802184678293,
+      "p10Minutes": 14.862791720291701,
+      "p90Minutes": 16.754867216117187,
+      "level": 11.93,
+      "selections": 10.93,
+      "targets": 351,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 4.221197815321707,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            21,
+            24,
+            27
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            27,
+            30,
+            33,
+            36
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            24,
+            27,
+            30,
+            33,
+            36
           ]
         }
       ]
@@ -1929,83 +1929,41 @@
     {
       "multiReloadScale": 2.5,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 50,
-      "minutes": 14.93406178894845,
-      "p10Minutes": 14.287577838827826,
-      "p90Minutes": 15.878749660832979,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 5.0659382110515505,
+      "reloadSeconds": 75,
+      "minutes": 15.690749013494514,
+      "p10Minutes": 14.79948717948716,
+      "p90Minutes": 16.8475366300366,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 4.309250986505486,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            31,
-            35,
-            39,
-            42
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            28,
-            31,
-            35,
-            39,
-            42
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.7,
-      "reloadSeconds": 35,
-      "minutes": 14.851686788948454,
-      "p10Minutes": 14.088617179312774,
-      "p90Minutes": 15.880178571428555,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 5.148313211051546,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
             25,
             28,
-            31
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         }
       ]
@@ -2013,41 +1971,83 @@
     {
       "multiReloadScale": 2,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 40,
-      "minutes": 14.834885598472264,
-      "p10Minutes": 14.135927436889444,
-      "p90Minutes": 15.863511904761886,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 5.165114401527736,
+      "reloadSeconds": 60,
+      "minutes": 15.541115680161179,
+      "p10Minutes": 14.530796703296687,
+      "p90Minutes": 16.667012532220834,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 4.4588843198388215,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            25,
+            28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.7,
+      "reloadSeconds": 52.5,
+      "minutes": 15.47387401349451,
+      "p10Minutes": 14.408653846153829,
+      "p90Minutes": 16.69236967507798,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 4.526125986505489,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            20,
+            22,
+            25
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            25,
+            28,
+            31,
+            34
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            22,
+            25,
+            28,
+            31,
+            34
           ]
         }
       ]
@@ -2055,41 +2055,41 @@
     {
       "multiReloadScale": 1.5,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 30,
-      "minutes": 14.80759512228178,
-      "p10Minutes": 14.169880952380943,
-      "p90Minutes": 15.584043040293022,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 5.19240487771822,
+      "reloadSeconds": 45,
+      "minutes": 15.436322823018322,
+      "p10Minutes": 14.377828185328164,
+      "p90Minutes": 16.568942307692275,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 4.5636771769816775,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            25,
+            28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         }
       ]
@@ -2097,41 +2097,41 @@
     {
       "multiReloadScale": 1.25,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 25,
-      "minutes": 14.681818931805596,
-      "p10Minutes": 14.070072412155744,
-      "p90Minutes": 15.383811668811658,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 5.318181068194404,
+      "reloadSeconds": 37.5,
+      "minutes": 15.295929965875462,
+      "p10Minutes": 14.445397230605186,
+      "p90Minutes": 16.33825820784152,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 4.704070034124538,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            25,
+            28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         }
       ]
@@ -2139,41 +2139,41 @@
     {
       "multiReloadScale": 1,
       "enemyCountScale": 0.7,
-      "reloadSeconds": 20,
-      "minutes": 14.631597503234167,
-      "p10Minutes": 14.092444192769142,
-      "p90Minutes": 15.317687630235502,
-      "level": 12.89,
-      "selections": 11.89,
-      "targets": 409,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 5.3684024967658335,
+      "reloadSeconds": 30,
+      "minutes": 15.10529544206594,
+      "p10Minutes": 14.362609890109871,
+      "p90Minutes": 16.006520655270624,
+      "level": 11,
+      "selections": 10,
+      "targets": 328,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 4.894704557934061,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            25,
-            28,
-            31
+            20,
+            22,
+            25
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            25,
+            28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            22,
+            25,
             28,
             31,
-            35,
-            39,
-            42
+            34
           ]
         }
       ]
@@ -2181,41 +2181,41 @@
     {
       "multiReloadScale": 3,
       "enemyCountScale": 0.65,
-      "reloadSeconds": 60,
-      "minutes": 14.307876486333894,
-      "p10Minutes": 13.680460422355475,
-      "p90Minutes": 15.132243113616576,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.2057330057330057,
-      "errorMinutes": 5.692123513666106,
+      "reloadSeconds": 90,
+      "minutes": 14.999504307064313,
+      "p10Minutes": 14.106666666666651,
+      "p90Minutes": 16.228076923076895,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.1413962832747363,
+      "errorMinutes": 5.0004956929356865,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            23,
-            26,
-            29
+            18,
+            21,
+            23
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            23,
+            26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            21,
+            23,
             26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         }
       ]
@@ -2223,125 +2223,41 @@
     {
       "multiReloadScale": 2.5,
       "enemyCountScale": 0.65,
-      "reloadSeconds": 50,
-      "minutes": 14.215191962524381,
-      "p10Minutes": 13.522033984533975,
-      "p90Minutes": 15.216683001015223,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.2460333006856023,
-      "errorMinutes": 5.784808037475619,
+      "reloadSeconds": 75,
+      "minutes": 14.871881688016689,
+      "p10Minutes": 14.030984432234415,
+      "p90Minutes": 15.939683034325558,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.16948826008428658,
+      "errorMinutes": 5.128118311983311,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            23,
-            26,
-            29
+            18,
+            21,
+            23
           ]
         },
         {
           "stageId": 2,
           "targets": [
-            29,
-            33,
-            36,
-            39
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            26,
-            29,
-            33,
-            36,
-            39
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.75,
-      "enemyCountScale": 0.65,
-      "reloadSeconds": 35,
-      "minutes": 14.133226486333909,
-      "p10Minutes": 13.452994844661504,
-      "p90Minutes": 15.003076923076906,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.3484049930651872,
-      "errorMinutes": 5.866773513666091,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
             23,
             26,
-            29
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
             29,
-            33,
-            36,
-            39
+            31
           ]
         },
         {
           "stageId": 3,
           "targets": [
-            26,
-            29,
-            33,
-            36,
-            39
-          ]
-        }
-      ]
-    },
-    {
-      "multiReloadScale": 1.5,
-      "enemyCountScale": 0.65,
-      "reloadSeconds": 30,
-      "minutes": 14.106002676810089,
-      "p10Minutes": 13.434807692307688,
-      "p90Minutes": 15.011749253832571,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.40450885668276965,
-      "errorMinutes": 5.893997323189911,
-      "waves": [
-        {
-          "stageId": 1,
-          "targets": [
+            21,
             23,
             26,
-            29
-          ]
-        },
-        {
-          "stageId": 2,
-          "targets": [
             29,
-            33,
-            36,
-            39
-          ]
-        },
-        {
-          "stageId": 3,
-          "targets": [
-            26,
-            29,
-            33,
-            36,
-            39
+            31
           ]
         }
       ]
@@ -2349,41 +2265,125 @@
     {
       "multiReloadScale": 2,
       "enemyCountScale": 0.65,
-      "reloadSeconds": 40,
-      "minutes": 14.102475295857712,
-      "p10Minutes": 13.424880952380947,
-      "p90Minutes": 15.059703989703971,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.3059683313032886,
-      "errorMinutes": 5.897524704142288,
+      "reloadSeconds": 60,
+      "minutes": 14.730317402302397,
+      "p10Minutes": 13.824088488671809,
+      "p90Minutes": 16.026190476190447,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.21151014274981214,
+      "errorMinutes": 5.269682597697603,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            23,
-            26,
-            29
+            18,
+            21,
+            23
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            23,
+            26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            21,
+            23,
             26,
             29,
-            33,
-            36,
-            39
+            31
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.75,
+      "enemyCountScale": 0.65,
+      "reloadSeconds": 52.5,
+      "minutes": 14.711997164207162,
+      "p10Minutes": 13.861785714285698,
+      "p90Minutes": 15.87940476190474,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.24144082332761577,
+      "errorMinutes": 5.288002835792838,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            18,
+            21,
+            23
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            23,
+            26,
+            29,
+            31
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            21,
+            23,
+            26,
+            29,
+            31
+          ]
+        }
+      ]
+    },
+    {
+      "multiReloadScale": 1.5,
+      "enemyCountScale": 0.65,
+      "reloadSeconds": 45,
+      "minutes": 14.587448354683351,
+      "p10Minutes": 13.573571428571414,
+      "p90Minutes": 15.805873510516035,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.2812387612387613,
+      "errorMinutes": 5.412551645316649,
+      "waves": [
+        {
+          "stageId": 1,
+          "targets": [
+            18,
+            21,
+            23
+          ]
+        },
+        {
+          "stageId": 2,
+          "targets": [
+            23,
+            26,
+            29,
+            31
+          ]
+        },
+        {
+          "stageId": 3,
+          "targets": [
+            21,
+            23,
+            26,
+            29,
+            31
           ]
         }
       ]
@@ -2391,41 +2391,41 @@
     {
       "multiReloadScale": 1.25,
       "enemyCountScale": 0.65,
-      "reloadSeconds": 25,
-      "minutes": 14.019638391095805,
-      "p10Minutes": 13.409184981684975,
-      "p90Minutes": 14.917042124542114,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.4821497120921304,
-      "errorMinutes": 5.980361608904195,
+      "reloadSeconds": 37.5,
+      "minutes": 14.519166211826214,
+      "p10Minutes": 13.62999999999998,
+      "p90Minutes": 15.632770146520123,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.3367464114832536,
+      "errorMinutes": 5.480833788173786,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            23,
-            26,
-            29
+            18,
+            21,
+            23
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            23,
+            26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            21,
+            23,
             26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         }
       ]
@@ -2433,41 +2433,41 @@
     {
       "multiReloadScale": 1,
       "enemyCountScale": 0.65,
-      "reloadSeconds": 20,
-      "minutes": 13.950149105381525,
-      "p10Minutes": 13.406795889295884,
-      "p90Minutes": 14.73644490577713,
-      "level": 12,
-      "selections": 11,
-      "targets": 381,
-      "multiToStandardRatio": 0.5966745843230403,
-      "errorMinutes": 6.049850894618475,
+      "reloadSeconds": 30,
+      "minutes": 14.345819783254786,
+      "p10Minutes": 13.576666666666652,
+      "p90Minutes": 15.260952380952354,
+      "level": 11,
+      "selections": 10,
+      "targets": 304,
+      "multiToStandardRatio": 0.4195529061102832,
+      "errorMinutes": 5.654180216745214,
       "waves": [
         {
           "stageId": 1,
           "targets": [
-            23,
-            26,
-            29
+            18,
+            21,
+            23
           ]
         },
         {
           "stageId": 2,
           "targets": [
+            23,
+            26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         },
         {
           "stageId": 3,
           "targets": [
+            21,
+            23,
             26,
             29,
-            33,
-            36,
-            39
+            31
           ]
         }
       ]
@@ -2475,65 +2475,65 @@
   ],
   "strategies": {
     "balanced": {
-      "minutes": 20.005060739308156,
-      "p10Minutes": 19.3320009157509,
-      "p90Minutes": 20.816955128205095,
-      "level": 15.005,
-      "selections": 14.005,
-      "targets": 583
+      "minutes": 20.066420754301426,
+      "p10Minutes": 19.041547619047602,
+      "p90Minutes": 21.410824175824153,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467
     },
     "offense": {
-      "minutes": 19.430877865727023,
-      "p10Minutes": 18.923333333333325,
-      "p90Minutes": 20.09964285714284,
-      "level": 15.006,
-      "selections": 14.006,
-      "targets": 583
+      "minutes": 19.213452050421,
+      "p10Minutes": 18.2580769230769,
+      "p90Minutes": 20.302976190476162,
+      "level": 13.75,
+      "selections": 12.75,
+      "targets": 467
     },
     "survival": {
-      "minutes": 22.274440574464766,
-      "p10Minutes": 21.172665551152583,
-      "p90Minutes": 23.091009297592464,
-      "level": 15.005,
-      "selections": 14.005,
-      "targets": 583
+      "minutes": 23.348653117075248,
+      "p10Minutes": 22.23154076281891,
+      "p90Minutes": 24.013435439415932,
+      "level": 13.73,
+      "selections": 12.73,
+      "targets": 467
     },
     "random": {
-      "minutes": 20.96967958345707,
-      "p10Minutes": 19.85164546872878,
-      "p90Minutes": 22.130058582009244,
-      "level": 15.004,
-      "selections": 14.004,
-      "targets": 583
+      "minutes": 21.374148582245667,
+      "p10Minutes": 20.170132783882753,
+      "p90Minutes": 22.588360212318523,
+      "level": 13.72,
+      "selections": 12.72,
+      "targets": 467
     }
   },
   "sensitivity": [
     {
       "engagementScale": 0.75,
-      "minutes": 17.288495286624002,
-      "p10Minutes": 16.63784569597068,
-      "p90Minutes": 18.113891705312287,
-      "level": 15.005,
-      "selections": 14.005,
-      "targets": 583
+      "minutes": 17.897906041916546,
+      "p10Minutes": 16.824801968864445,
+      "p90Minutes": 19.365674921143643,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467
     },
     {
       "engagementScale": 1,
-      "minutes": 20.005060739308156,
-      "p10Minutes": 19.3320009157509,
-      "p90Minutes": 20.816955128205095,
-      "level": 15.005,
-      "selections": 14.005,
-      "targets": 583
+      "minutes": 20.066420754301426,
+      "p10Minutes": 19.041547619047602,
+      "p90Minutes": 21.410824175824153,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467
     },
     {
       "engagementScale": 1.25,
-      "minutes": 22.7216227396114,
-      "p10Minutes": 22.041027930402908,
-      "p90Minutes": 23.53470882512547,
-      "level": 15.005,
-      "selections": 14.005,
-      "targets": 583
+      "minutes": 22.24892713335299,
+      "p10Minutes": 21.21584566709565,
+      "p90Minutes": 23.593426455874344,
+      "level": 13.79,
+      "selections": 12.79,
+      "targets": 467
     }
   ],
   "cardEffects": [
@@ -2583,21 +2583,21 @@
       "id": "standardRack",
       "name": "표준 미사일 랙 확장",
       "prerequisites": {},
-      "firstRankDpsPercent": 4.404635497795439,
+      "firstRankDpsPercent": 3.6908501177517206,
       "coverage": "직접 화력 또는 발사 주기 효과"
     },
     {
       "id": "multiRack",
       "name": "멀티 미사일 랙 확장",
       "prerequisites": {},
-      "firstRankDpsPercent": 5.2203497267745425,
+      "firstRankDpsPercent": 6.945697515997207,
       "coverage": "직접 화력 또는 발사 주기 효과"
     },
     {
       "id": "reload",
       "name": "신속 재장전",
       "prerequisites": {},
-      "firstRankDpsPercent": 4.964125775844441,
+      "firstRankDpsPercent": 3.7239543963180077,
       "coverage": "직접 화력 또는 발사 주기 효과"
     },
     {
@@ -2606,7 +2606,7 @@
       "prerequisites": {
         "power": 3
       },
-      "firstRankDpsPercent": 10.000000000000009,
+      "firstRankDpsPercent": 10.000000000000032,
       "coverage": "직접 화력 또는 발사 주기 효과"
     },
     {
@@ -2624,7 +2624,7 @@
       "prerequisites": {
         "control": 2
       },
-      "firstRankDpsPercent": 0.18749529523618413,
+      "firstRankDpsPercent": 0,
       "coverage": "직접 화력 또는 발사 주기 효과"
     }
   ],
@@ -2637,170 +2637,170 @@
       "level": 1,
       "selections": 0,
       "cumulativeTargets": 0,
-      "dps": 80.99089840725466
+      "dps": 55.47292201518297
     },
     {
       "point": "S1-W1",
       "stage": 1,
       "wave": 1,
-      "elapsedSeconds": 67.20979285714274,
+      "elapsedSeconds": 66.33671428571418,
       "level": 2,
       "selections": 1,
-      "cumulativeTargets": 35,
-      "dps": 87.19394049943209
+      "cumulativeTargets": 28,
+      "dps": 59.88778619202908
     },
     {
       "point": "S1-W2",
       "stage": 1,
       "wave": 2,
-      "elapsedSeconds": 145.5980848925849,
-      "level": 4,
-      "selections": 3,
-      "cumulativeTargets": 75,
-      "dps": 99.52188454346921
+      "elapsedSeconds": 145.77527507177484,
+      "level": 3,
+      "selections": 2,
+      "cumulativeTargets": 60,
+      "dps": 63.90974648450233
     },
     {
       "point": "S1-W3",
       "stage": 1,
       "wave": 3,
-      "elapsedSeconds": 230.46992453552505,
-      "level": 5,
-      "selections": 4,
-      "cumulativeTargets": 120,
-      "dps": 106.19191621345907
+      "elapsedSeconds": 230.8261695570574,
+      "level": 4,
+      "selections": 3,
+      "cumulativeTargets": 96,
+      "dps": 68.47349715017641
     },
     {
       "point": "S1-BOSS",
       "stage": 1,
       "wave": 4,
-      "elapsedSeconds": 242.44304823719295,
-      "level": 5,
-      "selections": 4,
-      "cumulativeTargets": 121,
-      "dps": 106.19191621345907
+      "elapsedSeconds": 250.34757699633053,
+      "level": 4.96,
+      "selections": 3.96,
+      "cumulativeTargets": 97,
+      "dps": 73.09468288494179
     },
     {
       "point": "S2-W1",
       "stage": 2,
       "wave": 1,
-      "elapsedSeconds": 356.4505076693894,
-      "level": 6.704,
-      "selections": 5.704,
-      "cumulativeTargets": 166,
-      "dps": 117.37157365376495
+      "elapsedSeconds": 360.5782395330461,
+      "level": 5.99,
+      "selections": 4.99,
+      "cumulativeTargets": 133,
+      "dps": 76.8940346043463
     },
     {
       "point": "S2-W2",
       "stage": 2,
       "wave": 2,
-      "elapsedSeconds": 453.68193895426765,
-      "level": 8,
-      "selections": 7,
-      "cumulativeTargets": 216,
-      "dps": 125.50407046099933
+      "elapsedSeconds": 455.39583453189533,
+      "level": 7,
+      "selections": 6,
+      "cumulativeTargets": 173,
+      "dps": 81.32562456088851
     },
     {
       "point": "S2-W3",
       "stage": 2,
       "wave": 3,
-      "elapsedSeconds": 558.0528203098315,
-      "level": 9.002,
-      "selections": 8.002,
-      "cumulativeTargets": 271,
-      "dps": 132.07672242216933
+      "elapsedSeconds": 556.401273900302,
+      "level": 8,
+      "selections": 7,
+      "cumulativeTargets": 217,
+      "dps": 86.07956954739386
     },
     {
       "point": "S2-W4",
       "stage": 2,
       "wave": 4,
-      "elapsedSeconds": 669.7079368835459,
-      "level": 10.258,
-      "selections": 9.258,
-      "cumulativeTargets": 331,
-      "dps": 140.66872790790927
+      "elapsedSeconds": 663.0141339465451,
+      "level": 9.01,
+      "selections": 8.01,
+      "cumulativeTargets": 265,
+      "dps": 90.51699634479242
     },
     {
       "point": "S2-BOSS",
       "stage": 2,
       "wave": 5,
-      "elapsedSeconds": 684.9539613207581,
-      "level": 10.626,
-      "selections": 9.626,
-      "cumulativeTargets": 332,
-      "dps": 143.0178910640121
+      "elapsedSeconds": 688.185335547547,
+      "level": 9.14,
+      "selections": 8.14,
+      "cumulativeTargets": 266,
+      "dps": 90.9455549802073
     },
     {
       "point": "S3-W1",
       "stage": 3,
       "wave": 1,
-      "elapsedSeconds": 782.141247485747,
-      "level": 11.167,
-      "selections": 10.167,
-      "cumulativeTargets": 372,
-      "dps": 146.48072637371882
+      "elapsedSeconds": 784.7710615048856,
+      "level": 10,
+      "selections": 9,
+      "cumulativeTargets": 298,
+      "dps": 94.28956229365949
     },
     {
       "point": "S3-W2",
       "stage": 3,
       "wave": 2,
-      "elapsedSeconds": 864.1733180118806,
-      "level": 12.012,
-      "selections": 11.012,
-      "cumulativeTargets": 417,
-      "dps": 151.73073311434246
+      "elapsedSeconds": 865.6300588438094,
+      "level": 11,
+      "selections": 10,
+      "cumulativeTargets": 334,
+      "dps": 98.66147952784709
     },
     {
       "point": "S3-W3",
       "stage": 3,
       "wave": 3,
-      "elapsedSeconds": 953.7048967748015,
-      "level": 13.002,
-      "selections": 12.002,
-      "cumulativeTargets": 467,
-      "dps": 157.72263278061365
+      "elapsedSeconds": 952.5908546863616,
+      "level": 11.97,
+      "selections": 10.97,
+      "cumulativeTargets": 374,
+      "dps": 101.8781763989877
     },
     {
       "point": "S3-W4",
       "stage": 3,
       "wave": 4,
-      "elapsedSeconds": 1051.4964908060342,
-      "level": 14,
-      "selections": 13,
-      "cumulativeTargets": 522,
-      "dps": 163.1338718042324
+      "elapsedSeconds": 1046.7398337519212,
+      "level": 12.63,
+      "selections": 11.63,
+      "cumulativeTargets": 418,
+      "dps": 104.4096528348755
     },
     {
       "point": "S3-W5",
       "stage": 3,
       "wave": 5,
-      "elapsedSeconds": 1156.4342740304357,
-      "level": 15,
-      "selections": 14,
-      "cumulativeTargets": 582,
-      "dps": 169.26296666042134
+      "elapsedSeconds": 1147.827582233648,
+      "level": 13.16,
+      "selections": 12.16,
+      "cumulativeTargets": 466,
+      "dps": 106.4424038080626
     },
     {
       "point": "S3-BOSS",
       "stage": 3,
       "wave": 6,
-      "elapsedSeconds": 1175.3036443584895,
-      "level": 15.005,
-      "selections": 14.005,
-      "cumulativeTargets": 583,
-      "dps": 169.2812686937759
+      "elapsedSeconds": 1178.9852452580853,
+      "level": 13.79,
+      "selections": 12.79,
+      "cumulativeTargets": 467,
+      "dps": 108.82908192066732
     }
   ],
   "averageCombat": {
-    "cannonShots": 2223.978,
-    "standardShots": 540.964,
-    "multiShots": 255.471,
-    "standardReloads": 25.823,
-    "multiReloads": 15.417,
-    "switches": 77.848,
-    "overkill": 23654.862619999985,
-    "collateralKills": 42.833,
-    "combatSeconds": 413.3287642857128,
-    "travelSeconds": 651.9748800727758
+    "cannonShots": 2981.87,
+    "standardShots": 583.7,
+    "multiShots": 148.34,
+    "standardReloads": 28.05,
+    "multiReloads": 18.5,
+    "switches": 60.28,
+    "overkill": 14274.069799999997,
+    "collateralKills": 39.14,
+    "combatSeconds": 545.7499999999985,
+    "travelSeconds": 523.2352452580875
   },
   "limitations": [
     "완주 조건부 예상 시간이며 피격·사망률은 계산하지 않음",

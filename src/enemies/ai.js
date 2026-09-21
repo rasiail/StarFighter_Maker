@@ -211,9 +211,10 @@ export function updateEnemies(delta) {
         );
 
         // 적기 엔진 불꽃 업데이트 (로우폴리 파티클)
-        if (enemy.mesh.baseGlow) {
-            enemy.mesh.baseGlow.scale.set(1 + Math.random() * 0.15, 1 + Math.random() * 0.15, 1);
-        }
+        const glows = enemy.mesh.baseGlows || (enemy.mesh.baseGlow ? [enemy.mesh.baseGlow] : []);
+        glows.forEach(glow => {
+            glow.scale.set(1 + Math.random() * 0.15, 1 + Math.random() * 0.15, 1);
+        });
         if (gameState.jetExhaustSystem && Math.random() < 0.6) {
             const localNozzle = new THREE.Vector3(0, 0, 5.3);
             gameState.jetExhaustSystem.spawn(

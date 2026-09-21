@@ -45,11 +45,12 @@ export function updatePlayerFlight(delta) {
     playerFlight.isAirbrake    = (keys.throttleDown || padInput.throttleDown) && playerFlight.speed < 320; // 320kts 이하 감속 중 에어브레이크
 
     // Thruster visual update: 내부 노즐 코어 발광 및 로우폴리곤 덩어리 파티클 방출
-    if (playerMesh.baseGlow) {
+    const glows = playerMesh.baseGlows || (playerMesh.baseGlow ? [playerMesh.baseGlow] : []);
+    glows.forEach(glow => {
         const glowScale = (playerFlight.isAfterburner ? 1.4 : 1.0) * (0.85 + Math.random() * 0.25);
-        playerMesh.baseGlow.scale.set(glowScale, glowScale, glowScale);
-        playerMesh.baseGlow.material.color.setHex(playerFlight.isAfterburner ? 0x66ddff : 0xffaa22);
-    }
+        glow.scale.set(glowScale, glowScale, glowScale);
+        glow.material.color.setHex(playerFlight.isAfterburner ? 0x66ddff : 0xffaa22);
+    });
 
     // 로우폴리곤 덩어리 쓰러스터 파티클 방출 (기체 로컬 좌표계로 전달하여 항상 노즐에 밀착)
     if (gameState.jetExhaustSystem && playerFlight.throttlePercent > 5) {

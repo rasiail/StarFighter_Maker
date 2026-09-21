@@ -20,24 +20,25 @@ let missileTemplate;
 export function updateWeaponHUD() {
     const statEl = document.getElementById('missile-stat');
     if (!statEl) return;
+    
     if (gameState.missileMode === 1) {
-        const burstPips = `${playerFlight.stdBursts}/${playerFlight.stdMaxBursts}`;
+        const count = `${playerFlight.stdBursts}/${playerFlight.stdMaxBursts}`;
         if (playerFlight.stdReloadTimers.length > 0) {
             const minT = Math.min(...playerFlight.stdReloadTimers);
-            statEl.textContent = `STD RELOAD (${minT.toFixed(1)}s) [${burstPips}]`;
+            statEl.innerHTML = `<span>STD RELOAD (${minT.toFixed(1)}s)</span><span style="color:#ffcc00">${count}</span>`;
             statEl.style.color = '#ffcc00';
         } else {
-            statEl.textContent = `STD READY [${burstPips}]`;
+            statEl.innerHTML = `<span>STD READY</span><span style="color:#4df58a">${count}</span>`;
             statEl.style.color = '#4df58a';
         }
     } else {
-        const burstPips = `${playerFlight.multiBursts}/${playerFlight.multiMaxBursts}`;
+        const count = `${playerFlight.multiBursts}/${playerFlight.multiMaxBursts}`;
         if (playerFlight.multiReloadTimers.length > 0) {
             const minT = Math.min(...playerFlight.multiReloadTimers);
-            statEl.textContent = `MULTI RELOAD (${minT.toFixed(1)}s) [${burstPips}]`;
+            statEl.innerHTML = `<span>MULTI RELOAD (${minT.toFixed(1)}s)</span><span style="color:#ffcc00">${count}</span>`;
             statEl.style.color = '#ffcc00';
         } else {
-            statEl.textContent = `MULTI READY [${burstPips}]`;
+            statEl.innerHTML = `<span>MULTI READY</span><span style="color:#4df58a">${count}</span>`;
             statEl.style.color = '#4df58a';
         }
     }

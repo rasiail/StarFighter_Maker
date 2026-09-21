@@ -17,4 +17,5 @@ export const gameState = {
     currentGunLeadPredictedPos: null,
     cameraPivot: null,
     jetExhaustSystem: null,
+    controlScheme: 'standard',
 };

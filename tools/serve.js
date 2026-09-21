@@ -18,6 +18,6 @@ createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
         res.end(body);
     } catch {
-        res.writeHead(404).end('Not found');
+        console.log('404:', req.url); res.writeHead(404).end('Not found');
     }
 }).listen(port, '127.0.0.1', () => console.log(`StarFighter: http://localhost:${port}`));

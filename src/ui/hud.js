@@ -1,10 +1,11 @@
-// ui/hud: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { camera, hudCanvas, hudCtx } from '../rendering/scene.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { enemies } from '../enemies/fleet.js';
 import { audio } from '../audio/audio.js';
+import { HUD_LAYOUT } from './hud_layout.js';
+
 
 
 export function renderHUD() {
@@ -121,25 +122,29 @@ export function renderHUD() {
     const throttlePct = Math.round(playerFlight.throttlePercent);
 
     // Left: Airspeed Indicator Box
-    hudCtx.strokeRect(cx - 240, cy - 35, 75, 70);
-    hudCtx.fillText("SPD KTS", cx - 235, cy - 18);
+    const speed = HUD_LAYOUT.speedBox;
+    hudCtx.strokeRect(cx + speed.cxOffset, cy + speed.cyOffset, speed.w, speed.h);
+    hudCtx.fillText("SPD KTS", cx + speed.cxOffset + 5, cy + speed.cyOffset + 17);
     hudCtx.font = '20px "Share Tech Mono", monospace';
-    hudCtx.fillText(speedKts.toString().padStart(3, '0'), cx - 225, cy + 18);
+    hudCtx.fillText(speedKts.toString().padStart(3, '0'), cx + speed.cxOffset + 15, cy + speed.cyOffset + 53);
 
     // Right: Altitude Indicator Box
+    const alt = HUD_LAYOUT.altBox;
     hudCtx.font = '13px "Share Tech Mono", monospace';
-    hudCtx.strokeRect(cx + 165, cy - 35, 80, 70);
-    hudCtx.fillText("ALT FT", cx + 175, cy - 18);
+    hudCtx.strokeRect(cx + alt.cxOffset, cy + alt.cyOffset, alt.w, alt.h);
+    hudCtx.fillText("ALT FT", cx + alt.cxOffset + 10, cy + alt.cyOffset + 17);
     hudCtx.font = '20px "Share Tech Mono", monospace';
-    hudCtx.fillText(altFt.toString().padStart(4, '0'), cx + 172, cy + 18);
+    hudCtx.fillText(altFt.toString().padStart(4, '0'), cx + alt.cxOffset + 7, cy + alt.cyOffset + 53);
 
     // Throttle indicator bottom bar
+    const thr = HUD_LAYOUT.throttle;
     hudCtx.font = '13px "Share Tech Mono", monospace';
-    hudCtx.strokeRect(cx - 90, cy + 160, 180, 14);
-    const fillWidth = Math.max(0, Math.min(180, (throttlePct / 100) * 180));
+    hudCtx.strokeRect(cx + thr.cxOffset, cy + thr.cyOffset, thr.w, thr.h);
+    const fillWidth = Math.max(0, Math.min(thr.w, (throttlePct / 100) * thr.w));
     hudCtx.fillStyle = playerFlight.isAfterburner ? '#ff7733' : '#4df58a';
-    hudCtx.fillRect(cx - 90, cy + 160, fillWidth, 14);
-    hudCtx.fillText(`THR: ${throttlePct}% ${playerFlight.isAfterburner ? '[AB ON]' : ''} ${playerFlight.isAirbrake ? '[BRAKE]' : ''}`, cx - 80, cy + 190);
+    hudCtx.fillRect(cx + thr.cxOffset, cy + thr.cyOffset, fillWidth, thr.h);
+    hudCtx.fillStyle = '#4df58a';
+    hudCtx.fillText(`THR: ${throttlePct}% ${playerFlight.isAfterburner ? '[AB ON]' : ''} ${playerFlight.isAirbrake ? '[BRAKE]' : ''}`, cx + thr.cxOffset + 10, cy + thr.cyOffset + thr.h + 16);
 
     const currentLockedEnemy = enemies[gameState.lockedEnemyIndex]?.alive ? enemies[gameState.lockedEnemyIndex] : null;
     const targetInLockCone = !!currentLockedEnemy?.isLocked;
@@ -386,9 +391,10 @@ export function renderHUD() {
     drawRadar(w, h, gameState.lockedEnemyIndex);
 }
 function drawRadar(w, h, lockedIdx) {
-    const rx = 100;
-    const ry = h - 100;
-    const radarSize = 75;
+    const radar = HUD_LAYOUT.radar;
+    const rx = radar.x;
+    const ry = h - radar.yOffsetFromBottom;
+    const radarSize = radar.r;
 
     hudCtx.save();
 
@@ -406,6 +412,26 @@ function drawRadar(w, h, lockedIdx) {
     hudCtx.arc(rx, ry, radarSize * 0.5, 0, Math.PI * 2);
     hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.2)';
     hudCtx.stroke();
+
+    // Compass labels (N, E, S, W)
+    hudCtx.fillStyle = 'rgba(77, 245, 138, 0.9)';
+    hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
+    hudCtx.textAlign = 'center';
+    hudCtx.textBaseline = 'middle';
+    const playerYaw = playerMesh.rotation.y;
+    const dirs = [
+        { t: 'N', x: 0, z: -1 },
+        { t: 'E', x: 1, z: 0 },
+        { t: 'S', x: 0, z: 1 },
+        { t: 'W', x: -1, z: 0 }
+    ];
+    dirs.forEach(d => {
+        const rotX = d.x * Math.cos(playerYaw) - d.z * Math.sin(playerYaw);
+        const rotZ = d.x * Math.sin(playerYaw) + d.z * Math.cos(playerYaw);
+        const mapX = rx + rotX * (radarSize - 9);
+        const mapY = ry + rotZ * (radarSize - 9);
+        hudCtx.fillText(d.t, mapX, mapY);
+    });
 
     // Radar sweep line (회전하는 녹색 탐색선)
     const sweepAngle = (performance.now() * 0.002) % (Math.PI * 2);
@@ -430,7 +456,6 @@ function drawRadar(w, h, lockedIdx) {
     hudCtx.fill();
 
     // Rotate relative to player heading
-    const playerYaw = playerMesh.rotation.y;
     const radarRange = 6000;
     const now = performance.now();
 

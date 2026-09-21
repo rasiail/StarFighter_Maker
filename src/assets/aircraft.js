@@ -16,6 +16,10 @@ let normTex;
 let playerPbrMat;
 let enemyPbrMat;
 export let fbxModelTemplate;
+export let su307ModelTemplate;
+export let isSu307Ready = false;
+export let su307PbrMat;
+
 export let isFBXReady;
 
 function base64ToArrayBuffer(base64) {
@@ -201,10 +205,27 @@ export function createF104Mesh(isEnemy = false) {
 
         group.add(modelClone);
 
-        // 배기구 불꽃 효과 부착 (FBX 기체 후방 노즐 위치 y = -0.38, z = 4.55)
-        const fx = createEngineEffects(4.55, -0.38);
-        group.add(fx.group);
-        group.baseGlow = fx.baseGlow;
+                group.baseGlows = [];
+        let dummyFound = false;
+        modelClone.updateMatrixWorld(true);
+        modelClone.traverse(child => {
+            if (child.name && child.name.toLowerCase().includes('dummy_exhaust')) {
+                const pos = new THREE.Vector3();
+                pos.setFromMatrixPosition(child.matrixWorld);
+                const fx = createEngineEffects(pos.z, pos.y);
+                fx.group.position.x = pos.x;
+                group.add(fx.group);
+                group.baseGlows.push(fx.baseGlow);
+                dummyFound = true;
+            }
+        });
+
+        if (!dummyFound) {
+            const fx = createEngineEffects(4.55, -0.38);
+            group.add(fx.group);
+            group.baseGlows.push(fx.baseGlow);
+        }
+        group.baseGlow = group.baseGlows[0];
     } else {
         // FBX가 아직 준비되지 않았거나 폴백일 때
         const proc = createProceduralF104Mesh(false);
@@ -243,6 +264,19 @@ export function loadFBXAsset() {
             isFBXReady = true;
             refreshPlayerMesh();
             finalizeAssetLoading();
+    loader.load(
+        'Enemy/Su307/Su307.fbx',
+        (fbx) => {
+            console.log('Su307 FBX loaded successfully');
+            su307ModelTemplate = processFBXTemplate(fbx);
+            // Size up by 1.2x
+            su307ModelTemplate.scale.set(1.2, 1.2, 1.2);
+            isSu307Ready = true;
+        },
+        undefined,
+        (err) => console.warn('Su307 FBX load failed:', err)
+    );
+
         },
         (xhr) => {
             if (xhr.lengthComputable && xhr.total > 0) {
@@ -253,6 +287,18 @@ export function loadFBXAsset() {
         (err) => {
             console.warn('FBX file load failed, falling back to procedural model:', err);
             isFBXReady = false;
+    const suBaseTex = textureLoader.load('Enemy/Su307/Su307_texture.png');
+    suBaseTex.encoding = THREE.sRGBEncoding;
+    su307PbrMat = new THREE.MeshStandardMaterial({
+        map: suBaseTex,
+        roughnessMap: textureLoader.load('Enemy/Su307/Su307_texture_roughness.png'),
+        metalnessMap: textureLoader.load('Enemy/Su307/Su307_texture_metallic.png'),
+        normalMap: textureLoader.load('Enemy/Su307/Su307_texture_normal.png'),
+        normalScale: new THREE.Vector2(2.5, 2.5),
+        roughness: 0.70,
+        metalness: 0.15
+    });
+
             finalizeAssetLoading();
         }
     );
@@ -331,6 +377,18 @@ export function initAircraft() {
     fbxModelTemplate = null;
 
     isFBXReady = false;
+    const suBaseTex = textureLoader.load('Enemy/Su307/Su307_texture.png');
+    suBaseTex.encoding = THREE.sRGBEncoding;
+    su307PbrMat = new THREE.MeshStandardMaterial({
+        map: suBaseTex,
+        roughnessMap: textureLoader.load('Enemy/Su307/Su307_texture_roughness.png'),
+        metalnessMap: textureLoader.load('Enemy/Su307/Su307_texture_metallic.png'),
+        normalMap: textureLoader.load('Enemy/Su307/Su307_texture_normal.png'),
+        normalScale: new THREE.Vector2(2.5, 2.5),
+        roughness: 0.70,
+        metalness: 0.15
+    });
+
 
     if (hasEmbeddedData && typeof THREE.FBXLoader !== 'undefined') {
         try {
@@ -344,4 +402,52 @@ export function initAircraft() {
             console.error('Failed to parse embedded FBX data:', err);
         }
     }
+}
+
+export function createEliteMesh() {
+    const group = new THREE.Group();
+    if (isSu307Ready && su307ModelTemplate) {
+        const modelClone = su307ModelTemplate.clone(true);
+        modelClone.traverse(child => {
+            if (child.isMesh) {
+                child.material = su307PbrMat;
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.geometry) child.geometry.computeVertexNormals();
+            }
+        });
+        group.add(modelClone);
+        
+
+        group.baseGlows = [];
+        let dummyFound = false;
+        modelClone.updateMatrixWorld(true);
+        modelClone.traverse(child => {
+            if (child.name && child.name.toLowerCase().includes('dummy_exhaust')) {
+                const pos = new THREE.Vector3();
+                pos.setFromMatrixPosition(child.matrixWorld);
+                const fx = createEngineEffects(pos.z, pos.y);
+                fx.group.position.x = pos.x;
+                group.add(fx.group);
+                group.baseGlows.push(fx.baseGlow);
+                dummyFound = true;
+            }
+        });
+
+        if (!dummyFound) {
+            // exhaust pos for Su307 scaled up (F104 is 4.55, -0.38)
+            const fx = createEngineEffects(4.55 * 1.2, -0.38 * 1.2);
+            group.add(fx.group);
+            group.baseGlows.push(fx.baseGlow);
+        }
+        group.baseGlow = group.baseGlows[0];
+
+    } else {
+        // Fallback procedural
+        const proc = createProceduralF104Mesh(true);
+        group.add(proc);
+        group.baseGlow = proc.baseGlow;
+    }
+    group.colliderRadius = 3.5 * 1.2;
+    return group;
 }

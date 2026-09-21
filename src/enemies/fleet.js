@@ -4,6 +4,7 @@ import { createBattleshipMesh, createTankMesh } from './models.js';
 import { scene } from '../rendering/scene.js';
 import { getSurfaceHeight, currentEnvironment } from '../world/environment.js';
 import { createDroneMesh } from './drone.js';
+import { createEliteMesh } from '../assets/aircraft.js';
 import { playerMesh } from '../player/player.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { formationKind } from './formation.js';

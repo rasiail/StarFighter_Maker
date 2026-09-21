@@ -96,7 +96,7 @@ export function killEnemy(enemy) {
         }
     } else {
         scene.remove(enemy.mesh); // 공중 적기나 탱크는 일반 제거
-        playerFlight.score += (enemy.isBoss ? BALANCE.enemies.boss : (enemy.isGround ? BALANCE.enemies.tank : BALANCE.enemies.stage_aircraft)).scoreReward;
+        playerFlight.score += (enemy.isBoss ? BALANCE.enemies.boss : (enemy.isGround ? BALANCE.enemies.tank : (enemy.isElite ? BALANCE.enemies.elite : BALANCE.enemies.stage_aircraft))).scoreReward;
     }
 
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');
@@ -107,7 +107,7 @@ export function killEnemy(enemy) {
     document.getElementById('target-count').textContent = remain;
 
     gameEvents.emit(EVENTS.ENEMY_DESTROYED, {
-        enemyType: enemy.isShip ? (enemy.shipPart === 'TURRET' ? 'turret' : 'ship') : (enemy.isGround ? 'tank' : 'aircraft'),
+        enemyType: enemy.isShip ? (enemy.shipPart === 'TURRET' ? 'turret' : 'ship') : (enemy.isGround ? 'tank' : (enemy.isElite ? 'elite' : 'aircraft')),
         killCount: gameState.currentKills,
         score: playerFlight.score,
         isBoss: !!enemy.isBoss,

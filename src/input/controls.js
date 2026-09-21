@@ -78,12 +78,21 @@ export function initControls() {
         }
 
         // 비행 조작 키 매핑
-        if (code === 'KeyW') keys.pitchDown = true;
-        if (code === 'KeyS') keys.pitchUp = true;
-        if (code === 'KeyA') keys.rollLeft = true;
-        if (code === 'KeyD') keys.rollRight = true;
-        if (code === 'KeyQ') keys.yawLeft = true;
-        if (code === 'KeyE') keys.yawRight = true;
+        if (gameState.controlScheme === 'casual') {
+            if (code === 'KeyW') keys.pitchUp = true;
+            if (code === 'KeyS') keys.pitchDown = true;
+            if (code === 'KeyA') keys.yawLeft = true;
+            if (code === 'KeyD') keys.yawRight = true;
+            if (code === 'KeyQ') keys.rollLeft = true;
+            if (code === 'KeyE') keys.rollRight = true;
+        } else {
+            if (code === 'KeyW') keys.pitchDown = true;
+            if (code === 'KeyS') keys.pitchUp = true;
+            if (code === 'KeyA') keys.rollLeft = true;
+            if (code === 'KeyD') keys.rollRight = true;
+            if (code === 'KeyQ') keys.yawLeft = true;
+            if (code === 'KeyE') keys.yawRight = true;
+        }
         if (code === 'ShiftLeft' || code === 'ShiftRight') keys.throttleUp = true;
         // 감속 키를 Ctrl에서 Alt로 변경하고, Alt 키의 브라우저 메뉴 진입(기본 동작)을 막음
         if (code === 'AltLeft' || code === 'AltRight') {
@@ -125,12 +134,21 @@ export function initControls() {
     window.addEventListener('keyup', (e) => {
         const code = e.code;
         if (!gameState.isGameRunning || gameState.isGamePaused) { clearCombatInput(); return; }
-        if (code === 'KeyW') keys.pitchDown = false;
-        if (code === 'KeyS') keys.pitchUp = false;
-        if (code === 'KeyA') keys.rollLeft = false;
-        if (code === 'KeyD') keys.rollRight = false;
-        if (code === 'KeyQ') keys.yawLeft = false;
-        if (code === 'KeyE') keys.yawRight = false;
+        if (gameState.controlScheme === 'casual') {
+            if (code === 'KeyW') keys.pitchUp = false;
+            if (code === 'KeyS') keys.pitchDown = false;
+            if (code === 'KeyA') keys.yawLeft = false;
+            if (code === 'KeyD') keys.yawRight = false;
+            if (code === 'KeyQ') keys.rollLeft = false;
+            if (code === 'KeyE') keys.rollRight = false;
+        } else {
+            if (code === 'KeyW') keys.pitchDown = false;
+            if (code === 'KeyS') keys.pitchUp = false;
+            if (code === 'KeyA') keys.rollLeft = false;
+            if (code === 'KeyD') keys.rollRight = false;
+            if (code === 'KeyQ') keys.yawLeft = false;
+            if (code === 'KeyE') keys.yawRight = false;
+        }
         if (code === 'ShiftLeft' || code === 'ShiftRight') {
             keys.throttleUp = false;
             playerFlight.cruiseSpeed = playerFlight.defaultCruiseSpeed || 550;

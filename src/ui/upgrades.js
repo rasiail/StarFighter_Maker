@@ -31,7 +31,7 @@ function renderChoices() {
         const label = document.createElement('strong');
         label.textContent = card.name;
         const rank = document.createElement('span');
-        rank.textContent = card.id === 'repair' ? '즉시 적용' : `${cardRank(progression, card)} → ${cardRank(progression, card) + 1} / ${card.maxRank}`;
+        rank.textContent = card.id === 'repair' ? '즉시 적용' : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
         const description = document.createElement('p');
         description.textContent = card.description;
         button.append(label, rank, description);

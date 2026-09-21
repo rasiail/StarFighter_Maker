@@ -262,14 +262,14 @@ export const BALANCE = deepFreeze({
       "displayNameKo": "표준 미사일",
       "owner": "player",
       "weaponType": "missile",
-      "damage": 85,
+      "damage": 55,
       "fireIntervalSec": 0.3,
       "readySlots": 20,
-      "reloadSec": 10,
+      "reloadSec": 15,
       "lockRangeM": 2000,
-      "projectileSpeedMps": 450,
-      "maxSpeedMps": 1400,
-      "accelerationMps2": 650,
+      "projectileSpeedMps": 350,
+      "maxSpeedMps": 1000,
+      "accelerationMps2": 450,
       "turnRateRadSec": 3.2,
       "lifetimeSec": 6,
       "engineKey": "std",
@@ -281,14 +281,14 @@ export const BALANCE = deepFreeze({
       "owner": "player",
       "weaponType": "missile",
       "damage": 85,
-      "fireIntervalSec": 0.35,
-      "readySlots": 16,
-      "reloadSec": 20,
+      "fireIntervalSec": 0.5,
+      "readySlots": 8,
+      "reloadSec": 30,
       "lockRangeM": 3000,
       "projectileSpeedMps": 450,
       "maxSpeedMps": 1400,
       "accelerationMps2": 650,
-      "turnRateRadSec": 3.2,
+      "turnRateRadSec": 4.5,
       "lifetimeSec": 6,
       "engineKey": "multi",
       "notes": "기본 4발, 멀티 관제 확장으로 최대 8발 동시 발사. 탄창 소진 후 전체 재장전"
@@ -309,9 +309,9 @@ export const BALANCE = deepFreeze({
       "owner": "enemy",
       "weaponType": "missile",
       "damage": 35,
-      "projectileSpeedMps": 450,
-      "maxSpeedMps": 1400,
-      "accelerationMps2": 650,
+      "projectileSpeedMps": 350,
+      "maxSpeedMps": 1000,
+      "accelerationMps2": 450,
       "turnRateRadSec": 3.2,
       "lifetimeSec": 6,
       "engineKey": "enemyMissile",
@@ -323,7 +323,7 @@ export const BALANCE = deepFreeze({
       "owner": "enemy",
       "weaponType": "missile",
       "damage": 20,
-      "projectileSpeedMps": 450,
+      "projectileSpeedMps": 400,
       "maxSpeedMps": 1400,
       "accelerationMps2": 650,
       "turnRateRadSec": 3.2,
@@ -355,9 +355,9 @@ export const BALANCE = deepFreeze({
       "bossName": "CANYON LEVIATHAN",
       "xpRewardMultiplier": 0.85,
       "waves": [
-        35,
-        40,
-        45
+        28,
+        32,
+        36
       ]
     },
     {
@@ -372,10 +372,10 @@ export const BALANCE = deepFreeze({
       "bossName": "OCEAN DREADNOUGHT",
       "xpRewardMultiplier": 0.9,
       "waves": [
-        45,
-        50,
-        55,
-        60
+        36,
+        40,
+        44,
+        48
       ]
     },
     {
@@ -390,11 +390,11 @@ export const BALANCE = deepFreeze({
       "bossName": "METROPOLIS OVERLORD",
       "xpRewardMultiplier": 1.4,
       "waves": [
+        32,
+        36,
         40,
-        45,
-        50,
-        55,
-        60
+        44,
+        48
       ]
     }
   ],
@@ -444,6 +444,16 @@ export const BALANCE = deepFreeze({
       "hitRadiusM": 65,
       "countsAsTarget": true,
       "notes": "체력은 Stages.boss_health"
+    },
+    "elite": {
+      "enemyId": "elite",
+      "displayNameKo": "엘리트",
+      "health": 250,
+      "xpReward": 100,
+      "scoreReward": 3000,
+      "hitRadiusM": 24,
+      "countsAsTarget": 1,
+      "notes": "정예 전투기"
     }
   },
   "spawnRules": {
@@ -475,21 +485,18 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "피치·롤·요 최대 회전속도 +8%",
       "effects": [
         {
-          "cardId": "mobility",
           "effectKey": "max_pitch_rate_multiplier",
           "operation": "add_per_rank",
           "value": 0.08,
           "unitOrRule": "ratio"
         },
         {
-          "cardId": "mobility",
           "effectKey": "max_roll_rate_multiplier",
           "operation": "add_per_rank",
           "value": 0.08,
           "unitOrRule": "ratio"
         },
         {
-          "cardId": "mobility",
           "effectKey": "max_yaw_rate_multiplier",
           "operation": "add_per_rank",
           "value": 0.08,
@@ -508,7 +515,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "회전 정리·역입력 응답 +15%",
       "effects": [
         {
-          "cardId": "stability",
           "effectKey": "stability_multiplier",
           "operation": "add_per_rank",
           "value": 0.15,
@@ -527,21 +533,18 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "순항 +20 / 최고 +40 kts · 가속 +8",
       "effects": [
         {
-          "cardId": "speed",
           "effectKey": "cruise_speed",
           "operation": "add_per_rank",
           "value": 20,
           "unitOrRule": "kts"
         },
         {
-          "cardId": "speed",
           "effectKey": "max_speed",
           "operation": "add_per_rank",
           "value": 40,
           "unitOrRule": "kts"
         },
         {
-          "cardId": "speed",
           "effectKey": "acceleration",
           "operation": "add_per_rank",
           "value": 8,
@@ -560,7 +563,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "최대 체력 +20 · 증가분 회복",
       "effects": [
         {
-          "cardId": "defense",
           "effectKey": "max_health",
           "operation": "add_per_rank",
           "value": 20,
@@ -576,13 +578,12 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "기본 무기 피해 배율 +20%",
+      "descriptionKo": "기본 무기 피해 배율 +10%",
       "effects": [
         {
-          "cardId": "power",
           "effectKey": "damage_multiplier",
           "operation": "add_per_rank",
-          "value": 0.2,
+          "value": 0.1,
           "unitOrRule": "ratio"
         }
       ],
@@ -598,14 +599,12 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "락온 거리 +10% · 유도 선회 +8%",
       "effects": [
         {
-          "cardId": "control",
           "effectKey": "lock_range_multiplier",
           "operation": "add_per_rank",
           "value": 0.1,
           "unitOrRule": "ratio"
         },
         {
-          "cardId": "control",
           "effectKey": "missile_turn_multiplier",
           "operation": "add_per_rank",
           "value": 0.08,
@@ -624,7 +623,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "표준 미사일 탄창 +4발",
       "effects": [
         {
-          "cardId": "standardRack",
           "effectKey": "standard_ready_slots",
           "operation": "add_per_rank",
           "value": 4,
@@ -640,13 +638,12 @@ export const BALANCE = deepFreeze({
       "maxRank": 3,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "멀티 미사일 탄창 +4발",
+      "descriptionKo": "멀티 미사일 탄창 +2발",
       "effects": [
         {
-          "cardId": "multiRack",
           "effectKey": "multi_ready_slots",
           "operation": "add_per_rank",
-          "value": 4,
+          "value": 2,
           "unitOrRule": "count"
         }
       ],
@@ -662,7 +659,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "두 미사일의 기본 재장전 시간 -10%",
       "effects": [
         {
-          "cardId": "reload",
           "effectKey": "missile_reload_multiplier",
           "operation": "subtract_per_rank",
           "value": 0.1,
@@ -681,7 +677,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "화력 보정 후 무기 피해 +10% · 화력 3 필요",
       "effects": [
         {
-          "cardId": "warhead",
           "effectKey": "damage_multiplier",
           "operation": "multiply_add_per_rank",
           "value": 0.1,
@@ -707,7 +702,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "미사일 유도 선회 성능 +15% · 관제력 3 필요",
       "effects": [
         {
-          "cardId": "guidance",
           "effectKey": "missile_turn_multiplier",
           "operation": "add_per_rank",
           "value": 0.15,
@@ -732,14 +726,12 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "체력 30% 회복 · 점수 +500",
       "effects": [
         {
-          "cardId": "repair",
           "effectKey": "health_restore",
           "operation": "instant_ratio",
           "value": 0.3,
           "unitOrRule": "max_health"
         },
         {
-          "cardId": "repair",
           "effectKey": "score",
           "operation": "instant_add",
           "value": 500,
@@ -758,7 +750,6 @@ export const BALANCE = deepFreeze({
       "descriptionKo": "멀티 동시 락온·발사 +2 (4→6→8발) · 관제력 2 필요",
       "effects": [
         {
-          "cardId": "multiSalvo",
           "effectKey": "multi_lock_count",
           "operation": "add_per_rank",
           "value": 2,

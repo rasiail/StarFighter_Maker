@@ -114,6 +114,14 @@ export function initMenus() {
             }
         });
     }
+    const optCasualControls = document.getElementById('opt-casual-controls');
+    if (optCasualControls) {
+        optCasualControls.checked = (gameState.controlScheme === 'casual');
+        optCasualControls.addEventListener('change', (e) => {
+            gameState.controlScheme = e.target.checked ? 'casual' : 'standard';
+        });
+    }
+
 
     document.getElementById('btn-sortie').addEventListener('click', () => {
         audio.init();
