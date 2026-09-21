@@ -6,84 +6,113 @@ import { camera } from '../rendering/scene.js';
 import { BALANCE } from '../data/generated/balance.js';
 
 
-export function acquireNextBestTarget() {
-    const aliveList = [];
-    enemies.forEach((e, idx) => {
-        if (e.alive) {
-            const dist = playerMesh.position.distanceTo(e.mesh.position);
-            aliveList.push({ enemy: e, idx, dist });
+export function evaluateTargetCandidates(options = {}) {
+    const pMesh = options.playerMesh || playerMesh;
+    const cam = options.camera || camera;
+    const enemyList = options.enemies || enemies;
+
+    if (!pMesh?.position || !cam) return { tier1: [], tier2: [], tier3: [] };
+
+    if (typeof cam.updateMatrixWorld === 'function') {
+        cam.updateMatrixWorld();
+    }
+
+    const camPos = new THREE.Vector3();
+    if (typeof cam.getWorldPosition === 'function') cam.getWorldPosition(camPos);
+    else if (cam.position) camPos.copy(cam.position);
+
+    const camFwd = new THREE.Vector3();
+    if (typeof cam.getWorldDirection === 'function') cam.getWorldDirection(camFwd);
+    else camFwd.set(0, 0, -1);
+
+    const playerFwd = new THREE.Vector3(0, 0, -1);
+    if (pMesh.quaternion) playerFwd.applyQuaternion(pMesh.quaternion);
+
+    const tier1 = []; // 화면 내 적 (isInScreen = true)
+    const tier2 = []; // 화면 밖 전방 적 (isInScreen = false, dotPlayer > 0)
+    const tier3 = []; // 플레이어 후방 적 (isInScreen = false, dotPlayer <= 0)
+
+    enemyList.forEach((enemy, idx) => {
+        if (!enemy?.alive || !enemy?.mesh?.position) return;
+
+        const enemyPos = enemy.mesh.position;
+        const distToPlayer = pMesh.position.distanceTo(enemyPos);
+
+        // 플레이어 기수 기준 방향 벡터 및 내적 (전방: dotPlayer > 0, 후방: dotPlayer <= 0)
+        const toEnemyFromPlayer = enemyPos.clone().sub(pMesh.position);
+        const distP = toEnemyFromPlayer.length();
+        const dotPlayer = distP > 0.1 ? playerFwd.dot(toEnemyFromPlayer.clone().normalize()) : 1;
+
+        // 카메라 기준 로컬 Z 거리 확인 (Three.js 카메라는 -Z가 전방이므로 camSpacePos.z < -0.5)
+        let isCameraFront = false;
+        if (cam.matrixWorldInverse) {
+            const camSpacePos = enemyPos.clone().applyMatrix4(cam.matrixWorldInverse);
+            isCameraFront = camSpacePos.z < -0.5;
+        } else {
+            const toEnemyCam = enemyPos.clone().sub(camPos);
+            isCameraFront = camFwd.dot(toEnemyCam.normalize()) > 0.1;
+        }
+
+        // 화면 뷰포트(NDC: -1.0 ~ 1.0) 투영 검사 (카메라 전방에 위치할 때만 유효)
+        let isInScreen = false;
+        if (isCameraFront && typeof enemyPos.clone().project === 'function') {
+            const proj = enemyPos.clone().project(cam);
+            isInScreen = (
+                Math.abs(proj.x) <= 1.05 &&
+                Math.abs(proj.y) <= 1.05 &&
+                proj.z >= -1.0 &&
+                proj.z <= 1.0
+            );
+        }
+
+        const candidate = { enemy, idx, dist: distToPlayer, isInScreen, dotPlayer };
+
+        if (isInScreen) {
+            tier1.push(candidate);
+        } else if (dotPlayer > 0) {
+            tier2.push(candidate);
+        } else {
+            tier3.push(candidate);
         }
     });
 
-    if (aliveList.length === 0) return null;
+    // 모든 티어는 플레이어와의 거리 기준 오름차순(가까운 적 우선) 정렬
+    tier1.sort((a, b) => a.dist - b.dist);
+    tier2.sort((a, b) => a.dist - b.dist);
+    tier3.sort((a, b) => a.dist - b.dist);
 
-    // 거리순 정렬
-    aliveList.sort((a, b) => a.dist - b.dist);
+    return { tier1, tier2, tier3 };
+}
 
-    // 카메라 정면 벡터와 가까운 적 우선 탐색
-    const camFwd = new THREE.Vector3();
-    camera.getWorldDirection(camFwd);
-    const inFront = aliveList.find(item => {
-        const toEnemy = item.enemy.mesh.position.clone().sub(camera.position).normalize();
-        return camFwd.dot(toEnemy) > 0.15;
-    });
+export function acquireNextBestTarget() {
+    const { tier1, tier2, tier3 } = evaluateTargetCandidates();
 
-    const chosen = inFront || aliveList[0];
+    // 1순위: 화면에 보이는 적들 중 가장 가까운 대상
+    // 2순위: 화면에 안 보이지만 플레이어 전방에 있는 적들 중 가장 가까운 대상
+    // 3순위: 전방에도 적이 없을 때 후방의 적들 중 가장 가까운 대상
+    const targetPool = tier1.length > 0 ? tier1 : (tier2.length > 0 ? tier2 : tier3);
+    if (targetPool.length === 0) return null;
+
+    const chosen = targetPool[0];
     gameState.lockedEnemyIndex = chosen.idx;
     return chosen.enemy;
 }
+
 export function cycleTarget() {
-    const aliveEnemies = enemies.filter(e => e.alive);
-    if (aliveEnemies.length === 0) return;
+    const { tier1, tier2, tier3 } = evaluateTargetCandidates();
 
-    // 카메라 위치 및 정면 방향 벡터
-    const camPos = new THREE.Vector3();
-    camera.getWorldPosition(camPos);
-    const camFwd = new THREE.Vector3();
-    camera.getWorldDirection(camFwd);
-
-    const inViewList = [];
-    const outViewList = [];
-
-    enemies.forEach((enemy, idx) => {
-        if (!enemy.alive) return;
-
-        const toEnemy = enemy.mesh.position.clone().sub(camPos);
-        const distToCam = toEnemy.length();
-        const distToPlayer = playerMesh.position.distanceTo(enemy.mesh.position);
-
-        // 카메라 정면 벡터와의 내적 (카메라 앞쪽에 위치하는지 확인)
-        const dotCam = (distToCam > 0.1) ? camFwd.dot(toEnemy.clone().normalize()) : -1;
-
-        // Three.js 투영 (NDC 좌표계: 화면 중심 0, 좌우/상하 -1.0 ~ 1.0)
-        const proj = enemy.mesh.position.clone().project(camera);
-        const isFront = (dotCam > 0.05 && proj.z < 1.0);
-        // 화면 뷰포트 내(약간의 마진 포함 ±1.08)에 들어와 있는지 확인
-        const isInScreen = isFront && (Math.abs(proj.x) <= 1.08 && Math.abs(proj.y) <= 1.08);
-
-        const item = { idx, dist: distToPlayer, inScreen: isInScreen };
-        if (isInScreen) {
-            inViewList.push(item);
-        } else {
-            outViewList.push(item);
-        }
-    });
-
-    // 거리순 (플레이어와 가까운 순서대로) 오름차순 정렬
-    inViewList.sort((a, b) => a.dist - b.dist);
-    outViewList.sort((a, b) => a.dist - b.dist);
-
-    // [최우선 순위 개선]: 화면 안에 적이 1기라도 있으면 오직 화면 안의 적들만 거리순으로 순환!
-    // 화면 안에 적이 아예 없을 때만 화면 밖의 적들을 거리순으로 순환
-    const targetPool = (inViewList.length > 0) ? inViewList : outViewList;
+    // 1순위: 화면에 보이는 적이 1기라도 있으면 오직 화면 내 적들만 순환
+    // 2순위: 화면에 적이 없을 때 전방 적들 순환
+    // 3순위: 전방에도 적이 없을 때만 후방 적들 순환
+    const targetPool = tier1.length > 0 ? tier1 : (tier2.length > 0 ? tier2 : tier3);
     if (targetPool.length === 0) return;
 
     const curPos = targetPool.findIndex(item => item.idx === gameState.lockedEnemyIndex);
     if (curPos === -1) {
-        // 현재 타깃이 화면 내에 없다면 -> 화면 내 가장 가까운 적(1순위)으로 즉각 포커싱
+        // 현재 잡고 있던 타깃이 해당 풀에 없다면 1순위(화면 내 가장 가까운 적)로 즉시 전환
         gameState.lockedEnemyIndex = targetPool[0].idx;
     } else {
-        // 화면 내 타깃들 사이에서 거리순으로 순환
+        // 동일 풀 내에서 거리순으로 다음 타깃 순환
         gameState.lockedEnemyIndex = targetPool[(curPos + 1) % targetPool.length].idx;
     }
 }

@@ -20,13 +20,15 @@ export function updatePlayerFlight(delta) {
     const cruiseSpd = playerFlight.cruiseSpeed; // 550 kts (THR 50% 기준 속도)
     const minSpd    = playerFlight.minSpeed;    // 150 kts (THR 0% 최저 실속 한계)
     const maxSpd    = playerFlight.maxSpeed;    // 950 kts (THR 100% 최대 애프터버너)
+    const accel     = playerFlight.acceleration;
+    const decel     = playerFlight.deceleration || accel;
 
     if (keys.throttleUp || padInput.throttleUp) {
-        // 가속: 점진적이고 적절한 증가 (초당 약 +85kts)
-        playerFlight.speed = Math.min(maxSpd, playerFlight.speed + delta * playerFlight.acceleration);
+        // 가속: 최대 속도까지 신속한 가속
+        playerFlight.speed = Math.min(maxSpd, playerFlight.speed + delta * accel);
     } else if (keys.throttleDown || padInput.throttleDown) {
-        // 감속: 점진적이고 적절한 감소 (초당 약 -85kts)
-        playerFlight.speed = Math.max(minSpd, playerFlight.speed - delta * playerFlight.acceleration);
+        // 감속: 에어브레이크를 통한 신속한 감속
+        playerFlight.speed = Math.max(minSpd, playerFlight.speed - delta * decel);
     } else {
         // 키를 떼면 평균 순항 속도(550kts, 50% THR)로 부드럽게 복귀
         const diff = cruiseSpd - playerFlight.speed;

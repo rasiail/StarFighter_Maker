@@ -38,6 +38,7 @@ export function calculateStats(build) {
         cruiseSpeed: b.cruiseSpeed + r.speed * cardEffectValue('speed', 'cruise_speed'),
         maxSpeed: b.maxSpeed + r.speed * cardEffectValue('speed', 'max_speed'),
         acceleration: b.acceleration + r.speed * cardEffectValue('speed', 'acceleration'),
+        deceleration: (b.deceleration || b.acceleration) + r.speed * cardEffectValue('speed', 'acceleration'),
         maxHealth: b.maxHealth + r.defense * cardEffectValue('defense', 'max_health'),
         damageMultiplier: (1 + r.power * cardEffectValue('power', 'damage_multiplier')) * (1 + (c.warhead || 0) * cardEffectValue('warhead', 'damage_multiplier')),
         lockRangeMultiplier: 1 + r.control * cardEffectValue('control', 'lock_range_multiplier'),

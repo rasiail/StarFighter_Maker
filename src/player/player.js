@@ -30,7 +30,7 @@ export function initPlayer() {
 
     gameState.cameraPivot.add(camera);
 
-    camera.position.set(0, 2.2, 12.5);
+    camera.position.set(0, 1.4, 6.25);
 
     camera.rotation.set(-0.13, 0, 0);
 

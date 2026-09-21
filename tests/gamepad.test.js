@@ -8,18 +8,32 @@ function pad(...buttons) {
     return { index: 0, id: 'Test controller', connected: true, mapping: 'standard', axes: [0, 0, 0, 0],
         buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: buttons.includes(i), value: buttons.includes(i) ? 1 : 0 })) };
 }
-test('Circle and L2 tap on release, hold at 180ms, and never tap after a hold', () => {
-    for (const button of [1, 6]) {
+test('Circle holds at 180ms and L2 holds at 280ms, and never tap after a hold', () => {
+    // Circle (button 1): 180ms
+    {
         const reader = createPadReader();
         reader.read(pad(), 0, 'combat');
-        assert.equal(reader.read(pad(button), 1, 'combat').hold[button], false);
-        assert.equal(reader.read(pad(), 1.17, 'combat').tap[button], true);
-        assert.equal(reader.read(pad(), 1.18, 'combat').tap[button], false);
-        reader.read(pad(button), 2, 'combat');
-        assert.equal(reader.read(pad(button), 2.181, 'combat').hold[button], true);
+        assert.equal(reader.read(pad(1), 1, 'combat').hold[1], false);
+        assert.equal(reader.read(pad(), 1.17, 'combat').tap[1], true);
+        assert.equal(reader.read(pad(), 1.18, 'combat').tap[1], false);
+        reader.read(pad(1), 2, 'combat');
+        assert.equal(reader.read(pad(1), 2.181, 'combat').hold[1], true);
         const release = reader.read(pad(), 3, 'combat');
-        assert.equal(release.tap[button], false);
-        assert.equal(release.hold[button], false);
+        assert.equal(release.tap[1], false);
+        assert.equal(release.hold[1], false);
+    }
+    // L2 (button 6): 280ms (increased by 0.1s)
+    {
+        const reader = createPadReader();
+        reader.read(pad(), 0, 'combat');
+        assert.equal(reader.read(pad(6), 1, 'combat').hold[6], false);
+        assert.equal(reader.read(pad(), 1.27, 'combat').tap[6], true);
+        assert.equal(reader.read(pad(), 1.28, 'combat').tap[6], false);
+        reader.read(pad(6), 2, 'combat');
+        assert.equal(reader.read(pad(6), 2.281, 'combat').hold[6], true);
+        const release = reader.read(pad(), 3, 'combat');
+        assert.equal(release.tap[6], false);
+        assert.equal(release.hold[6], false);
     }
 });
 test('Connection, context changes and reset suppress held buttons until released', () => {
@@ -60,14 +74,14 @@ test('Runtime mapping, pause, disconnect and API failure clear only controller i
         current = pad(7, 3, 4, 1, 6);
         current.axes = [1, -1, 0, 0];
         updateGamepad(0.016, 1);
-        updateGamepad(0.016, 1.2);
+        updateGamepad(0.016, 1.3);
         assert.deepEqual(padInput, { pitch: -1, roll: -1, yaw: 1, throttleUp: true, throttleDown: true, fireCannon: true, targetCam: true });
         gameState.isGamePaused = true;
-        updateGamepad(0.016, 1.3);
+        updateGamepad(0.016, 1.4);
         assert.equal(padInput.fireCannon, false);
         assert.equal(padInput.throttleUp, false);
         gameState.isGamePaused = false;
-        updateGamepad(0.016, 1.4);
+        updateGamepad(0.016, 1.5);
         assert.equal(padInput.fireCannon, false);
         current = null;
         updateGamepad(0.016, 2);
