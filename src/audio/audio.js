@@ -338,6 +338,26 @@ class SoundEngine {
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
     }
+
+    playCardSelect() {
+        if (!this.initialized || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(880.00, now + 0.06); // A5
+
+        // 스킬카드 선택 SFX 음량 30% (귀에 자극적이지 않고 산뜻한 피드백)
+        const vol = 0.3 * 0.22;
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(gain);
+        gain.connect(this.masterSfxGain);
+        osc.start(now);
+        osc.stop(now + 0.18);
+    }
 }
 
 export function initAudio() {

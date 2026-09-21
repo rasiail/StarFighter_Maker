@@ -5,6 +5,7 @@ import { drawCards, cardRank } from '../progression/cards.js';
 import { STAT_NAMES, xpToNextLevel } from '../progression/model.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
 import { clearCombatInput } from '../input/controls.js';
+import { audio } from '../audio/audio.js';
 
 let offered = [];
 export function refreshProgressionUI() {
@@ -38,6 +39,7 @@ function renderChoices() {
         button.addEventListener('click', event => {
             event.stopPropagation();
             if (gameState.activeModal !== 'cards' || !button.isConnected) return;
+            audio.playCardSelect();
             chooseUpgrade(card.id, offered);
             if (progression.pending > 0) renderChoices();
             else {

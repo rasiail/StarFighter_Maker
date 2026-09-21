@@ -4,19 +4,19 @@ export const BALANCE = deepFreeze({
   "levels": [
     {
       "currentLevel": 1,
-      "xpToNext": 300
+      "xpToNext": 60
     },
     {
       "currentLevel": 2,
-      "xpToNext": 413
+      "xpToNext": 150
     },
     {
       "currentLevel": 3,
-      "xpToNext": 525
+      "xpToNext": 300
     },
     {
       "currentLevel": 4,
-      "xpToNext": 638
+      "xpToNext": 500
     },
     {
       "currentLevel": 5,
