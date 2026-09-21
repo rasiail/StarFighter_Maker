@@ -42,6 +42,7 @@ export function calculateStats(build) {
         damageMultiplier: (1 + r.power * cardEffectValue('power', 'damage_multiplier')) * (1 + (c.warhead || 0) * cardEffectValue('warhead', 'damage_multiplier')),
         lockRangeMultiplier: 1 + r.control * cardEffectValue('control', 'lock_range_multiplier'),
         missileTurnMultiplier: 1 + r.control * cardEffectValue('control', 'missile_turn_multiplier') + (c.guidance || 0) * cardEffectValue('guidance', 'missile_turn_multiplier'),
+        smartAssistMultiplier: 1 + (c.smartAim || 0) * cardEffectValue('smartAim', 'smart_assist_multiplier'),
         multiLockCount: Math.min(8, b.multiLockCount + (c.multiSalvo || 0) * cardEffectValue('multiSalvo', 'multi_lock_count')),
         stdMaxBursts: b.stdMaxBursts + (c.standardRack || 0) * cardEffectValue('standardRack', 'standard_ready_slots'),
         multiMaxBursts: b.multiMaxBursts + (c.multiRack || 0) * cardEffectValue('multiRack', 'multi_ready_slots'),

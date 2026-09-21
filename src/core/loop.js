@@ -8,7 +8,7 @@ import { updateProjectiles } from '../combat/projectiles.js';
 import { updateCamera } from '../camera/camera.js';
 import { renderHUD } from '../ui/hud.js';
 import { setupStageEnvironment, skyMesh } from '../world/environment.js';
-import { playerMesh } from '../player/player.js';
+import { playerMesh, playerFlight } from '../player/player.js';
 import { retroPostCamera, retroPostScene, retroRenderTarget } from '../rendering/retro.js';
 import { camera, renderer, scene } from '../rendering/scene.js';
 import { loadFBXAsset } from '../assets/aircraft.js';
@@ -17,10 +17,45 @@ import { updateTargeting } from '../combat/targeting.js';
 import { updateMission } from '../game/missions.js';
 import { updateCombatSchedule } from './scheduler.js';
 
+import { keys } from '../input/state.js';
+
 let clock;
+
+import { triggerExplosion } from '../effects/particles.js';
 
 export function stepSimulation(delta) {
     if (!gameState.isGameRunning || gameState.isGamePaused) return;
+    gameState.isFiringGun = keys.fireCannon;
+
+    if (gameState.isPlayerDead) {
+        gameState.deathTimer -= delta;
+        
+        // 연쇄 폭발 효과
+        if (Math.random() < 0.3) {
+            triggerExplosion(playerMesh.position.clone().add(new THREE.Vector3((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10)), 12, 1.5);
+            audio.playExplosion();
+        }
+
+        if (gameState.deathTimer <= 0) {
+            import('../game/missions.js').then(m => m.gameOver(false));
+            gameState.isPlayerDead = false;
+        }
+
+        // 관성으로 계속 전진
+        const forwardSpeedMps = playerFlight.speed * 0.514444;
+        playerMesh.translateZ(-forwardSpeedMps * delta);
+
+        updateEnemies(delta);
+        updateSinkingShips(delta);
+        updateProjectiles(delta);
+        updateCombatSchedule(delta);
+        updateMission(delta);
+        updateCamera(delta);
+        gameState.jetExhaustSystem?.update(delta);
+        skyMesh.position.copy(playerMesh.position);
+        return;
+    }
+
     updatePlayerFlight(delta);
     if (!gameState.isGameRunning) return;
     updateEnemies(delta);

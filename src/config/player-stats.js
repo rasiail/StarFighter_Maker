@@ -17,6 +17,7 @@ export const PLAYER_BASE_STATS = Object.freeze({
     stabilityMultiplier: 1,
     lockRangeMultiplier: 1,
     missileTurnMultiplier: 1,
+    smartAssistMultiplier: 1.0,
     multiLockCount: 4,
     stdMaxBursts: standardMissile.readySlots,
     multiMaxBursts: multiMissile.readySlots,

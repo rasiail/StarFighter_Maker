@@ -279,11 +279,35 @@ export function renderHUD() {
                 const bsX = (boresightProj.x * 0.5 + 0.5) * hudCanvas.width;
                 const bsY = (-(boresightProj.y * 0.5) + 0.5) * hudCanvas.height;
 
-                // ── SHOOT 판정: 보어사이트 원이 예측 탄착점 근처에 있는지 ──────
-                // aimDistPx < shootThreshold 이면 맞는 각도 — 판정을 충분히 넉넉하게
-                const aimDistPx = Math.hypot(bsX - ppX, bsY - ppY);
-                const shootThreshold = 55; // 넉넉한 판정 반경 (px)
-                const isAimAligned = (aimDistPx < shootThreshold && pipperProj.z < 1.0);
+                let smartAssistRadius = 35 * (playerFlight.smartAssistMultiplier || 1.0);
+                let snappedX = bsX;
+                let snappedY = bsY;
+                let isAimAligned = false;
+
+                if (gameState.isSmartGunEnabled) {
+                    const distToCenter = Math.hypot(bsX - ppX, bsY - ppY);
+                    if (distToCenter <= smartAssistRadius && pipperProj.z < 1.0) {
+                        isAimAligned = true;
+                        if (gameState.isFiringGun) {
+                            snappedX = ppX;
+                            snappedY = ppY;
+                        }
+                    }
+                    
+                    hudCtx.save();
+                    hudCtx.setLineDash([6, 6]);
+                    hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.4)';
+                    hudCtx.lineWidth = 1.2;
+                    hudCtx.beginPath();
+                    hudCtx.arc(bsX, bsY, smartAssistRadius, 0, Math.PI * 2);
+                    hudCtx.stroke();
+                    hudCtx.restore();
+                } else {
+                    const aimDistPx = Math.hypot(bsX - ppX, bsY - ppY);
+                    const shootThreshold = 55;
+                    isAimAligned = (aimDistPx < shootThreshold && pipperProj.z < 1.0);
+                }
+
                 gameState.isGunAimOnTarget = isAimAligned;
 
                 hudCtx.save();
@@ -299,12 +323,12 @@ export function renderHUD() {
                 // 외부 원형 링
                 hudCtx.lineWidth = isAimAligned ? 3.2 : 2.0;
                 hudCtx.beginPath();
-                hudCtx.arc(bsX, bsY, pipperRadius, 0, Math.PI * 2);
+                hudCtx.arc(snappedX, snappedY, pipperRadius, 0, Math.PI * 2);
                 hudCtx.stroke();
 
                 // 중앙 도트
                 hudCtx.beginPath();
-                hudCtx.arc(bsX, bsY, isAimAligned ? 3.5 : 2.5, 0, Math.PI * 2);
+                hudCtx.arc(snappedX, snappedY, isAimAligned ? 3.5 : 2.5, 0, Math.PI * 2);
                 hudCtx.fill();
 
                 // 4방향 외곽 틱 마크
@@ -312,10 +336,10 @@ export function renderHUD() {
                 const tickOuter = pipperRadius + 9;
                 hudCtx.lineWidth = isAimAligned ? 2.5 : 1.8;
                 hudCtx.beginPath();
-                hudCtx.moveTo(bsX, bsY - tickInner); hudCtx.lineTo(bsX, bsY - tickOuter);
-                hudCtx.moveTo(bsX, bsY + tickInner); hudCtx.lineTo(bsX, bsY + tickOuter);
-                hudCtx.moveTo(bsX - tickInner, bsY); hudCtx.lineTo(bsX - tickOuter, bsY);
-                hudCtx.moveTo(bsX + tickInner, bsY); hudCtx.lineTo(bsX + tickOuter, bsY);
+                hudCtx.moveTo(snappedX, snappedY - tickInner); hudCtx.lineTo(snappedX, snappedY - tickOuter);
+                hudCtx.moveTo(snappedX, snappedY + tickInner); hudCtx.lineTo(snappedX, snappedY + tickOuter);
+                hudCtx.moveTo(snappedX - tickInner, snappedY); hudCtx.lineTo(snappedX - tickOuter, snappedY);
+                hudCtx.moveTo(snappedX + tickInner, snappedY); hudCtx.lineTo(snappedX + tickOuter, snappedY);
                 hudCtx.stroke();
 
                 // 잔여 거리 아크 게이지 (GUN_RANGE 기준, 가까울수록 아크 채워짐)
@@ -323,7 +347,7 @@ export function renderHUD() {
                 hudCtx.lineWidth = 3.0;
                 hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : 'rgba(77, 245, 138, 0.75)';
                 hudCtx.beginPath();
-                hudCtx.arc(bsX, bsY, pipperRadius - 5,
+                hudCtx.arc(snappedX, snappedY, pipperRadius - 5,
                     -Math.PI * 0.5,
                     -Math.PI * 0.5 + Math.PI * 2 * (1 - rangeRatio));
                 hudCtx.stroke();
@@ -337,17 +361,17 @@ export function renderHUD() {
                         hudCtx.font = 'bold 15px "Share Tech Mono", monospace';
                         hudCtx.shadowBlur = 20;
                         hudCtx.shadowColor = '#ff2233';
-                        hudCtx.fillText('SHOOT', bsX, bsY - pipperRadius - 12);
+                        hudCtx.fillText('SHOOT', snappedX, snappedY - pipperRadius - 12);
                     }
                     hudCtx.shadowBlur = 0;
                     hudCtx.fillStyle = '#ff6677';
                     hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
-                    hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, bsX, bsY + pipperRadius + 17);
+                    hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, snappedX, snappedY + pipperRadius + 17);
                 } else {
                     hudCtx.shadowBlur = 0;
                     hudCtx.fillStyle = '#4df58a';
                     hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
-                    hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, bsX, bsY + pipperRadius + 17);
+                    hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, snappedX, snappedY + pipperRadius + 17);
                 }
 
                 hudCtx.restore();
@@ -398,7 +422,7 @@ function drawRadar(w, h, lockedIdx) {
 
     hudCtx.save();
 
-    // Radar background (Tactical circular sweep)
+    // 1. Radar background (Tactical circular sweep)
     hudCtx.beginPath();
     hudCtx.arc(rx, ry, radarSize, 0, Math.PI * 2);
     hudCtx.fillStyle = 'rgba(10, 25, 20, 0.65)';
@@ -407,33 +431,61 @@ function drawRadar(w, h, lockedIdx) {
     hudCtx.lineWidth = 1.2;
     hudCtx.stroke();
 
-    // Range rings
+    // 2. Range rings (Outer: 5000m, Middle: 3000m / 60%, Inner: 1500m / 30%)
     hudCtx.beginPath();
-    hudCtx.arc(rx, ry, radarSize * 0.5, 0, Math.PI * 2);
+    hudCtx.arc(rx, ry, radarSize * 0.6, 0, Math.PI * 2);
     hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.2)';
     hudCtx.stroke();
 
-    // Compass labels (N, E, S, W)
+    hudCtx.beginPath();
+    hudCtx.arc(rx, ry, radarSize * 0.3, 0, Math.PI * 2);
+    hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.12)';
+    hudCtx.stroke();
+
+    // 3. True 6-DOF horizontal forward & right vectors from quaternion
+    const vForward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+    const fLen = Math.hypot(vForward.x, vForward.z);
+    let fwdX, fwdZ;
+
+    if (fLen > 0.02) {
+        fwdX = vForward.x / fLen;
+        fwdZ = vForward.z / fLen;
+    } else {
+        // Fallback when pitching 90 deg vertically up/down
+        const vUp = new THREE.Vector3(0, 1, 0).applyQuaternion(playerMesh.quaternion);
+        const uLen = Math.hypot(vUp.x, vUp.z);
+        if (uLen > 0.02) {
+            fwdX = (vForward.y > 0 ? -vUp.x : vUp.x) / uLen;
+            fwdZ = (vForward.y > 0 ? -vUp.z : vUp.z) / uLen;
+        } else {
+            fwdX = 0;
+            fwdZ = -1;
+        }
+    }
+    const rightX = -fwdZ;
+    const rightZ = fwdX;
+
+    // 4. Compass labels (N, E, S, W) rotating dynamically with true heading
     hudCtx.fillStyle = 'rgba(77, 245, 138, 0.9)';
     hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
     hudCtx.textAlign = 'center';
     hudCtx.textBaseline = 'middle';
-    const playerYaw = playerMesh.rotation.y;
     const dirs = [
         { t: 'N', x: 0, z: -1 },
         { t: 'E', x: 1, z: 0 },
         { t: 'S', x: 0, z: 1 },
         { t: 'W', x: -1, z: 0 }
     ];
+    const lblDist = radarSize - 10;
     dirs.forEach(d => {
-        const rotX = d.x * Math.cos(playerYaw) - d.z * Math.sin(playerYaw);
-        const rotZ = d.x * Math.sin(playerYaw) + d.z * Math.cos(playerYaw);
-        const mapX = rx + rotX * (radarSize - 9);
-        const mapY = ry + rotZ * (radarSize - 9);
+        const dirForward = d.x * fwdX + d.z * fwdZ;
+        const dirRight = d.x * rightX + d.z * rightZ;
+        const mapX = rx + dirRight * lblDist;
+        const mapY = ry - dirForward * lblDist;
         hudCtx.fillText(d.t, mapX, mapY);
     });
 
-    // Radar sweep line (회전하는 녹색 탐색선)
+    // 5. Radar sweep line (회전하는 녹색 탐색선)
     const sweepAngle = (performance.now() * 0.002) % (Math.PI * 2);
     hudCtx.beginPath();
     hudCtx.moveTo(rx, ry);
@@ -441,22 +493,25 @@ function drawRadar(w, h, lockedIdx) {
     hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.35)';
     hudCtx.stroke();
 
-    // Center ownship crosshair (내 전투기)
-    hudCtx.fillStyle = '#4df58a';
-    hudCtx.fillRect(rx - 1.5, ry - 5, 3, 10);
-    hudCtx.fillRect(rx - 5, ry - 1.5, 10, 3);
-
-    // Forward FOV cone (전투기 기수 전방 락온 콘 가이드 표시)
+    // 6. Forward FOV cone (실제 미사일 락온 콘 각도 dot > 0.80 = 36.9도와 100% 일치)
+    const lockConeHalfAngle = Math.acos(0.80);
     hudCtx.beginPath();
     hudCtx.moveTo(rx, ry);
-    hudCtx.lineTo(rx - 25, ry - radarSize);
-    hudCtx.lineTo(rx + 25, ry - radarSize);
+    hudCtx.arc(rx, ry, radarSize, -Math.PI / 2 - lockConeHalfAngle, -Math.PI / 2 + lockConeHalfAngle);
     hudCtx.closePath();
-    hudCtx.fillStyle = 'rgba(77, 245, 138, 0.06)';
+    hudCtx.fillStyle = 'rgba(77, 245, 138, 0.08)';
     hudCtx.fill();
+    hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.25)';
+    hudCtx.lineWidth = 1;
+    hudCtx.stroke();
 
-    // Rotate relative to player heading
-    const radarRange = 6000;
+    // 7. Center ownship crosshair (내 전투기)
+    hudCtx.fillStyle = '#4df58a';
+    hudCtx.fillRect(rx - 1.5, ry - 6, 3, 12);
+    hudCtx.fillRect(rx - 6, ry - 1.5, 12, 3);
+
+    // 8. Plot enemies relative to player position and heading
+    const radarRange = 5000;
     const now = performance.now();
 
     enemies.forEach((enemy, idx) => {
@@ -464,15 +519,15 @@ function drawRadar(w, h, lockedIdx) {
         const relX = enemy.mesh.position.x - playerMesh.position.x;
         const relZ = enemy.mesh.position.z - playerMesh.position.z;
 
-        // Rotate coordinates by player yaw
-        const rotX = relX * Math.cos(playerYaw) - relZ * Math.sin(playerYaw);
-        const rotZ = relX * Math.sin(playerYaw) + relZ * Math.cos(playerYaw);
+        // Project onto player's relative forward & right axes
+        const dotForward = relX * fwdX + relZ * fwdZ;
+        const dotRight = relX * rightX + relZ * rightZ;
 
-        const mapX = rx + (rotX / radarRange) * radarSize;
-        const mapY = ry + (rotZ / radarRange) * radarSize;
+        const mapX = rx + (dotRight / radarRange) * radarSize;
+        const mapY = ry - (dotForward / radarRange) * radarSize;
 
         // Clip to circle
-        if (Math.hypot(mapX - rx, mapY - ry) < radarSize) {
+        if (Math.hypot(mapX - rx, mapY - ry) <= radarSize) {
             const isTarget = (idx === lockedIdx);
             const isGround = enemy.isGround;
             const isShip = enemy.isShip;

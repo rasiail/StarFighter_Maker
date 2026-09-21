@@ -153,6 +153,8 @@ export function launchStage(stageId, { newRun = true } = {}) {
     gameState.cameraPivot?.rotation.set(0, 0, 0);
     gameState.isGameRunning = true;
     gameState.isGamePaused = false;
+    gameState.isPlayerDead = false;
+    playerMesh.visible = true;
     beginWave();
     playerMesh.updateMatrixWorld(true);
     updateTargeting();
@@ -171,7 +173,13 @@ export function departHangar() {
     else gameOver(true);
 }
 export function initMissions() {
-    gameEvents.on(EVENTS.PLAYER_DESTROYED, () => { if (gameState.isGameRunning) gameOver(false); });
+    gameEvents.on(EVENTS.PLAYER_DESTROYED, () => {
+        if (gameState.isGameRunning && !gameState.isPlayerDead) {
+            gameState.isPlayerDead = true;
+            gameState.deathTimer = 3.0;
+            playerMesh.visible = false;
+        }
+    });
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ isBoss }) => {
         if (encounter && gameState.isGameRunning) recordEncounterKill(encounter, isBoss);
     });

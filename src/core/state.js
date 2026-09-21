@@ -18,4 +18,8 @@ export const gameState = {
     cameraPivot: null,
     jetExhaustSystem: null,
     controlScheme: 'standard',
+    isSmartGunEnabled: true,
+    isFiringGun: false,
+    isPlayerDead: false,
+    deathTimer: 0,
 };

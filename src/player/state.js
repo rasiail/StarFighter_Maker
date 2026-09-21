@@ -20,9 +20,11 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
         stdBursts: effectiveStats.stdMaxBursts,
         stdShotCooldown: 0,
         stdReloadTimers: [],
+        stdReloadDebt: 0,
         multiBursts: effectiveStats.multiMaxBursts,
         multiShotCooldown: 0,
         multiReloadTimers: [],
+        multiReloadDebt: 0,
     };
 }
 
@@ -33,8 +35,10 @@ export function replenishPlayerForSortie(flight) {
     flight.health = flight.maxHealth;
     flight.stdBursts = flight.stdMaxBursts;
     flight.stdReloadTimers = [];
+    flight.stdReloadDebt = 0;
     flight.multiBursts = flight.multiMaxBursts;
     flight.multiReloadTimers = [];
+    flight.multiReloadDebt = 0;
     flight.targetSpeed = flight.cruiseSpeed;
     flight.pitchRate = flight.rollRate = flight.yawRate = 0;
     flight.cannonCooldown = flight.stdShotCooldown = flight.multiShotCooldown = 0;

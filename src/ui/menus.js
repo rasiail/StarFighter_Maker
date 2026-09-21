@@ -122,6 +122,14 @@ export function initMenus() {
         });
     }
 
+    const optSmartGun = document.getElementById('opt-smart-gun');
+    if (optSmartGun) {
+        optSmartGun.checked = gameState.isSmartGunEnabled;
+        optSmartGun.addEventListener('change', (e) => {
+            gameState.isSmartGunEnabled = e.target.checked;
+        });
+    }
+
 
     document.getElementById('btn-sortie').addEventListener('click', () => {
         audio.init();

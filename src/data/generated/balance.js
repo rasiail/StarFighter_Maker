@@ -482,7 +482,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "피치·롤·요 최대 회전속도 +8%",
       "effects": [
         {
           "effectKey": "max_pitch_rate_multiplier",
@@ -512,7 +511,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "회전 정리·역입력 응답 +15%",
       "effects": [
         {
           "effectKey": "stability_multiplier",
@@ -530,7 +528,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "순항 +20 / 최고 +40 kts · 가속 +8",
       "effects": [
         {
           "effectKey": "cruise_speed",
@@ -560,7 +557,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "최대 체력 +20 · 증가분 회복",
       "effects": [
         {
           "effectKey": "max_health",
@@ -578,7 +574,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "기본 무기 피해 배율 +10%",
       "effects": [
         {
           "effectKey": "damage_multiplier",
@@ -596,7 +591,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": true,
-      "descriptionKo": "락온 거리 +10% · 유도 선회 +8%",
       "effects": [
         {
           "effectKey": "lock_range_multiplier",
@@ -620,7 +614,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 3,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "표준 미사일 탄창 +4발",
       "effects": [
         {
           "effectKey": "standard_ready_slots",
@@ -638,7 +631,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 3,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "멀티 미사일 탄창 +2발",
       "effects": [
         {
           "effectKey": "multi_ready_slots",
@@ -656,7 +648,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 5,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "두 미사일의 기본 재장전 시간 -10%",
       "effects": [
         {
           "effectKey": "missile_reload_multiplier",
@@ -674,7 +665,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 3,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "화력 보정 후 무기 피해 +10% · 화력 3 필요",
       "effects": [
         {
           "effectKey": "damage_multiplier",
@@ -699,7 +689,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 3,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "미사일 유도 선회 성능 +15% · 관제력 3 필요",
       "effects": [
         {
           "effectKey": "missile_turn_multiplier",
@@ -723,7 +712,6 @@ export const BALANCE = deepFreeze({
       "category": "fallback",
       "drawWeight": 0,
       "isStat": false,
-      "descriptionKo": "체력 30% 회복 · 점수 +500",
       "effects": [
         {
           "effectKey": "health_restore",
@@ -747,7 +735,6 @@ export const BALANCE = deepFreeze({
       "maxRank": 2,
       "drawWeight": 100,
       "isStat": false,
-      "descriptionKo": "멀티 동시 락온·발사 +2 (4→6→8발) · 관제력 2 필요",
       "effects": [
         {
           "effectKey": "multi_lock_count",
@@ -764,6 +751,23 @@ export const BALANCE = deepFreeze({
           "value": 2
         }
       ]
+    },
+    {
+      "cardId": "smartAim",
+      "displayNameKo": "스마트 에임 확장",
+      "category": "equipment",
+      "maxRank": 3,
+      "drawWeight": 100,
+      "isStat": false,
+      "effects": [
+        {
+          "effectKey": "smart_assist_multiplier",
+          "operation": "add_per_rank",
+          "value": 0.2,
+          "unitOrRule": "ratio"
+        }
+      ],
+      "conditions": []
     }
   ]
 });

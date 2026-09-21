@@ -59,7 +59,8 @@ export function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
     // 에이스컴뱃 스타일 기총 유효 에임(Gun Lead Pipper) 정렬 시 탄도 수렴 보정
     if (isPlayer && gameState.isGunAimOnTarget && gameState.currentGunLeadPredictedPos) {
         const toLead = gameState.currentGunLeadPredictedPos.clone().sub(spawnPos).normalize();
-        forward.lerp(toLead, 0.42).normalize();
+        const magnetism = gameState.isSmartGunEnabled ? 1.0 : 0.42;
+        forward.lerp(toLead, magnetism).normalize();
         bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), forward);
     }
 
