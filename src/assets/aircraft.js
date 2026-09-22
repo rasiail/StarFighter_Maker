@@ -20,6 +20,16 @@ export let su307ModelTemplate;
 export let isSu307Ready = false;
 export let su307PbrMat;
 
+export let migFishModelTemplate;
+export let isMigFishReady = false;
+export let migFishPbrMat;
+
+export const MECHA_FISH_ASSET = 'Enemy/MechaFish/Mecha_Fish/Mecha_Fish';
+export let mechaFishModelTemplate;
+export let isMechaFishReady = false;
+export let mechaFishPbrMat;
+let enemyAssetsRequested = false;
+const pendingBossModels = new Set();
 export let isFBXReady;
 
 function base64ToArrayBuffer(base64) {
@@ -236,72 +246,55 @@ export function createF104Mesh(isEnemy = false) {
     group.colliderRadius = 3.5;
     return group;
 }
+function loadEnemyAssets() {
+    if (enemyAssetsRequested || typeof THREE.FBXLoader === 'undefined') return;
+    enemyAssetsRequested = true;
+    const loader = new THREE.FBXLoader();
+    loader.load('Enemy/Su307/Su307.fbx', fbx => {
+        su307ModelTemplate = processFBXTemplate(fbx);
+        su307ModelTemplate.scale.setScalar(1.2);
+        isSu307Ready = true;
+    }, undefined, err => console.warn('Su307 FBX load failed:', err));
+    loader.load('Enemy/MigFish/MigFish.fbx', fbx => {
+        migFishModelTemplate = processFBXTemplate(fbx);
+        isMigFishReady = true;
+    }, undefined, err => console.warn('MigFish FBX load failed:', err));
+    loader.load(MECHA_FISH_ASSET + '.fbx', fbx => {
+        mechaFishModelTemplate = processFBXTemplate(fbx);
+        for (const group of pendingBossModels) populateMechaFish(group);
+        pendingBossModels.clear();
+    }, undefined, err => {
+        console.warn('MechaFish FBX load failed; retaining fallback:', err);
+        pendingBossModels.clear();
+    });
+}
+
 export function loadFBXAsset() {
-    if (isFBXReady) {
+    // Enemy assets must load even when F104 came from embedded data or fails.
+    loadEnemyAssets();
+    if (isFBXReady || typeof THREE.FBXLoader === 'undefined') {
         finalizeAssetLoading();
         return;
     }
-
     const btn = document.getElementById('btn-sortie');
     if (btn) {
-        btn.textContent = "LOADING 3D F104 MODEL...";
-        btn.style.opacity = "0.7";
-        btn.style.pointerEvents = "none";
+        btn.textContent = 'LOADING 3D F104 MODEL...';
+        btn.style.opacity = '0.7';
+        btn.style.pointerEvents = 'none';
     }
-
-    if (typeof THREE.FBXLoader === 'undefined') {
-        console.warn('FBXLoader is not available. Using procedural models.');
+    new THREE.FBXLoader().load('F104/F104.fbx', fbx => {
+        fbxModelTemplate = processFBXTemplate(fbx);
+        isFBXReady = true;
+        refreshPlayerMesh();
         finalizeAssetLoading();
-        return;
-    }
-
-    const loader = new THREE.FBXLoader();
-    loader.load(
-        'F104/F104.fbx',
-        (fbx) => {
-            console.log('F104 FBX loaded successfully from file');
-            fbxModelTemplate = processFBXTemplate(fbx);
-            isFBXReady = true;
-            refreshPlayerMesh();
-            finalizeAssetLoading();
-    loader.load(
-        'Enemy/Su307/Su307.fbx',
-        (fbx) => {
-            console.log('Su307 FBX loaded successfully');
-            su307ModelTemplate = processFBXTemplate(fbx);
-            // Size up by 1.2x
-            su307ModelTemplate.scale.set(1.2, 1.2, 1.2);
-            isSu307Ready = true;
-        },
-        undefined,
-        (err) => console.warn('Su307 FBX load failed:', err)
-    );
-
-        },
-        (xhr) => {
-            if (xhr.lengthComputable && xhr.total > 0) {
-                const pct = Math.round((xhr.loaded / xhr.total) * 100);
-                if (btn) btn.textContent = `LOADING 3D MODEL... (${pct}%)`;
-            }
-        },
-        (err) => {
-            console.warn('FBX file load failed, falling back to procedural model:', err);
-            isFBXReady = false;
-    const suBaseTex = textureLoader.load('Enemy/Su307/Su307_texture.png');
-    suBaseTex.encoding = THREE.sRGBEncoding;
-    su307PbrMat = new THREE.MeshStandardMaterial({
-        map: suBaseTex,
-        roughnessMap: textureLoader.load('Enemy/Su307/Su307_texture_roughness.png'),
-        metalnessMap: textureLoader.load('Enemy/Su307/Su307_texture_metallic.png'),
-        normalMap: textureLoader.load('Enemy/Su307/Su307_texture_normal.png'),
-        normalScale: new THREE.Vector2(2.5, 2.5),
-        roughness: 0.70,
-        metalness: 0.15
-    });
-
-            finalizeAssetLoading();
+    }, xhr => {
+        if (btn && xhr.lengthComputable && xhr.total > 0) {
+            btn.textContent = 'LOADING 3D MODEL... (' + Math.round(xhr.loaded / xhr.total * 100) + '%)';
         }
-    );
+    }, err => {
+        console.warn('F104 FBX load failed; retaining fallback:', err);
+        finalizeAssetLoading();
+    });
 }
 function finalizeAssetLoading() {
     const btn = document.getElementById('btn-sortie');
@@ -333,6 +326,20 @@ function refreshPlayerMesh() {
 
 export function initAircraft() {
     textureLoader = new THREE.TextureLoader();
+    enemyAssetsRequested = false;
+    mechaFishModelTemplate = null;
+    pendingBossModels.clear();
+    const bossBase = textureLoader.load(MECHA_FISH_ASSET + '_texture.png');
+    bossBase.encoding = THREE.sRGBEncoding;
+    mechaFishPbrMat = new THREE.MeshStandardMaterial({
+        map: bossBase,
+        roughnessMap: textureLoader.load(MECHA_FISH_ASSET + '_texture_roughness.png'),
+        metalnessMap: textureLoader.load(MECHA_FISH_ASSET + '_texture_metallic.png'),
+        normalMap: textureLoader.load(MECHA_FISH_ASSET + '_texture_normal.png'),
+        normalScale: new THREE.Vector2(2.5, 2.5),
+        roughness: 0.70,
+        metalness: 0.15,
+    });
 
     hasEmbeddedData = typeof window.F104_DATA !== 'undefined' && window.F104_DATA.fbx;
 
@@ -384,6 +391,18 @@ export function initAircraft() {
         roughnessMap: textureLoader.load('Enemy/Su307/Su307_texture_roughness.png'),
         metalnessMap: textureLoader.load('Enemy/Su307/Su307_texture_metallic.png'),
         normalMap: textureLoader.load('Enemy/Su307/Su307_texture_normal.png'),
+        normalScale: new THREE.Vector2(2.5, 2.5),
+        roughness: 0.70,
+        metalness: 0.15
+    });
+
+    const migBaseTex = textureLoader.load('Enemy/MigFish/MigFish_texture.png');
+    migBaseTex.encoding = THREE.sRGBEncoding;
+    migFishPbrMat = new THREE.MeshStandardMaterial({
+        map: migBaseTex,
+        roughnessMap: textureLoader.load('Enemy/MigFish/MigFish_texture_roughness.png'),
+        metalnessMap: textureLoader.load('Enemy/MigFish/MigFish_texture_metallic.png'),
+        normalMap: textureLoader.load('Enemy/MigFish/MigFish_texture_normal.png'),
         normalScale: new THREE.Vector2(2.5, 2.5),
         roughness: 0.70,
         metalness: 0.15
@@ -449,5 +468,97 @@ export function createEliteMesh() {
         group.baseGlow = proc.baseGlow;
     }
     group.colliderRadius = 3.5 * 1.2;
+    return group;
+}
+
+export function createMigFishMesh() {
+    const group = new THREE.Group();
+    if (isMigFishReady && migFishModelTemplate) {
+        const modelClone = migFishModelTemplate.clone(true);
+        modelClone.traverse(child => {
+            if (child.isMesh) {
+                child.material = migFishPbrMat;
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.geometry) child.geometry.computeVertexNormals();
+            }
+        });
+        group.add(modelClone);
+
+        group.baseGlows = [];
+        let dummyFound = false;
+        modelClone.updateMatrixWorld(true);
+        modelClone.traverse(child => {
+            if (child.name && child.name.toLowerCase().includes('dummy_exhaust')) {
+                const pos = new THREE.Vector3();
+                pos.setFromMatrixPosition(child.matrixWorld);
+                const fx = createEngineEffects(pos.z, pos.y);
+                fx.group.position.x = pos.x;
+                group.add(fx.group);
+                group.baseGlows.push(fx.baseGlow);
+                dummyFound = true;
+            }
+        });
+
+        if (!dummyFound) {
+            // exhaust pos for MigFish scaled similarly to F104
+            const fx = createEngineEffects(4.55, -0.38);
+            group.add(fx.group);
+            group.baseGlows.push(fx.baseGlow);
+        }
+        group.baseGlow = group.baseGlows[0];
+    } else {
+        // Fallback procedural
+        const proc = createProceduralF104Mesh(true);
+        group.add(proc);
+        group.baseGlow = proc.baseGlow;
+    }
+    group.colliderRadius = 3.5;
+    return group;
+}
+
+function populateMechaFish(group) {
+    while (group.children.length) group.remove(group.children[0]);
+    const model = mechaFishModelTemplate.clone(true);
+    model.traverse(child => {
+        if (!child.isMesh) return;
+        child.material = mechaFishPbrMat;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        // Reuse FBX normals where supplied, avoiding per-boss shared geometry edits.
+        if (child.geometry && !child.geometry.attributes.normal) child.geometry.computeVertexNormals();
+    });
+    group.add(model);
+    group.baseGlows = [];
+    // Convert authored exhaust helpers into the local frame, including on late loads.
+    group.updateMatrixWorld(true);
+    model.traverse(child => {
+        if (!child.name?.toLowerCase().includes('dummy_exhaust')) return;
+        const pos = group.worldToLocal(child.getWorldPosition(new THREE.Vector3()));
+        const fx = createEngineEffects(pos.z, pos.y);
+        fx.group.position.x = pos.x;
+        group.add(fx.group);
+        group.baseGlows.push(fx.baseGlow);
+    });
+    if (!group.baseGlows.length) {
+        const fx = createEngineEffects(mechaFishModelTemplate.exhaustZ, -0.38);
+        group.add(fx.group);
+        group.baseGlows.push(fx.baseGlow);
+    }
+    group.baseGlow = group.baseGlows[0];
+    group.userData.model = 'MechaFish';
+}
+
+export function createMechaFishMesh() {
+    const group = new THREE.Group();
+    // Same centered, 9 m local template as F104; fleet applies boss scale x9 (81 m).
+    group.colliderRadius = 3.5;
+    if (mechaFishModelTemplate) populateMechaFish(group);
+    else {
+        const fallback = createProceduralF104Mesh(true);
+        group.add(fallback);
+        group.baseGlow = fallback.baseGlow;
+        pendingBossModels.add(group);
+    }
     return group;
 }

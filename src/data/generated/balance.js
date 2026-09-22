@@ -298,7 +298,7 @@ export const BALANCE = deepFreeze({
       "displayNameKo": "적 기관포",
       "owner": "enemy",
       "weaponType": "cannon",
-      "damage": 8,
+      "damage": 4,
       "projectileSpeedMps": 1600,
       "lifetimeSec": 1.4,
       "engineKey": "enemyCannon"
@@ -308,11 +308,11 @@ export const BALANCE = deepFreeze({
       "displayNameKo": "적 미사일",
       "owner": "enemy",
       "weaponType": "missile",
-      "damage": 35,
+      "damage": 14,
       "projectileSpeedMps": 350,
-      "maxSpeedMps": 1000,
-      "accelerationMps2": 450,
-      "turnRateRadSec": 3.2,
+      "maxSpeedMps": 700,
+      "accelerationMps2": 220,
+      "turnRateRadSec": 0.65,
       "lifetimeSec": 6,
       "engineKey": "enemyMissile",
       "notes": "일반 적"
@@ -324,9 +324,9 @@ export const BALANCE = deepFreeze({
       "weaponType": "missile",
       "damage": 20,
       "projectileSpeedMps": 400,
-      "maxSpeedMps": 1400,
-      "accelerationMps2": 650,
-      "turnRateRadSec": 3.2,
+      "maxSpeedMps": 850,
+      "accelerationMps2": 300,
+      "turnRateRadSec": 0.9,
       "lifetimeSec": 6,
       "engineKey": "bossMissile"
     },
@@ -335,7 +335,7 @@ export const BALANCE = deepFreeze({
       "displayNameKo": "대공포",
       "owner": "enemy",
       "weaponType": "cannon",
-      "damage": 8,
+      "damage": 4,
       "projectileSpeedMps": 1100,
       "lifetimeSec": 2.8,
       "engineKey": "antiAir",
@@ -355,9 +355,14 @@ export const BALANCE = deepFreeze({
       "bossName": "CANYON LEVIATHAN",
       "xpRewardMultiplier": 0.85,
       "waves": [
-        28,
-        32,
-        36
+        10,
+        16,
+        22
+      ],
+      "eliteRatios": [
+        0,
+        0.1,
+        0.15
       ]
     },
     {
@@ -372,10 +377,16 @@ export const BALANCE = deepFreeze({
       "bossName": "OCEAN DREADNOUGHT",
       "xpRewardMultiplier": 0.9,
       "waves": [
-        36,
-        40,
-        44,
-        48
+        18,
+        24,
+        30,
+        36
+      ],
+      "eliteRatios": [
+        0,
+        0.1,
+        0.15,
+        0.2
       ]
     },
     {
@@ -390,11 +401,18 @@ export const BALANCE = deepFreeze({
       "bossName": "METROPOLIS OVERLORD",
       "xpRewardMultiplier": 1.4,
       "waves": [
-        32,
+        25,
+        30,
         36,
-        40,
-        44,
+        42,
         48
+      ],
+      "eliteRatios": [
+        0,
+        0.1,
+        0.15,
+        0.2,
+        0.25
       ]
     }
   ],

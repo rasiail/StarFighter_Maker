@@ -41,9 +41,10 @@ export function stepSimulation(delta) {
             gameState.isPlayerDead = false;
         }
 
-        // 관성으로 계속 전진
+        // 관성으로 계속 전진 및 롤 회전 (추락 연출)
         const forwardSpeedMps = playerFlight.speed * 0.514444;
         playerMesh.translateZ(-forwardSpeedMps * delta);
+        playerMesh.rotateZ(3.0 * delta);
 
         updateEnemies(delta);
         updateSinkingShips(delta);
@@ -51,6 +52,7 @@ export function stepSimulation(delta) {
         updateCombatSchedule(delta);
         updateMission(delta);
         updateCamera(delta);
+        renderHUD();
         gameState.jetExhaustSystem?.update(delta);
         skyMesh.position.copy(playerMesh.position);
         return;

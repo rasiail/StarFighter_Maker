@@ -6,6 +6,8 @@ import { STAT_NAMES, xpToNextLevel } from '../progression/model.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
 import { clearCombatInput } from '../input/controls.js';
 import { audio } from '../audio/audio.js';
+import { playerFlight } from '../player/player.js';
+import { createUpgradePreview } from './upgrade-preview.js';
 
 let offered = [];
 export function refreshProgressionUI() {
@@ -30,12 +32,34 @@ function renderChoices() {
         button.className = 'upgrade-card';
         button.dataset.card = card.id;
         const label = document.createElement('strong');
+        label.className = 'upgrade-title';
         label.textContent = card.name;
         const rank = document.createElement('span');
+        rank.className = 'upgrade-rank';
         rank.textContent = card.id === 'repair' ? '즉시 적용' : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
         const description = document.createElement('p');
-        description.textContent = card.description;
+        const preview = createUpgradePreview(progression, card, playerFlight);
+        description.className = 'upgrade-description';
+        description.textContent = preview.description;
         button.append(label, rank, description);
+        const changes = document.createElement('span');
+        changes.className = 'upgrade-changes';
+        for (const change of preview.changes) {
+            const row = document.createElement('span');
+            row.className = 'upgrade-change';
+            const name = document.createElement('span');
+            name.className = 'upgrade-change-label';
+            name.textContent = change.label;
+            const value = document.createElement('span');
+            value.className = 'upgrade-change-value';
+            value.textContent = change.value;
+            const difference = document.createElement('small');
+            difference.className = 'upgrade-change-difference';
+            difference.textContent = `(${change.difference})`;
+            row.append(name, value, difference);
+            changes.append(row);
+        }
+        button.append(changes);
         button.addEventListener('click', event => {
             event.stopPropagation();
             if (gameState.activeModal !== 'cards' || !button.isConnected) return;

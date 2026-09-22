@@ -1,6 +1,6 @@
 // Pure encounter state; mesh spawning and UI live in missions.js.
 export function createEncounter(stage) {
-    return { stage, wave: 0, kills: 0, spawned: 0, phase: 'waves', transition: false };
+    return { stage, wave: 0, kills: 0, spawned: 0, spawnedElites: 0, phase: 'waves', transition: false };
 }
 export function recordEncounterKill(encounter, isBoss) {
     if (encounter.transition) return;
@@ -14,7 +14,7 @@ export function advanceEncounter(encounter) {
     encounter.transition = false;
     if (encounter.phase === 'waves') {
         encounter.wave++;
-        encounter.kills = encounter.spawned = 0;
+        encounter.kills = encounter.spawned = encounter.spawnedElites = 0;
         if (encounter.wave === encounter.stage.waves.length) encounter.phase = 'boss';
     } else if (encounter.phase === 'boss') encounter.phase = 'hangar';
     return true;

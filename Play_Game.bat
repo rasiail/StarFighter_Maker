@@ -1,4 +1,6 @@
 @echo off
+setlocal
+cd /d "%~dp0"
 python tools\balance\build.py
 if errorlevel 1 (
     echo Balance data conversion failed.
@@ -6,5 +8,5 @@ if errorlevel 1 (
     exit /b 1
 )
 echo Starting Starfighter Ace Web Server...
-start http://localhost:8000/index.html
-python -m http.server 8000
+node tools\serve.js --open
+if errorlevel 1 pause

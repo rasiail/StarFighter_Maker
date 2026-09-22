@@ -6,6 +6,7 @@ import { killEnemy } from '../enemies/lifecycle.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { scene } from '../rendering/scene.js';
+import { advanceHomingMissile } from './homing.js';
 
 
 export function updateProjectiles(delta) {
@@ -48,8 +49,10 @@ export function updateProjectiles(delta) {
     // 2. Guided Missiles
     for (let i = missiles.length - 1; i >= 0; i--) {
         const m = missiles[i];
-        m.life -= delta;
-        m.speed = Math.min(m.maxSpeed, m.speed + m.acceleration * delta);
+        if (m.isPlayer) {
+            m.life -= delta;
+            m.speed = Math.min(m.maxSpeed, m.speed + m.acceleration * delta);
+        }
 
         // Proportional Navigation Guidance
         if (m.isPlayer) {
@@ -60,16 +63,15 @@ export function updateProjectiles(delta) {
                 m.mesh.quaternion.rotateTowards(targetQuat, m.turnRate * delta);
             }
         } else {
-            // 적이 쏜 미사일: 플레이어 추적
-            if (m.target && m.target.mesh) {
-                const toTgt = m.target.mesh.position.clone().sub(m.mesh.position).normalize();
-                const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), toTgt);
-                m.mesh.quaternion.rotateTowards(targetQuat, m.turnRate * delta);
-            }
+            m.position = m.mesh.position;
+            m.direction ??= new THREE.Vector3(0, 0, -1).applyQuaternion(m.mesh.quaternion);
+            const target = m.target?.mesh?.position ?? m.position.clone().add(m.direction);
+            advanceHomingMissile(m, target, delta);
+            m.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), m.direction);
         }
 
         // Advance
-        m.mesh.translateZ(-m.speed * delta);
+        if (m.isPlayer) m.mesh.translateZ(-m.speed * delta);
 
         // Spawn smoke puffs along path
         createSmokePuff(m.mesh.position);

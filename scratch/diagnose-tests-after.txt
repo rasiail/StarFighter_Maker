@@ -1,0 +1,301 @@
+✔ 생성된 밸런스 데이터가 웹 런타임 설정에 연결된다 (3.2909ms)
+✔ 카드 후보 추첨이 XLSX의 draw_weight를 사용한다 (0.819ms)
+✔ 엔진 중립 데이터의 ID와 참조가 고유하고 완전하다 (0.467ms)
+✔ 같은 시드와 가정은 같은 시뮬레이션 결과를 만든다 (112.4802ms)
+✔ 경험치 요구량 증가는 카드 선택을 줄이고 현재 곡선은 런당 약 14회를 제공한다 (1066.7728ms)
+✖ 명중률이 높으면 예상 플레이 시간이 줄어든다 (400.7475ms)
+✔ 무기 성능 계산은 화력 배율과 재장전 성장에 반응한다 (0.2255ms)
+✔ 후보 수치는 원본을 변경하지 않고 적 수·성장·장전 성능에 반영된다 (22.2017ms)
+✔ 멀티 일제 발사는 다중 표적과 단일 보스의 발사 한계를 구분한다 (13.5388ms)
+✔ initial and cruise rear camera use the same 9.375m distance (3.5582ms)
+✔ rear camera smoothly reaches 12.5m at 80% speed (1.3688ms)
+✔ side and front views preserve the full orbit distance (0.3608ms)
+✖ 멀티 관제 확장은 관제력 2에서 해금되고 4→6→8발을 발사한다 (5.4701ms)
+✖ 실제 타격 수와 과잉 피해를 계산하고 화력 1단계의 원킬 경계를 반영한다 (2.3564ms)
+✖ 21번째 표준 발사는 탄창 전체 재장전 이후에 가능하다 (2.7292ms)
+✔ 전함은 3타깃 예산을 소비하고 선체 격파가 함포를 함께 제거한다 (2.3097ms)
+✔ 3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 정비창을 연다 (2.1743ms)
+✔ 증원은 동시 적 수와 웨이브 전체 목표를 초과하지 않는다 (0.4241ms)
+✔ 전투 예약 작업은 시뮬레이션 시간에만 진행하며 새 런에서 제거된다 (0.459ms)
+✔ a target ahead remains ahead, without reverse steering or roll (6.2845ms)
+✔ low descending aircraft climb away without circling toward a low player (11.564ms)
+✔ ridge avoidance starts well before the ridge and maintains clearance (3.8716ms)
+✔ close passes extend along a fixed heading instead of chasing a moving side point (2.0598ms)
+✔ heading seam and targets behind cannot cause roll flips; time steps agree (12.3796ms)
+✔ weapons require attack permission, stable lock and safe firing distances (2.4915ms)
+✖ cannon fires short bursts with a readable recovery window (13.1738ms)
+✔ ordinary fighters fire cannon but never missiles, even with a ready lock (3.5163ms)
+✔ elites and bosses can launch missiles and still respect common launch denial (0.5066ms)
+✖ air spawn distribution is 30% elite and uses elite health in combat simulation (1.9186ms)
+✔ an elite in missile range receives a slot ahead of ordinary fighters (3.8741ms)
+✔ boss FBX and all four PBR maps resolve to the requested Mecha_Fish asset (2.6041ms)
+✔ 전투 결과가 미션/성장 구독자에 동기적으로 전달되고 구독 해제가 가능하다 (5.518ms)
+✔ 이벤트 전파 중 추가한 구독자는 다음 이벤트부터 실행된다 (0.4919ms)
+✔ Circle holds at 180ms and L2 holds at 280ms, and never tap after a hold (2.7592ms)
+✔ Connection, context changes and reset suppress held buttons until released (0.5894ms)
+✔ Square/Cross/Options trigger once per press and sticks have a rescaled deadzone (0.5551ms)
+✔ Runtime mapping, pause, disconnect and API failure clear only controller input (3.2209ms)
+✔ attack slots exclude dead units and hulls, cap batteries, and retain boss priority (2.7071ms)
+✖ blocked missiles keep their ready cooldown and lock without consuming a shot (3.3346ms)
+✔ missile cannot exceed turn/speed limits, even for an antipodal target (0.6578ms)
+✖ pressure simulation is reproducible and obeys the shared missile cap (156.3474ms)
+✔ active evasion reduces damage in a fixed all-missile pressure fixture (191.4042ms)
+✖ 표준 20발은 소진 후 10초에 전체 충전된다 (5.3395ms)
+✖ 멀티는 최대 4발, 총 16발 소진 후 20초에 전체 충전된다 (0.897ms)
+✔ 서로 다른 기체가 스탯과 재장전 타이머를 공유하지 않는다 (3.4833ms)
+✔ 추가 스탯을 반영한 생성/재출격이 기본값으로 강제 복귀하지 않는다 (0.5855ms)
+✔ 알 수 없는 스테이지는 출격 전에 거부한다 (0.9028ms)
+✔ 경험치가 여러 레벨을 넘으면 잔여 경험치와 선택권을 모두 적립한다 (2.1676ms)
+✔ 이전 카드 선택으로 해금된 카드는 다음 후보 풀에 등장한다 (0.7975ms)
+✔ 최대 단계 카드가 재등장하지 않고 후보가 모두 소진되어도 선택권을 소비할 수 있다 (1.3108ms)
+✖ 후보는 중복되지 않으며 스탯 보정은 반복 계산해도 누적 곱셈되지 않는다 (3.0564ms)
+✔ 슬롯 확장은 준비 탄수만 늘리고 진행 중 재장전과 체력 증가는 보존한다 (0.6462ms)
+✔ evaluateTargetCandidates: 화면 내 적을 tier1로, 등 뒤 적을 tier3로 분류한다 (2.3081ms)
+✔ acquireNextBestTarget: 화면 내 적이 있으면 등 뒤의 더 가까운 적 대신 화면 내 적을 선택한다 (0.3571ms)
+✔ cycleTarget: 화면 내 적이 2기 이상 있을 때 오직 화면 내 적들만 거리순으로 순환한다 (1.5578ms)
+✔ every offered card has an effect description and numeric changes, without mutating the build (38.5063ms)
+✔ rack and reload previews match actual application to partially spent/reloading weapons (1.5409ms)
+✔ warhead preview includes existing power bonuses and current weapon base damage (0.7574ms)
+✔ defense displays current HP recovery and repair is capped at actual max health (1.1878ms)
+✔ new source descriptions take precedence over the fallback and max salvo stays capped (0.4383ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 49
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1817.1079
+
+✖ failing tests:
+
+test at tests\balance-simulator.test.js:20:1
+✖ 명중률이 높으면 예상 플레이 시간이 줄어든다 (400.7475ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  340 !== 583
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/balance-simulator.test.js:24:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 340,
+    expected: 583,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\combat-model.test.js:13:1
+✖ 멀티 관제 확장은 관제력 2에서 해금되고 4→6→8발을 발사한다 (5.4701ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 3
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/combat-model.test.js:26:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\combat-model.test.js:31:1
+✖ 실제 타격 수와 과잉 피해를 계산하고 화력 1단계의 원킬 경계를 반영한다 (2.3564ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/combat-model.test.js:37:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\combat-model.test.js:42:1
+✖ 21번째 표준 발사는 탄창 전체 재장전 이후에 가능하다 (2.7292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  42 !== 21
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/combat-model.test.js:45:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 42,
+    expected: 21,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\enemy-flight.test.js:82:1
+✖ cannon fires short bursts with a readable recovery window (13.1738ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(shots.length >= 6 && shots.length <= 9)
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/enemy-flight.test.js:88:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\enemy-roles.test.js:32:1
+✖ air spawn distribution is 30% elite and uses elite health in combat simulation (1.9186ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  20 !== 30
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/enemy-roles.test.js:33:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 20,
+    expected: 30,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\incoming-fire.test.js:17:1
+✖ blocked missiles keep their ready cooldown and lock without consuming a shot (3.3346ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/incoming-fire.test.js:23:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\incoming-fire.test.js:40:1
+✖ pressure simulation is reproducible and obeys the shared missile cap (156.3474ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(a.maxMissiles <= 2)
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/incoming-fire.test.js:45:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests\magazine.test.js:6:1
+✖ 표준 20발은 소진 후 10초에 전체 충전된다 (5.3395ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   14.499749999999999
+  -   10
+    ]
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/magazine.test.js:13:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 14.499749999999999 ],
+    expected: [ 10 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\magazine.test.js:20:1
+✖ 멀티는 최대 4발, 총 16발 소진 후 20초에 전체 충전된다 (0.897ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 4
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/magazine.test.js:22:33)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\progression.test.js:36:1
+✖ 후보는 중복되지 않으며 스탯 보정은 반복 계산해도 누적 곱셈되지 않는다 (3.0564ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1.2 !== 1.4
+  
+      at TestContext.<anonymous> (file:///D:/CCY/AI/test/StarFighter/tests/progression.test.js:45:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1.2,
+    expected: 1.4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

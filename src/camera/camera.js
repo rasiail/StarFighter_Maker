@@ -6,6 +6,7 @@ import { enemies } from '../enemies/fleet.js';
 import { keys } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
+import { cameraFollowOffset } from './follow.js';
 
 export let cameraConfig;
 
@@ -23,20 +24,8 @@ export function updateCamera(delta) {
     // - 속도 80% 이상: 현재 기본 거리인 12.5m
     // - 50% ~ 80% 구간: 속도가 빨라짐에 따라 거리가 점진적으로 멀어짐
     // - 전투기 뒤쪽에 카메라가 위치할 때만 적용 (타깃 캠/프리룩으로 측면·전방 회전 시 기본 거리 12.5m 유지)
-    const clampedSpeedRatio = THREE.MathUtils.clamp(speedRatio, 0.0, 1.0);
-    const speedT = THREE.MathUtils.clamp((clampedSpeedRatio - 0.5) / 0.3, 0.0, 1.0);
-    const speedDistanceFactor = THREE.MathUtils.lerp(0.75, 1.0, speedT);
-
-    // 피봇 회전 기준 카메라가 전투기 후방에 위치하는 정도 (cosYaw * cosPitch)
-    const cosYaw = Math.cos(gameState.cameraPivot.rotation.y);
-    const cosPitch = Math.cos(gameState.cameraPivot.rotation.x);
-    const rearAlignment = Math.max(0.0, cosYaw * cosPitch);
-
-    // 후방일 때만 속도 기반 거리 축소 적용, 다른 방향일 때는 1.0(기본 거리 12.5m) 유지
-    const effectiveFactor = THREE.MathUtils.lerp(1.0, speedDistanceFactor, rearAlignment);
-
-    const targetY = THREE.MathUtils.lerp(1.4, 2.2, (effectiveFactor - 0.5) / 0.5);
-    const targetZ = 12.5 * effectiveFactor;
+    const { y: targetY, z: targetZ } = cameraFollowOffset(
+        speedRatio, gameState.cameraPivot.rotation.y, gameState.cameraPivot.rotation.x);
 
     const posLerp = 1.0 - Math.exp(-10.0 * delta);
     camera.position.x = 0;
@@ -46,13 +35,19 @@ export function updateCamera(delta) {
 
     let targetEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
 
+    if (gameState.isPlayerDead) {
+        cameraConfig.freelookIdleTimer = 10.0;
+        cameraConfig.freelookYaw = Math.PI * 0.75; // 대각선 앞 옆 각도 (135도)
+        cameraConfig.freelookPitch = 0.1;
+    }
+
     // 타깃 캠(우클릭 홀드) 중인데 기존 타깃이 격추/무효화된 경우, 즉시 다른 생존 적기를 자동 획득
-    if ((keys.targetCam || padInput.targetCam) && !targetEnemy) {
+    if (!gameState.isPlayerDead && (keys.targetCam || padInput.targetCam) && !targetEnemy) {
         targetEnemy = acquireNextBestTarget();
     }
 
     // 1. 타깃 캠 모드 (우클릭 홀드 또는 T키 시 적기 방향으로 카메라 피봇 회전)
-    if ((keys.targetCam || padInput.targetCam) && targetEnemy) {
+    if (!gameState.isPlayerDead && (keys.targetCam || padInput.targetCam) && targetEnemy) {
         cameraConfig.freelookIdleTimer = 0;
 
         // 적기의 월드 좌표를 플레이어 로컬 공간으로 변환

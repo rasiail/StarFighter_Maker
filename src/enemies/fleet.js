@@ -7,7 +7,7 @@ import { createDroneMesh } from './drone.js';
 import { createEliteMesh } from '../assets/aircraft.js';
 import { playerMesh } from '../player/player.js';
 import { BALANCE } from '../data/generated/balance.js';
-import { formationKind } from './formation.js';
+import { formationKind, isEliteSpawn } from './formation.js';
 
 const enemyData = BALANCE.enemies;
 const spawnRules = Object.fromEntries(Object.entries(BALANCE.spawnRules).map(([key, rule]) => [key, rule.value]));
@@ -128,11 +128,13 @@ function spawnGroundTank(pos, callsign) {
     enemies.push(enemy);
     return enemy;
 }
-export function spawnEnemy(pos, { health = 80, boss = false } = {}) {
+export function spawnEnemy(pos, { health = 80, boss = false, elite = false } = {}) {
+    elite = !boss && elite;
+    if (elite) health = enemyData.elite.health;
     const groundY = getSurfaceHeight(pos.x, pos.z);
     pos.y = Math.max(pos.y, Math.max(750, groundY + 400));
 
-    const enemyMesh = createDroneMesh(boss);
+    const enemyMesh = elite ? createEliteMesh() : createDroneMesh(boss);
     enemyMesh.userData.isBoss = boss;
     // 적기 크기: 원거리 및 도그파이트 시인성을 위해 2.5배로 크게 확대 설정
     enemyMesh.scale.setScalar(boss ? 9 : 2.5);
@@ -144,7 +146,8 @@ export function spawnEnemy(pos, { health = 80, boss = false } = {}) {
         health,
         maxHealth: health,
         isBoss: boss,
-        hitRadius: boss ? enemyData.boss.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
+        isElite: elite,
+        hitRadius: boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
         speed: boss ? 240 : 340,
         velocity: new THREE.Vector3(0, 0, -1),
         state: 'PATROL', // PATROL, INTERCEPT, ENGAGE, EVADE
@@ -158,7 +161,7 @@ export function spawnEnemy(pos, { health = 80, boss = false } = {}) {
         isGround: false,
         isShip: false,
         type: 'AIR',
-        callsign: `BANDIT-0${enemies.filter(e => !e.isGround).length + 1}`
+        callsign: `${elite ? 'ELITE' : 'BANDIT'}-0${enemies.filter(e => !e.isGround).length + 1}`
     };
     enemies.push(enemy);
     return enemy;
@@ -176,6 +179,7 @@ export function clearFleet() {
 }
 
 export function spawnFormation(count, options = {}) {
+    let elitesRemaining = options.eliteCount || 0;
     for (let i = 0; i < count; i++) {
         // 플레이어 주변 사방 1500m ~ 3500m 반경에서 랜덤하게 스폰 (각도 및 거리 무작위)
         const angle = Math.random() * Math.PI * 2;
@@ -199,7 +203,12 @@ export function spawnFormation(count, options = {}) {
             // 공중 병력 스폰 (하늘에서 스폰)
             const py = playerMesh.position.y + (Math.random() - 0.5) * 1000;
             const pos = new THREE.Vector3(px, Math.max(750, py), pz);
-            const enemy = spawnEnemy(pos, options);
+            let isElite = false;
+            if (!options.boss && elitesRemaining > 0) {
+                isElite = true;
+                elitesRemaining--;
+            }
+            const enemy = spawnEnemy(pos, { ...options, elite: isElite });
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI); // Aircraft nose points along local -Z.
             enemy.state = 'INTERCEPT';

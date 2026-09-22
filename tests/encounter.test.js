@@ -28,12 +28,13 @@ test('3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 정비
 test('증원은 동시 적 수와 웨이브 전체 목표를 초과하지 않는다', () => {
     const e = createEncounter(getStage(1));
     e.wave = 2;
-    assert.equal(reinforcementCount(e, 0), 30);
-    e.spawned = 30;
-    assert.equal(reinforcementCount(e, 25), 5);
-    e.spawned = e.stage.waves[e.wave] - 1;
+    const total = e.stage.waves[e.wave];
+    assert.equal(reinforcementCount(e, 0), Math.min(e.stage.maxActive, total));
+    e.spawned = total - 5;
+    assert.equal(reinforcementCount(e, 0), 5);
+    e.spawned = total - 1;
     assert.equal(reinforcementCount(e, 20), 1);
-    e.spawned = e.stage.waves[e.wave];
+    e.spawned = total;
     assert.equal(reinforcementCount(e, 0), 0);
 });
 test('전투 예약 작업은 시뮬레이션 시간에만 진행하며 새 런에서 제거된다', () => {

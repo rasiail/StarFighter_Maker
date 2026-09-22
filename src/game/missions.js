@@ -41,8 +41,19 @@ function clearBattle() {
 }
 function fillWave() {
     const count = reinforcementCount(encounter, enemies.filter(enemy => enemy.alive).length);
-    spawnFormation(count, { health: encounter.stage.enemyHealth });
+    const eliteRatio = encounter.stage.eliteRatios[encounter.wave] || 0;
+    const totalWaveEnemies = encounter.stage.waves[encounter.wave];
+    const targetEliteForWave = Math.round(totalWaveEnemies * eliteRatio);
+    
+    let eliteToSpawn = 0;
+    if (encounter.spawnedElites < targetEliteForWave) {
+        const expectedElites = Math.round(targetEliteForWave * (encounter.spawned + count) / totalWaveEnemies);
+        eliteToSpawn = expectedElites - encounter.spawnedElites;
+    }
+
+    spawnFormation(count, { health: encounter.stage.enemyHealth, eliteCount: eliteToSpawn });
     encounter.spawned += count;
+    encounter.spawnedElites += eliteToSpawn;
 }
 function beginWave() {
     clearBattle();
@@ -176,8 +187,8 @@ export function initMissions() {
     gameEvents.on(EVENTS.PLAYER_DESTROYED, () => {
         if (gameState.isGameRunning && !gameState.isPlayerDead) {
             gameState.isPlayerDead = true;
-            gameState.deathTimer = 3.0;
-            playerMesh.visible = false;
+            gameState.deathTimer = 8.0;
+            // playerMesh remains visible for the death animation
         }
     });
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ isBoss }) => {

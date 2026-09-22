@@ -6,6 +6,7 @@
   "scripts": {
     "balance:build": "python tools/balance/build.py",
     "balance:simulate": "node tools/balance/simulate.mjs",
+    "balance:incoming": "node tools/balance/incoming-review.mjs --applied=true",
     "balance:review": "python tools/balance/build.py && node tools/balance/review.mjs",
     "start": "python tools/balance/build.py && node tools/serve.js",
     "check": "python tools/balance/build.py && node tools/check.js",

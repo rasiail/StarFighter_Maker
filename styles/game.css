@@ -9,11 +9,16 @@
 .run-eyebrow { letter-spacing: 3px; color: #83d9b0; font-size: 12px; }
 .run-note { font-size: 12px; color: #a3bdb5; }
 #upgrade-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
-.upgrade-card { border: 1px solid #4df58a77; background: #0d2a2e; color: #c8eadb; padding: 24px 18px; min-height: 210px; cursor: pointer; text-align: center; font: inherit; }
+.upgrade-card { display: flex; flex-direction: column; align-items: stretch; border: 1px solid #4df58a77; background: #0d2a2e; color: #c8eadb; padding: 24px 18px; min-height: 300px; cursor: pointer; text-align: left; font: inherit; }
 .upgrade-card:hover, .upgrade-card:focus-visible { border-color: #ffde59; background: #193c3b; outline: 2px solid #ffde59; }
-.upgrade-card strong { display: block; color: #fff; font-size: 19px; margin-bottom: 16px; }
-.upgrade-card span { display: block; color: #ffde59; margin-bottom: 16px; }
-.upgrade-card p { margin: 0; font-size: 14px; }
+.upgrade-card .upgrade-title { display: block; color: #fff; font-size: 18px; margin-bottom: 12px; }
+.upgrade-card .upgrade-rank { display: block; color: #ffde59; margin-bottom: 14px; font-size: 14px; }
+.upgrade-card .upgrade-description { margin: 0 0 18px; font-size: 14px; line-height: 1.65; word-break: keep-all; overflow-wrap: anywhere; }
+.upgrade-changes { display: grid; gap: 10px; margin-top: auto; padding-top: 14px; border-top: 1px solid #83d9b044; }
+.upgrade-change { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 7px; }
+.upgrade-change-label { flex-basis: 100%; color: #a3bdb5; font-size: 12px; }
+.upgrade-change-value { color: #fff; font-size: 14px; font-variant-numeric: tabular-nums; }
+.upgrade-change-difference { color: #83f5af; font-size: 12px; }
 #progression-hud { position: absolute; top: 0; left: 0; z-index: 12; width: 100%; text-align: center; font-size: 13px; pointer-events: none; display: flex; flex-direction: column; align-items: stretch; }
 #progression-status { position: absolute; top: 2px; width: 100%; text-align: center; z-index: 13; color: #000; font-weight: bold; }
 .xp-track { height: 18px; background: rgba(77, 245, 138, 0.15); border-bottom: 1px solid #4df58a; width: 100%; position: relative; }

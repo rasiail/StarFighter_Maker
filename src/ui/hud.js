@@ -29,6 +29,28 @@ export function renderHUD() {
         const hpPct = Math.max(0, Math.min(100, Math.round((playerFlight.health / (playerFlight.maxHealth || 100)) * 100)));
         hpEl.textContent = `${hpPct}%`;
         hpBar.style.width = `${hpPct}%`;
+
+        const portrait = document.getElementById('player-portrait');
+        if (portrait) {
+            let icon = "Cha_icon01.png";
+            if (hpPct <= 0) {
+                icon = "Cha_icon04.png";
+            } else if (hpPct <= 30) {
+                icon = "Cha_icon03.png";
+            } else if (hpPct <= 60) {
+                icon = "Cha_icon02.png";
+            } else {
+                icon = "Cha_icon01.png";
+            }
+
+            const targetPath = "Cha/" + icon;
+            if (!portrait.src.endsWith(targetPath)) {
+                portrait.src = targetPath;
+                portrait.setAttribute('src', targetPath);
+                console.log(`[Portrait Update] HP: ${hpPct}% -> ${targetPath}`);
+            }
+        }
+
         if (hpPct > 50) {
             hpBar.style.backgroundColor = '#4df58a';
             hpEl.style.color = '#4df58a';
@@ -279,7 +301,7 @@ export function renderHUD() {
                 const bsX = (boresightProj.x * 0.5 + 0.5) * hudCanvas.width;
                 const bsY = (-(boresightProj.y * 0.5) + 0.5) * hudCanvas.height;
 
-                let smartAssistRadius = 35 * (playerFlight.smartAssistMultiplier || 1.0);
+                let smartAssistRadius = 140 * (playerFlight.smartAssistMultiplier || 1.0);
                 let snappedX = bsX;
                 let snappedY = bsY;
                 let isAimAligned = false;
@@ -304,7 +326,7 @@ export function renderHUD() {
                     hudCtx.restore();
                 } else {
                     const aimDistPx = Math.hypot(bsX - ppX, bsY - ppY);
-                    const shootThreshold = 55;
+                    const shootThreshold = 110;
                     isAimAligned = (aimDistPx < shootThreshold && pipperProj.z < 1.0);
                 }
 

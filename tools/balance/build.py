@@ -186,6 +186,7 @@ def build():
     for stage in sorted(stages, key=lambda x: x["stage_id"]):
         item = camel(stage)
         item["waves"] = [row["target_kills"] for row in sorted((w for w in waves if w["stage_id"] == stage["stage_id"]), key=lambda x: x["wave_index"])]
+        item["eliteRatios"] = [row.get("elite_ratio", 0) for row in sorted((w for w in waves if w["stage_id"] == stage["stage_id"]), key=lambda x: x["wave_index"])]
         stage_data.append(item)
     enemy_data = {row["enemy_id"]: camel(row) for row in enemies}
     card_data = []

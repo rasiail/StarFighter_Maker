@@ -1,0 +1,409 @@
+{
+  "runs": 12,
+  "seconds": 60,
+  "dt": 0.016666666666666666,
+  "seed": 104,
+  "baselineSha256": "90e2154370f6e5de2f833d92d179428dbde3055f581c2a0f89f6e3b660a7c7e2",
+  "currentSha256": "3c28d67ca1c8de639d511805306667f9f0cf5eea65b1fd051008dccdee80105f",
+  "policy": {
+    "groundAttackers": 2,
+    "missileLimit": 2,
+    "missileSpacing": 5,
+    "bossMissileSpacing": 3.5
+  },
+  "weaponCandidates": {
+    "before": {
+      "enemy_cannon": {
+        "weaponId": "enemy_cannon",
+        "displayNameKo": "적 기관포",
+        "owner": "enemy",
+        "weaponType": "cannon",
+        "damage": 8,
+        "projectileSpeedMps": 1600,
+        "lifetimeSec": 1.4,
+        "engineKey": "enemyCannon"
+      },
+      "enemy_missile": {
+        "weaponId": "enemy_missile",
+        "displayNameKo": "적 미사일",
+        "owner": "enemy",
+        "weaponType": "missile",
+        "damage": 35,
+        "projectileSpeedMps": 350,
+        "maxSpeedMps": 1000,
+        "accelerationMps2": 450,
+        "turnRateRadSec": 3.2,
+        "lifetimeSec": 6,
+        "engineKey": "enemyMissile",
+        "notes": "일반 적"
+      },
+      "boss_missile": {
+        "weaponId": "boss_missile",
+        "displayNameKo": "보스 미사일",
+        "owner": "enemy",
+        "weaponType": "missile",
+        "damage": 20,
+        "projectileSpeedMps": 400,
+        "maxSpeedMps": 1400,
+        "accelerationMps2": 650,
+        "turnRateRadSec": 3.2,
+        "lifetimeSec": 6,
+        "engineKey": "bossMissile"
+      },
+      "anti_air": {
+        "weaponId": "anti_air",
+        "displayNameKo": "대공포",
+        "owner": "enemy",
+        "weaponType": "cannon",
+        "damage": 8,
+        "projectileSpeedMps": 1100,
+        "lifetimeSec": 2.8,
+        "engineKey": "antiAir",
+        "notes": "탱크·함포"
+      }
+    },
+    "applied": {
+      "enemy_cannon": {
+        "weaponId": "enemy_cannon",
+        "displayNameKo": "적 기관포",
+        "owner": "enemy",
+        "weaponType": "cannon",
+        "damage": 4,
+        "projectileSpeedMps": 1600,
+        "lifetimeSec": 1.4,
+        "engineKey": "enemyCannon"
+      },
+      "enemy_missile": {
+        "weaponId": "enemy_missile",
+        "displayNameKo": "적 미사일",
+        "owner": "enemy",
+        "weaponType": "missile",
+        "damage": 14,
+        "projectileSpeedMps": 350,
+        "maxSpeedMps": 700,
+        "accelerationMps2": 220,
+        "turnRateRadSec": 0.65,
+        "lifetimeSec": 6,
+        "engineKey": "enemyMissile",
+        "notes": "일반 적"
+      },
+      "boss_missile": {
+        "weaponId": "boss_missile",
+        "displayNameKo": "보스 미사일",
+        "owner": "enemy",
+        "weaponType": "missile",
+        "damage": 20,
+        "projectileSpeedMps": 400,
+        "maxSpeedMps": 850,
+        "accelerationMps2": 300,
+        "turnRateRadSec": 0.9,
+        "lifetimeSec": 6,
+        "engineKey": "bossMissile"
+      },
+      "anti_air": {
+        "weaponId": "anti_air",
+        "displayNameKo": "대공포",
+        "owner": "enemy",
+        "weaponType": "cannon",
+        "damage": 4,
+        "projectileSpeedMps": 1100,
+        "lifetimeSec": 2.8,
+        "engineKey": "antiAir",
+        "notes": "탱크·함포"
+      }
+    }
+  },
+  "rows": [
+    {
+      "version": "before",
+      "stageId": 1,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 269.6666666666667,
+      "p90Damage": 315,
+      "survivalPercent": 0,
+      "meanMissilesFired": 7.916666666666667,
+      "meanMissileHits": 7.666666666666667,
+      "maxMissiles": 4
+    },
+    {
+      "version": "before",
+      "stageId": 1,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 443.0833333333333,
+      "p90Damage": 463,
+      "survivalPercent": 0,
+      "meanMissilesFired": 12.583333333333334,
+      "meanMissileHits": 12.583333333333334,
+      "maxMissiles": 4
+    },
+    {
+      "version": "before",
+      "stageId": 1,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 800,
+      "p90Damage": 945,
+      "survivalPercent": 0,
+      "meanMissilesFired": 23.25,
+      "meanMissileHits": 22.666666666666668,
+      "maxMissiles": 4
+    },
+    {
+      "version": "before",
+      "stageId": 2,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 315.1666666666667,
+      "p90Damage": 385,
+      "survivalPercent": 0,
+      "meanMissilesFired": 9,
+      "meanMissileHits": 8.833333333333334,
+      "maxMissiles": 4
+    },
+    {
+      "version": "before",
+      "stageId": 2,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 451.8333333333333,
+      "p90Damage": 603,
+      "survivalPercent": 0,
+      "meanMissilesFired": 12.833333333333334,
+      "meanMissileHits": 12.833333333333334,
+      "maxMissiles": 4
+    },
+    {
+      "version": "before",
+      "stageId": 2,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 993.8333333333334,
+      "p90Damage": 1074,
+      "survivalPercent": 0,
+      "meanMissilesFired": 29.083333333333332,
+      "meanMissileHits": 28.166666666666668,
+      "maxMissiles": 5
+    },
+    {
+      "version": "before",
+      "stageId": 3,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 426.25,
+      "p90Damage": 525,
+      "survivalPercent": 0,
+      "meanMissilesFired": 12.25,
+      "meanMissileHits": 12.083333333333334,
+      "maxMissiles": 6
+    },
+    {
+      "version": "before",
+      "stageId": 3,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 654.1666666666666,
+      "p90Damage": 700,
+      "survivalPercent": 0,
+      "meanMissilesFired": 18.5,
+      "meanMissileHits": 18.5,
+      "maxMissiles": 6
+    },
+    {
+      "version": "before",
+      "stageId": 3,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 1170.8333333333333,
+      "p90Damage": 1265,
+      "survivalPercent": 0,
+      "meanMissilesFired": 35.25,
+      "meanMissileHits": 33.166666666666664,
+      "maxMissiles": 6
+    },
+    {
+      "version": "applied",
+      "stageId": 1,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 47.166666666666664,
+      "p90Damage": 70,
+      "survivalPercent": 100,
+      "meanMissilesFired": 3.6666666666666665,
+      "meanMissileHits": 3.25,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 1,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 49.5,
+      "p90Damage": 70,
+      "survivalPercent": 100,
+      "meanMissilesFired": 4.333333333333333,
+      "meanMissileHits": 3.4166666666666665,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 1,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 50.333333333333336,
+      "p90Damage": 64,
+      "survivalPercent": 100,
+      "meanMissilesFired": 11.5,
+      "meanMissileHits": 3.1666666666666665,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 2,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 35.666666666666664,
+      "p90Damage": 56,
+      "survivalPercent": 100,
+      "meanMissilesFired": 3,
+      "meanMissileHits": 2.5,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 2,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 47,
+      "p90Damage": 56,
+      "survivalPercent": 100,
+      "meanMissilesFired": 3.9166666666666665,
+      "meanMissileHits": 3.3333333333333335,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 2,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 48,
+      "p90Damage": 70,
+      "survivalPercent": 100,
+      "meanMissilesFired": 11.166666666666666,
+      "meanMissileHits": 3.1666666666666665,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 3,
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 54.166666666666664,
+      "p90Damage": 78,
+      "survivalPercent": 100,
+      "meanMissilesFired": 4.166666666666667,
+      "meanMissileHits": 3.5833333333333335,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 3,
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 60.166666666666664,
+      "p90Damage": 102,
+      "survivalPercent": 83.33333333333334,
+      "meanMissilesFired": 5.25,
+      "meanMissileHits": 4.083333333333333,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "stageId": 3,
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 50.333333333333336,
+      "p90Damage": 76,
+      "survivalPercent": 100,
+      "meanMissilesFired": 11.75,
+      "meanMissileHits": 2.8333333333333335,
+      "maxMissiles": 2
+    }
+  ],
+  "bossRows": [
+    {
+      "version": "before",
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 23.333333333333332,
+      "p90Damage": 60,
+      "survivalPercent": 100,
+      "meanMissilesFired": 1.1666666666666667,
+      "meanMissileHits": 1.1666666666666667,
+      "maxMissiles": 1
+    },
+    {
+      "version": "before",
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 13.333333333333334,
+      "p90Damage": 40,
+      "survivalPercent": 100,
+      "meanMissilesFired": 0.6666666666666666,
+      "meanMissileHits": 0.6666666666666666,
+      "maxMissiles": 1
+    },
+    {
+      "version": "before",
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 85.33333333333333,
+      "p90Damage": 168,
+      "survivalPercent": 41.66666666666667,
+      "meanMissilesFired": 4.416666666666667,
+      "meanMissileHits": 4.166666666666667,
+      "maxMissiles": 1
+    },
+    {
+      "version": "applied",
+      "motion": "straight",
+      "runs": 12,
+      "meanDamage": 20,
+      "p90Damage": 40,
+      "survivalPercent": 100,
+      "meanMissilesFired": 1.1666666666666667,
+      "meanMissileHits": 1,
+      "maxMissiles": 2
+    },
+    {
+      "version": "applied",
+      "motion": "weave",
+      "runs": 12,
+      "meanDamage": 6.666666666666667,
+      "p90Damage": 20,
+      "survivalPercent": 100,
+      "meanMissilesFired": 0.6666666666666666,
+      "meanMissileHits": 0.3333333333333333,
+      "maxMissiles": 1
+    },
+    {
+      "version": "applied",
+      "motion": "evade",
+      "runs": 12,
+      "meanDamage": 42.666666666666664,
+      "p90Damage": 100,
+      "survivalPercent": 83.33333333333334,
+      "meanMissilesFired": 4.416666666666667,
+      "meanMissileHits": 2.0833333333333335,
+      "maxMissiles": 2
+    }
+  ],
+  "limitations": [
+    "60초 무격추·무회복·무강화 압박 시험, 완주율 예측이 아님",
+    "고도 800m 평지, 550kts. yaw: 직진 0, 완만한 회피 0.16*sin(t/5), 적극적 회피 0.48*sin(t/3) rad/s",
+    "실제 비행·발사 조건·적 미사일 유도 함수를 공유. 스폰 위치와 지상 배치는 근사이며 실제 지형·피치·발사구 위치는 생략",
+    "60Hz 점 충돌 판정은 현재 게임과 동일한 반경을 사용. 브라우저 프레임률 및 조작 패턴에 따라 실전 명중률은 달라질 수 있음",
+    "피격 피해는 격추 후에도 누적하여 압박을 비교. 생존율은 최초 누적 피해 100 기준. 동일 시드 사용, 발사 변화에 따른 난수 소비 차이는 존재"
+  ]
+}

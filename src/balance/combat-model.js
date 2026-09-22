@@ -2,7 +2,7 @@ import { BALANCE } from '../data/generated/balance.js';
 import { PLAYER_BASE_STATS } from '../config/player-stats.js';
 import { createPlayerFlight } from '../player/state.js';
 import { consumeMagazine, tickMagazines } from '../combat/magazine.js';
-import { formationKind } from '../enemies/formation.js';
+import { formationKind, isEliteSpawn } from '../enemies/formation.js';
 
 export function createCombatInventory(stats) { return createPlayerFlight(null, stats); }
 
@@ -24,8 +24,8 @@ export function createWaveTargets(stage, count, random) {
             targets.push({id:'ship_hull', health:BALANCE.enemies.ship_hull.health, ship});
             for(let i=0;i<2;i++) targets.push({id:'ship_turret', health:BALANCE.enemies.ship_turret.health, ship});
         } else {
-            const id = kind === 'tank' ? 'tank' : 'stage_aircraft';
-            targets.push({id, health:kind === 'tank' ? BALANCE.enemies.tank.health : stage.aircraftHealth});
+            const id = kind === 'tank' ? 'tank' : isEliteSpawn(random()) ? 'elite' : 'stage_aircraft';
+            targets.push({id, health: id === 'stage_aircraft' ? stage.aircraftHealth : BALANCE.enemies[id].health});
         }
     }
     return targets;

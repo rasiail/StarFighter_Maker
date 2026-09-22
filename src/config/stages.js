@@ -6,6 +6,7 @@ export const STAGES = Object.freeze(BALANCE.stages.map(stage => Object.freeze({
     title: stage.title,
     environmentTheme: stage.environmentTheme,
     waves: Object.freeze([...stage.waves]),
+    eliteRatios: Object.freeze([...stage.eliteRatios]),
     maxActive: stage.maxActive,
     attackBudget: stage.attackBudget,
     enemyHealth: stage.aircraftHealth,
