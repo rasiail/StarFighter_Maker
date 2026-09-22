@@ -19,13 +19,13 @@ export function updateCamera(delta) {
     if (!gameState.cameraPivot) return;
 
     // 속도에 따른 카메라-전투기 거리 제어
-    // - 일반 속도(순항 속도 50% 이하): 기존 거리(12.5)의 절반인 6.25m
+    // - 일반 속도(순항 속도 50% 이하): 기존 거리(12.5)의 75%인 9.375m
     // - 속도 80% 이상: 현재 기본 거리인 12.5m
     // - 50% ~ 80% 구간: 속도가 빨라짐에 따라 거리가 점진적으로 멀어짐
     // - 전투기 뒤쪽에 카메라가 위치할 때만 적용 (타깃 캠/프리룩으로 측면·전방 회전 시 기본 거리 12.5m 유지)
     const clampedSpeedRatio = THREE.MathUtils.clamp(speedRatio, 0.0, 1.0);
     const speedT = THREE.MathUtils.clamp((clampedSpeedRatio - 0.5) / 0.3, 0.0, 1.0);
-    const speedDistanceFactor = THREE.MathUtils.lerp(0.5, 1.0, speedT);
+    const speedDistanceFactor = THREE.MathUtils.lerp(0.75, 1.0, speedT);
 
     // 피봇 회전 기준 카메라가 전투기 후방에 위치하는 정도 (cosYaw * cosPitch)
     const cosYaw = Math.cos(gameState.cameraPivot.rotation.y);
