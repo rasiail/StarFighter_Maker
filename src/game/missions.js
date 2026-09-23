@@ -39,10 +39,14 @@ function clearBattle() {
     gameState.jetExhaustSystem?.clear();
     clearFleet();
     clearDyingBosses();
+    gameState.bossDyingSequence = false;
     boss = null;
 }
 function fillWave() {
-    const count = reinforcementCount(encounter, enemies.filter(enemy => enemy.alive).length);
+    const aliveCount = enemies.filter(enemy => enemy.alive).length;
+    const count = reinforcementCount(encounter, aliveCount);
+    if (count <= 0) return;
+
     const eliteRatio = encounter.stage.eliteRatios[encounter.wave] || 0;
     const totalWaveEnemies = encounter.stage.waves[encounter.wave];
     const targetEliteForWave = Math.round(totalWaveEnemies * eliteRatio);
@@ -50,7 +54,11 @@ function fillWave() {
     let eliteToSpawn = 0;
     if (encounter.spawnedElites < targetEliteForWave) {
         const expectedElites = Math.round(targetEliteForWave * (encounter.spawned + count) / totalWaveEnemies);
-        eliteToSpawn = expectedElites - encounter.spawnedElites;
+        eliteToSpawn = Math.min(count, Math.max(0, expectedElites - encounter.spawnedElites));
+    } else if (eliteRatio > 0) {
+        for (let i = 0; i < count; i++) {
+            if (Math.random() < eliteRatio) eliteToSpawn++;
+        }
     }
 
     spawnFormation(count, { health: encounter.stage.enemyHealth, eliteCount: eliteToSpawn });
@@ -88,6 +96,10 @@ function updateMissionUI() {
 // Transitions happen after entity updates, never inside a projectile iteration.
 export function updateMission(delta) {
     if (!encounter || !gameState.isGameRunning || gameState.isGamePaused) return;
+    if (gameState.bossDyingSequence) {
+        updateMissionUI();
+        return;
+    }
     if (advanceEncounter(encounter)) {
         if (encounter.phase === 'waves') beginWave();
         else if (encounter.phase === 'boss') {
@@ -214,10 +226,18 @@ export function initMissions() {
         }
     });
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ isBoss }) => {
-        if (encounter && gameState.isGameRunning && !isBoss) recordEncounterKill(encounter, isBoss);
+        if (encounter && gameState.isGameRunning && !isBoss) {
+            recordEncounterKill(encounter, isBoss);
+            if (encounter.phase === 'waves' && !encounter.transition) {
+                fillWave();
+            }
+        }
     });
     gameEvents.on(EVENTS.BOSS_SEQUENCE_COMPLETE, () => {
-        if (encounter && gameState.isGameRunning) recordEncounterKill(encounter, true);
+        if (encounter && gameState.isGameRunning) {
+            resetCamera();
+            recordEncounterKill(encounter, true);
+        }
     });
     const cards = document.querySelectorAll('.stage-card');
     cards[0]?.classList.add('selected');

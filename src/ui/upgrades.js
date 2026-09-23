@@ -15,7 +15,7 @@ export function refreshProgressionUI() {
     status.textContent = `LV ${progression.level} · EXP ${progression.xp}/${xpToNextLevel(progression.level)}`;
     document.getElementById('xp-fill').style.width = `${100 * progression.xp / xpToNextLevel(progression.level)}%`;
     const prompt = document.getElementById('upgrade-prompt');
-    prompt.hidden = !gameState.isGameRunning || progression.pending === 0 || gameState.isGamePaused;
+    prompt.hidden = !gameState.isGameRunning || progression.pending === 0 || gameState.isGamePaused || gameState.bossDyingSequence;
     prompt.textContent = `[X] 스킬 업그레이드 가능 · ${progression.pending}회`;
     const hangar = document.getElementById('hangar-upgrade');
     hangar.textContent = `스킬 업그레이드 · ${progression.pending}회 [X]`;
@@ -81,6 +81,7 @@ function renderChoices() {
     list.firstElementChild?.focus();
 }
 export function openUpgrades() {
+    if (gameState.bossDyingSequence) return;
     if (!progression.pending || gameState.activeModal || (gameState.isGamePaused && gameState.phase !== 'hangar')) return;
     if (!gameState.isGameRunning && gameState.phase !== 'hangar') return;
     gameState.activeModal = 'cards';

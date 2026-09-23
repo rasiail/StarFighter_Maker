@@ -3,6 +3,7 @@ import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { camera, scene } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
+import { activeDyingBosses } from '../enemies/lifecycle.js';
 import { keys } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
@@ -49,6 +50,29 @@ export function updateCamera(delta) {
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, posLerp);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, posLerp);
     camera.rotation.set(-0.13, 0, 0);
+
+    // 보스 격추 파괴 시네마틱 킬캠: 카메라가 월드 씬으로 분리되어 파괴 중인 거대 보스를 중심(Boss-Centered)으로 포커싱
+    const dyingBoss = activeDyingBosses && activeDyingBosses[0];
+    if (!gameState.isPlayerDead && dyingBoss && dyingBoss.mesh) {
+        cameraConfig.targetFov = 58;
+        camera.fov += (cameraConfig.targetFov - camera.fov) * (delta * 4);
+        camera.updateProjectionMatrix();
+
+        // 보스 선체 기준 전측방 상공 오프셋 (거리 약 110m, 높이 약 40m)
+        const bossCamOffset = new THREE.Vector3(65, 38, 85);
+        const targetCamPos = dyingBoss.mesh.position.clone().add(bossCamOffset);
+
+        if (camera.parent !== scene) {
+            scene.attach(camera);
+            // 시네마틱 컷 전환: 보스 주변 시네마틱 앵글로 즉각 배치
+            camera.position.copy(targetCamPos);
+        } else {
+            const camLerp = 1.0 - Math.exp(-5.0 * delta);
+            camera.position.lerp(targetCamPos, camLerp);
+        }
+        camera.lookAt(dyingBoss.mesh.position);
+        return;
+    }
 
     let targetEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
 

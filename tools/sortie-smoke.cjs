@@ -35,7 +35,7 @@ const puppeteer = require('puppeteer');
                 return {
                     phase: mission.encounter.phase,
                     enemies: enemies.filter(enemy => enemy.alive).length,
-                    expected: Math.min(mission.encounter.stage.maxActive, mission.encounter.stage.waves[0]),
+                    expected: Math.min(mission.encounter.stage.maxActive, Math.ceil(mission.encounter.stage.waves[0] * 1.5)),
                     cameraZ: camera.position.z,
                     hud: [hudCanvas.width, hudCanvas.height],
                     hudPainted: hudCtx.getImageData(0, 0, hudCanvas.width, hudCanvas.height).data.some((v, i) => i % 4 === 3 && v > 0),

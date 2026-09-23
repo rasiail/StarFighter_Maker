@@ -28,4 +28,6 @@ export const gameState = {
     deathNextBurst: 0,
     deathSmokeTimer: 0,
     deathFallSpeed: 0,
+    bossSlowMoTimer: 0,
+    bossDyingSequence: false,
 };

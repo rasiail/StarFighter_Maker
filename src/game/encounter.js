@@ -21,5 +21,9 @@ export function advanceEncounter(encounter) {
 }
 export function reinforcementCount(encounter, alive) {
     if (encounter.phase !== 'waves' || encounter.transition) return 0;
-    return Math.max(0, Math.min(encounter.stage.maxActive - alive, encounter.stage.waves[encounter.wave] - encounter.spawned));
+    const remainingKills = Math.max(0, encounter.stage.waves[encounter.wave] - encounter.kills);
+    if (remainingKills === 0) return 0;
+    const targetActive = Math.min(encounter.stage.maxActive, Math.ceil(remainingKills * 1.5));
+    return Math.max(0, targetActive - alive);
 }
+

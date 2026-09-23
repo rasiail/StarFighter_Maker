@@ -350,14 +350,14 @@ export const BALANCE = deepFreeze({
       "environmentTheme": "DESERT",
       "maxActive": 30,
       "attackBudget": 4,
-      "aircraftHealth": 80,
+      "aircraftHealth": 60,
       "bossHealth": 2200,
       "bossName": "CANYON LEVIATHAN",
       "xpRewardMultiplier": 0.85,
       "waves": [
-        10,
         16,
-        22
+        24,
+        31
       ],
       "eliteRatios": [
         0,
@@ -377,10 +377,10 @@ export const BALANCE = deepFreeze({
       "bossName": "OCEAN DREADNOUGHT",
       "xpRewardMultiplier": 0.9,
       "waves": [
-        18,
-        24,
-        30,
-        36
+        29,
+        37,
+        44,
+        50
       ],
       "eliteRatios": [
         0,
@@ -401,11 +401,11 @@ export const BALANCE = deepFreeze({
       "bossName": "METROPOLIS OVERLORD",
       "xpRewardMultiplier": 1.4,
       "waves": [
-        25,
-        30,
-        36,
-        42,
-        48
+        40,
+        47,
+        54,
+        61,
+        67
       ],
       "eliteRatios": [
         0,
@@ -429,7 +429,7 @@ export const BALANCE = deepFreeze({
     "tank": {
       "enemyId": "tank",
       "displayNameKo": "전차",
-      "health": 120,
+      "health": 100,
       "xpReward": 25,
       "scoreReward": 1500,
       "hitRadiusM": 18,
@@ -470,7 +470,7 @@ export const BALANCE = deepFreeze({
       "xpReward": 100,
       "scoreReward": 3000,
       "hitRadiusM": 24,
-      "countsAsTarget": 1,
+      "countsAsTarget": true,
       "notes": "정예 전투기"
     }
   },

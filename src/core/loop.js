@@ -159,10 +159,14 @@ export function stepSimulation(delta) {
 function animate() {
     requestAnimationFrame(animate);
 
-    const delta = Math.min(0.08, clock.getDelta());
+    let delta = Math.min(0.08, clock.getDelta());
     updateGamepad(delta);
 
     if (gameState.isGameRunning && !gameState.isGamePaused) {
+        if (gameState.bossSlowMoTimer > 0) {
+            gameState.bossSlowMoTimer -= delta;
+            delta *= 0.35; // 보스 격파 순간 영화 같은 0.35배 시네마틱 슬로우모션
+        }
         try {
             stepSimulation(delta);
         } catch (err) {

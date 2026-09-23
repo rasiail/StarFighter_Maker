@@ -18,6 +18,7 @@ export function clearDyingBosses() {
         if (b.mesh) scene.remove(b.mesh);
     }
     activeDyingBosses.length = 0;
+    gameState.bossDyingSequence = false;
 }
 
 
@@ -61,45 +62,65 @@ export function updateDyingBosses(delta) {
         const elapsed = b.totalTime - b.timer;
 
         // 관성 감속 및 통제 불능 회전/하강
-        b.speed = Math.max(30, (b.speed || 180) - delta * 60);
+        b.speed = Math.max(30, (b.speed || 180) - delta * 50);
         b.mesh.translateZ(-b.speed * 0.514444 * delta);
-        b.mesh.rotateZ(0.7 * delta);
-        b.mesh.rotateX(0.15 * delta);
-        b.mesh.position.y -= 25 * delta;
+        b.mesh.rotateZ(0.75 * delta);
+        b.mesh.rotateX(0.18 * delta);
+        b.mesh.position.y -= 22 * delta;
 
-        // 거대 보스(scale 9) 선체 곳곳에서 지속 연기 트레일 방출
+        // 거대 보스(scale 9) 선체 곳곳에서 짙은 대형 연기 트레일 방출
         b.smokeTimer -= delta;
         if (b.smokeTimer <= 0) {
-            for (let k = 0; k < 2; k++) {
-                const offset = new THREE.Vector3(
-                    (Math.random() - 0.5) * 30,
-                    (Math.random() - 0.5) * 15,
-                    (Math.random() - 0.5) * 40
-                );
-                createSmokePuff(b.mesh.position.clone().add(offset));
+            const smokeOffsets = [
+                new THREE.Vector3(-25, 2, 5),  // 좌익
+                new THREE.Vector3(25, 2, 5),   // 우익
+                new THREE.Vector3(0, 5, -20),  // 중앙 동체
+                new THREE.Vector3(0, -2, 25),  // 후방 엔진
+            ];
+            for (const off of smokeOffsets) {
+                const jitter = new THREE.Vector3((Math.random()-0.5)*8, (Math.random()-0.5)*5, (Math.random()-0.5)*8);
+                createSmokePuff(b.mesh.position.clone().add(off.clone().applyEuler(b.mesh.rotation)).add(jitter));
             }
-            b.smokeTimer = 0.05;
+            b.smokeTimer = 0.04;
         }
 
-        // 중간 단발성 연쇄 유폭 (약 0.35초 간격으로 선체 각 부위에서 폭발)
-        if (elapsed >= b.nextBurst && b.timer > 0.35) {
+        // 중간 단발성 연쇄 유폭 (약 0.28~0.38초 간격으로 거대 선체 각 부위에서 대형 폭발)
+        if (elapsed >= b.nextBurst && b.timer > 0.8) {
             const burstOffset = new THREE.Vector3(
-                (Math.random() - 0.5) * 35,
-                (Math.random() - 0.5) * 20,
-                (Math.random() - 0.5) * 45
+                (Math.random() - 0.5) * 55,
+                (Math.random() - 0.5) * 28,
+                (Math.random() - 0.5) * 65
             );
-            triggerExplosion(b.mesh.position.clone().add(burstOffset), 45, 2.8);
+            triggerExplosion(b.mesh.position.clone().add(burstOffset), 65, 3.8);
             audio.playExplosion();
-            b.nextBurst = elapsed + (0.32 + Math.random() * 0.18);
-            b.mesh.rotateZ((Math.random() - 0.5) * 0.3);
+            b.nextBurst = elapsed + (0.28 + Math.random() * 0.16);
+            b.mesh.rotateZ((Math.random() - 0.5) * 0.4);
         }
 
-        // 3초 종료 시: 초대형 클라이맥스 대폭발 및 씬에서 제거
+        // 4.2초 시점 (남은 시간 0.8초): 피날레 클라이맥스 연쇄 대폭발 시작
+        if (b.timer <= 0.8 && !b.finalPhaseStarted) {
+            b.finalPhaseStarted = true;
+            triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(-15, 8, -20)), 110, 5.5);
+            scheduleCombat(0.18, () => {
+                if (b.mesh) triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(20, -5, 10)), 120, 6.0);
+            });
+            scheduleCombat(0.36, () => {
+                if (b.mesh) triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(0, 12, 0)), 135, 6.5);
+            });
+            audio.playExplosion();
+        }
+
+        // 5.0초 종료 시: 초대형 클라이맥스 대폭발 및 씬에서 제거, 시퀀스 완료 이벤트
         if (b.timer <= 0) {
-            triggerExplosion(b.mesh.position, 130, 5.5);
+            triggerExplosion(b.mesh.position, 180, 8.5);
+            // 시간차 2차 대폭발
+            scheduleCombat(0.1, () => {
+                triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(15, 5, -10)), 90, 5.0);
+            });
             audio.playExplosion();
             scene.remove(b.mesh);
             activeDyingBosses.splice(i, 1);
+            gameState.bossDyingSequence = false;
             gameEvents.emit(EVENTS.BOSS_SEQUENCE_COMPLETE);
         }
     }
@@ -111,16 +132,19 @@ export function killEnemy(enemy) {
 
     if (enemy.isBoss) {
         enemy.isDying = true;
-        // 보스는 즉시 scene.remove 하지 않고 activeDyingBosses에 등록하여 3초 연출
+        gameState.bossDyingSequence = true;
+        gameState.bossSlowMoTimer = 0.8; // 격파 순간 0.8초 시네마틱 슬로우모션 발동
+        // 보스는 즉시 scene.remove 하지 않고 activeDyingBosses에 등록하여 5초 연출
         activeDyingBosses.push({
             mesh: enemy.mesh,
-            timer: 3.0,
-            totalTime: 3.0,
+            timer: 5.0,
+            totalTime: 5.0,
             nextBurst: 0.25,
             smokeTimer: 0,
             speed: enemy.speed || 180,
+            finalPhaseStarted: false,
         });
-        triggerExplosion(enemy.mesh.position, 70, 3.5);
+        triggerExplosion(enemy.mesh.position, 90, 4.8);
         audio.playExplosion();
         playerFlight.score += BALANCE.enemies.boss.scoreReward;
     } else if (enemy.isShip) {

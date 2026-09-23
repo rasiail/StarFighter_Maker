@@ -89,7 +89,10 @@ export function updateEnemies(delta) {
             const spawnDist = 1600 + Math.random() * 600;
             const x = playerMesh.position.x + pFwd.x * spawnDist + (Math.random() - 0.5) * 600;
             const z = playerMesh.position.z + pFwd.z * spawnDist + (Math.random() - 0.5) * 600;
-            enemy.mesh.position.set(x, Math.max(750, playerMesh.position.y, getSurfaceHeight(x, z) + 400), z);
+            const groundY = getSurfaceHeight(x, z);
+            const targetY = playerMesh.position.y + (enemy.altitudeOffset || 0);
+            const reY = Math.max(groundY + 280, Math.min(1650, targetY));
+            enemy.mesh.position.set(x, reY, z);
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI);
             enemy.flight = null;
@@ -99,14 +102,18 @@ export function updateEnemies(delta) {
             enemy.burstShots = 0;
         }
         if (!enemy.flight) {
-            enemy.flight = createFlightState(new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.mesh.quaternion));
+            enemy.flight = createFlightState(
+                new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.mesh.quaternion),
+                enemy.altitudeOffset || 0
+            );
         }
         const speed = enemy.speed * (enemy.state === 'INTERCEPT' ? 0.65 : 0.58);
         const flight = stepFlight(enemy.flight, enemy.mesh.position, playerMesh.position,
             speed, delta, getSurfaceHeight, enemy.isBoss, enemy.evadeTimer > 0);
         enemy.evadeTimer = Math.max(0, (enemy.evadeTimer || 0) - delta);
         enemy.state = flight.state;
-        enemy.mesh.rotation.set(enemy.flight.pitch, enemy.flight.heading, enemy.flight.bank, 'YXZ');
+        const visualBank = enemy.flight.bank * 1.35;
+        enemy.mesh.rotation.set(enemy.flight.pitch, enemy.flight.heading, visualBank, 'YXZ');
         enemy.velocity.set(flight.forward.x, flight.forward.y, flight.forward.z).multiplyScalar(speed);
 
         // Assess aim after moving/steering; recovery and extension suppress fire.

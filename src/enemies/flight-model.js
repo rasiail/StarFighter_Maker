@@ -4,11 +4,12 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 const approach = (a, b, step) => a + clamp(b - a, -step, step);
 
-export function createFlightState(forward) {
+export function createFlightState(forward, altitudeOffset = 0) {
     return {
         heading: Math.atan2(-forward.x, -forward.z),
         pitch: Math.asin(clamp(forward.y, -1, 1)), bank: 0,
         recovering: false, recoveryHeading: 0, egressTime: 0, egressHeading: 0,
+        altitudeOffset, egressManeuver: 0
     };
 }
 
@@ -33,15 +34,32 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
     if (!flight.recovering && flight.egressTime <= 0 && (distance < 480 || evade)) {
         flight.egressTime = 3.5;
         flight.egressHeading = flight.heading;
+        if ((flight.altitudeOffset || 0) > 50) {
+            flight.egressManeuver = 0; // High Yo-Yo (상승 이탈)
+        } else if ((flight.altitudeOffset || 0) < -50) {
+            flight.egressManeuver = 1; // Slice Dive (급강하 이탈)
+        } else {
+            flight.egressManeuver = 2; // Level extend
+        }
     }
     const egress = flight.egressTime > 0;
     flight.egressTime = Math.max(0, flight.egressTime - dt);
     let heading = Math.hypot(dx, dz) > 1 ? Math.atan2(-dx, -dz) : flight.heading;
-    let pitch = clamp(Math.atan2(Math.max(ground + 300, Math.min(2300, target.y)) - position.y,
+    const desiredAlt = clamp(target.y + (flight.altitudeOffset || 0), ground + 280, 1650);
+    let pitch = clamp(Math.atan2(desiredAlt - position.y,
         Math.max(450, Math.hypot(dx, dz))), -0.38, 0.48);
     if (egress) {
         heading = flight.egressHeading;
-        pitch = clamp((Math.max(ground + 350, Math.min(2200, target.y)) - position.y) / 1000, -0.18, 0.28);
+        if (flight.egressManeuver === 0 && position.y < 1600) {
+            pitch = 0.28;
+        } else if (flight.egressManeuver === 1 && position.y > ground + 360) {
+            pitch = -0.22;
+        } else {
+            pitch = clamp((desiredAlt - position.y) / 1000, -0.18, 0.28);
+        }
+    }
+    if (position.y > 1650) {
+        pitch = Math.min(pitch, -0.22); // 1650m 고도 상한선 엄수
     }
     if (flight.recovering) {
         heading = flight.recoveryHeading;
@@ -78,7 +96,7 @@ export function stepAirWeapons(enemy, dt, distance, alignment, allowed, random =
     if (gunAim && enemy.fireCooldown <= 0) {
         cannon = true;
         enemy.burstShots = (enemy.burstShots || (enemy.isBoss ? 4 : 3)) - 1;
-        enemy.fireCooldown = enemy.burstShots > 0 ? 0.15 : (enemy.isBoss ? 0.8 : 1.2) + random() * 0.4;
+        enemy.fireCooldown = enemy.burstShots > 0 ? 0.15 : (enemy.isBoss ? 1.6 : 2.4) + random() * 0.4;
     }
     if (missileAllowed && missileAim && enemy.missileCooldown <= 0 && enemy.missileLockTime >= 1.1) {
         missile = true;

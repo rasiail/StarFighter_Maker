@@ -128,11 +128,11 @@ function spawnGroundTank(pos, callsign) {
     enemies.push(enemy);
     return enemy;
 }
-export function spawnEnemy(pos, { health = 80, boss = false, elite = false } = {}) {
+export function spawnEnemy(pos, { health = 60, boss = false, elite = false, altitudeOffset = 0 } = {}) {
     elite = !boss && elite;
     if (elite) health = enemyData.elite.health;
     const groundY = getSurfaceHeight(pos.x, pos.z);
-    pos.y = Math.max(pos.y, Math.max(750, groundY + 400));
+    pos.y = Math.max(groundY + 280, Math.min(1650, pos.y));
 
     const enemyMesh = elite ? createEliteMesh() : createDroneMesh(boss);
     enemyMesh.userData.isBoss = boss;
@@ -150,6 +150,7 @@ export function spawnEnemy(pos, { health = 80, boss = false, elite = false } = {
         hitRadius: boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
         speed: boss ? 240 : 340,
         velocity: new THREE.Vector3(0, 0, -1),
+        altitudeOffset: boss ? 0 : altitudeOffset,
         state: 'PATROL', // PATROL, INTERCEPT, ENGAGE, EVADE
         patrolTimer: Math.random() * 5,
         patrolTarget: new THREE.Vector3(pos.x + 3000, pos.y, pos.z - 4000),
@@ -200,15 +201,38 @@ export function spawnFormation(count, options = {}) {
                 spawnGroundTank(new THREE.Vector3(px, 0, pz));
             }
         } else {
-            // 공중 병력 스폰 (하늘에서 스폰)
-            const py = playerMesh.position.y + (Math.random() - 0.5) * 1000;
-            const pos = new THREE.Vector3(px, Math.max(750, py), pz);
+            // 공중 병력 스폰: 에이스 컴뱃 스타일 고저차(Low/Mid/High) 분배 및 고도 상한 1650m 제한
+            const groundY = getSurfaceHeight(px, pz);
+            let py;
+            let altOffset;
+            if (options.boss) {
+                py = Math.max(groundY + 450, 1150);
+                altOffset = 0;
+            } else {
+                const roll = Math.random();
+                if (roll < 0.3) {
+                    // Low 레이어 (약 30%): 저고도 지형 활용 (지형 위 320m ~ 580m)
+                    py = groundY + 320 + Math.random() * 260;
+                    altOffset = -220 - Math.random() * 180;
+                } else if (roll < 0.7) {
+                    // Mid 레이어 (약 40%): 중고도 일반 순항 (850m ~ 1150m)
+                    py = Math.max(groundY + 380, 850 + Math.random() * 300);
+                    altOffset = (Math.random() - 0.5) * 200;
+                } else {
+                    // High 레이어 (약 30%): 고고도 요격 (1250m ~ 1600m)
+                    py = Math.max(groundY + 480, 1250 + Math.random() * 350);
+                    altOffset = 220 + Math.random() * 200;
+                }
+            }
+            py = Math.max(groundY + 280, Math.min(1650, py));
+
+            const pos = new THREE.Vector3(px, py, pz);
             let isElite = false;
             if (!options.boss && elitesRemaining > 0) {
                 isElite = true;
                 elitesRemaining--;
             }
-            const enemy = spawnEnemy(pos, { ...options, elite: isElite });
+            const enemy = spawnEnemy(pos, { ...options, elite: isElite, altitudeOffset: altOffset });
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI); // Aircraft nose points along local -Z.
             enemy.state = 'INTERCEPT';

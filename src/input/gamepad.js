@@ -36,12 +36,14 @@ function navigateMenu(input) {
     if (input.pressed[0] || input.pressed[1]) items[index]?.click();
 }
 export function updateGamepad(delta, now = performance.now() / 1000) {
-    if (document.hidden || !document.hasFocus()) { resetGamepad(); return; }
+    if (document.hidden) { resetGamepad(); return; }
     let pads;
     try { pads = Array.from(navigator.getGamepads?.() || []); }
     catch { resetGamepad(); return; }
     const pad = pads.find(p => p?.connected && p.mapping === 'standard' && `${p.index}:${p.id}` === device)
-        || pads.find(p => p?.connected && p.mapping === 'standard');
+        || pads.find(p => p?.connected && p.mapping === 'standard')
+        || pads.find(p => p?.connected && `${p.index}:${p.id}` === device)
+        || pads.find(p => p?.connected);
     if (!pad) { device = null; resetGamepad(); return; }
     const identity = `${pad.index}:${pad.id}`;
     if (identity !== device) { resetGamepad(); device = identity; }
@@ -57,13 +59,24 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
         else navigateMenu(input);
         return;
     }
-    if (input.pressed[0]) { openUpgrades(); if (gameState.isGamePaused) { resetGamepad(); return; } }
+    // [Ace Combat Controller Mapping]
+    // D-pad Up(12) or Select(8) opens upgrades
+    if (input.pressed[12] || input.pressed[8]) { openUpgrades(); if (gameState.isGamePaused) { resetGamepad(); return; } }
+    // X Button (2): Switch weapon mode (Std / Multi)
     if (input.pressed[2]) { gameState.missileMode = gameState.missileMode === 1 ? 2 : 1; updateWeaponHUD(); }
-    if (input.tap[1]) tryFireMissile();
-    if (input.tap[6]) cycleTarget();
+    // B Button (1): Fire Missile
+    if (input.pressed[1]) tryFireMissile();
+    // Y Button (3): Cycle Target
+    if (input.pressed[3]) cycleTarget();
+
     Object.assign(padInput, {
-        pitch: input.axes[1], roll: -input.axes[0], yaw: Number(input.down[4]) - Number(input.down[5]),
-        throttleUp: input.down[7], throttleDown: input.down[3], fireCannon: input.hold[1], targetCam: input.hold[6],
+        pitch: input.axes[1],
+        roll: -input.axes[0],
+        yaw: Number(input.down[4]) - Number(input.down[5]), // LB(4) / RB(5)
+        throttleUp: input.down[7],                          // RT (Throttle Up / Afterburner)
+        throttleDown: input.down[6],                        // LT (Throttle Down / Airbrake)
+        fireCannon: input.down[0],                          // A Button (Fire Cannon continuous)
+        targetCam: input.down[11] || input.down[13],        // R3(11) or D-pad Down(13)
     });
     if (wasThrottle && !padInput.throttleUp && !padInput.throttleDown) playerFlight.cruiseSpeed = playerFlight.defaultCruiseSpeed;
     if (wasTargetCam && !padInput.targetCam) {
