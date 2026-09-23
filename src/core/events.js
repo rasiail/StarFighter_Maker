@@ -23,4 +23,5 @@ export const EVENTS = Object.freeze({
     ENEMY_DESTROYED: 'enemy:destroyed',
     PLAYER_DESTROYED: 'player:destroyed',
     PROGRESSION_CHANGED: 'progression:changed',
+    BOSS_SEQUENCE_COMPLETE: 'boss:sequence_complete',
 });

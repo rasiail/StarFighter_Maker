@@ -1,7 +1,7 @@
 // camera/camera: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
-import { camera } from '../rendering/scene.js';
+import { camera, scene } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
 import { keys } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
@@ -11,6 +11,23 @@ import { cameraFollowOffset } from './follow.js';
 export let cameraConfig;
 
 export function updateCamera(delta) {
+    if (gameState.isPlayerDead && gameState.playerCrashed && gameState.crashPosition) {
+        if (camera.parent !== scene) {
+            scene.attach(camera);
+        }
+        cameraConfig.targetFov = 58;
+        camera.fov += (cameraConfig.targetFov - camera.fov) * (delta * 4);
+        camera.updateProjectionMatrix();
+
+        // 추락 지점 상공에서 내려다보는 앵글 (Overhead High-Angle View)
+        const overheadOffset = new THREE.Vector3(25, 80, 35);
+        const targetCamPos = gameState.crashPosition.clone().add(overheadOffset);
+        const camLerp = 1.0 - Math.exp(-3.5 * delta);
+        camera.position.lerp(targetCamPos, camLerp);
+        camera.lookAt(gameState.crashPosition);
+        return;
+    }
+
     // 속도에 따른 동적 FOV 조정
     const speedRatio = (playerFlight.speed - playerFlight.minSpeed) / (playerFlight.maxSpeed - playerFlight.minSpeed);
     cameraConfig.targetFov = 62 + speedRatio * 16;
@@ -131,4 +148,20 @@ export function initCamera() {
         freelookPitch: 0,
         freelookIdleTimer: 0
     };
+}
+
+export function resetCamera() {
+    if (!gameState.cameraPivot) return;
+    if (camera.parent !== gameState.cameraPivot) {
+        gameState.cameraPivot.add(camera);
+    }
+    const cameraOffset = cameraFollowOffset();
+    camera.position.set(0, cameraOffset.y, cameraOffset.z);
+    camera.rotation.set(-0.13, 0, 0);
+    if (cameraConfig) {
+        cameraConfig.freelookYaw = 0;
+        cameraConfig.freelookPitch = 0;
+        cameraConfig.freelookIdleTimer = 0;
+        cameraConfig.targetFov = 65;
+    }
 }

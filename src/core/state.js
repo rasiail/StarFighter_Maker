@@ -22,4 +22,10 @@ export const gameState = {
     isFiringGun: false,
     isPlayerDead: false,
     deathTimer: 0,
+    deathTotalTime: 5.0,
+    playerCrashed: false,
+    crashPosition: null,
+    deathNextBurst: 0,
+    deathSmokeTimer: 0,
+    deathFallSpeed: 0,
 };

@@ -10,12 +10,13 @@ import { refreshProgressionUI, openUpgrades } from '../ui/upgrades.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
 import { clearCombatInput } from '../input/controls.js';
 import { audio } from '../audio/audio.js';
-import { currentEnvironment, setupStageEnvironment } from '../world/environment.js';
+import { currentEnvironment, setupStageEnvironment, getSurfaceHeight } from '../world/environment.js';
 import { clearProjectiles, updateWeaponHUD } from '../combat/weapons.js';
-import { clearParticles } from '../effects/particles.js';
+import { clearParticles, triggerExplosion } from '../effects/particles.js';
 import { container } from '../rendering/scene.js';
 import { clearFleet, spawnFormation, spawnBoss, enemies } from '../enemies/fleet.js';
-import { cameraConfig } from '../camera/camera.js';
+import { clearDyingBosses, activeDyingBosses } from '../enemies/lifecycle.js';
+import { cameraConfig, resetCamera } from '../camera/camera.js';
 import { updateTargeting } from '../combat/targeting.js';
 import { renderHUD } from '../ui/hud.js';
 import { BALANCE } from '../data/generated/balance.js';
@@ -37,6 +38,7 @@ function clearBattle() {
     clearParticles();
     gameState.jetExhaustSystem?.clear();
     clearFleet();
+    clearDyingBosses();
     boss = null;
 }
 function fillWave() {
@@ -70,10 +72,16 @@ function updateMissionUI() {
     status.textContent = encounter?.phase === 'boss' ? 'BOSS ENGAGEMENT' : `WAVE ${(encounter?.wave || 0) + 1} / ${encounter?.stage.waves.length || 0}`;
     document.getElementById('target-count').textContent = encounter?.phase === 'boss' ? 'BOSS' : Math.max(0, gameState.TARGET_KILLS - (encounter?.kills || 0));
     const bar = document.getElementById('boss-status');
-    bar.hidden = !boss?.alive || !gameState.isGameRunning;
+    const isBossDying = boss && (!boss.alive || boss.isDying) && activeDyingBosses.length > 0;
+    bar.hidden = (!boss?.alive && !isBossDying) || !gameState.isGameRunning;
     if (boss?.alive) {
         document.getElementById('boss-name').textContent = `${boss.callsign} · ${Math.max(0, Math.ceil(boss.health))} HP`;
         document.getElementById('boss-hp-fill').style.width = `${Math.max(0, boss.health / boss.maxHealth * 100)}%`;
+        document.getElementById('boss-hp-fill').style.backgroundColor = '';
+    } else if (isBossDying) {
+        document.getElementById('boss-name').textContent = `${boss.callsign} · DESTROYED`;
+        document.getElementById('boss-hp-fill').style.width = '0%';
+        document.getElementById('boss-hp-fill').style.backgroundColor = '#ff3344';
     }
 }
 
@@ -159,8 +167,10 @@ export function launchStage(stageId, { newRun = true } = {}) {
     playerMesh.quaternion.set(0, 0, 0, 1);
     replenishPlayerForSortie(playerFlight);
     gameState.missileMode = 1;
-    cameraConfig.freelookYaw = cameraConfig.freelookPitch = 0;
-    cameraConfig.freelookIdleTimer = 2;
+    resetCamera();
+    gameState.playerCrashed = false;
+    gameState.crashPosition = null;
+    gameState.deathFallSpeed = 0;
     gameState.cameraPivot?.rotation.set(0, 0, 0);
     gameState.isGameRunning = true;
     gameState.isGamePaused = false;
@@ -187,12 +197,27 @@ export function initMissions() {
     gameEvents.on(EVENTS.PLAYER_DESTROYED, () => {
         if (gameState.isGameRunning && !gameState.isPlayerDead) {
             gameState.isPlayerDead = true;
-            gameState.deathTimer = 8.0;
-            // playerMesh remains visible for the death animation
+            gameState.deathTimer = 5.0;
+            gameState.deathTotalTime = 5.0;
+            gameState.playerCrashed = false;
+            gameState.crashPosition = null;
+            gameState.deathNextBurst = 0.9;
+            gameState.deathSmokeTimer = 0;
+
+            const groundY = getSurfaceHeight(playerMesh.position.x, playerMesh.position.z);
+            const currentAlt = Math.max(10, playerMesh.position.y - groundY);
+            gameState.deathFallSpeed = Math.max(90, currentAlt / 2.6);
+
+            triggerExplosion(playerMesh.position, 45, 2.5);
+            audio.playExplosion();
+            audio.setEngineThrottle(0, false);
         }
     });
     gameEvents.on(EVENTS.ENEMY_DESTROYED, ({ isBoss }) => {
-        if (encounter && gameState.isGameRunning) recordEncounterKill(encounter, isBoss);
+        if (encounter && gameState.isGameRunning && !isBoss) recordEncounterKill(encounter, isBoss);
+    });
+    gameEvents.on(EVENTS.BOSS_SEQUENCE_COMPLETE, () => {
+        if (encounter && gameState.isGameRunning) recordEncounterKill(encounter, true);
     });
     const cards = document.querySelectorAll('.stage-card');
     cards[0]?.classList.add('selected');
@@ -210,6 +235,7 @@ export function initMissions() {
     document.getElementById('btn-restart').addEventListener('click', () => launchStage(runStartStage));
     document.getElementById('btn-main-menu').addEventListener('click', () => {
         if (gameState.activeModal === 'cards') return;
+        resetCamera();
         gameState.isGameRunning = false;
         gameState.isGamePaused = false;
         gameState.phase = 'menu';

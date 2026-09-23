@@ -2,13 +2,23 @@ import { scheduleCombat } from '../core/scheduler.js';
 // enemies/lifecycle: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { activeSinkingShips, enemies } from './fleet.js';
-import { triggerExplosion } from '../effects/particles.js';
+import { triggerExplosion, createSmokePuff } from '../effects/particles.js';
 import { scene } from '../rendering/scene.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
 import { getSurfaceHeight } from '../world/environment.js';
 import { BALANCE } from '../data/generated/balance.js';
+import { audio } from '../audio/audio.js';
+
+export let activeDyingBosses = [];
+
+export function clearDyingBosses() {
+    for (const b of activeDyingBosses) {
+        if (b.mesh) scene.remove(b.mesh);
+    }
+    activeDyingBosses.length = 0;
+}
 
 
 export function updateSinkingShips(delta) {
@@ -43,12 +53,78 @@ export function updateSinkingShips(delta) {
         }
     }
 }
+
+export function updateDyingBosses(delta) {
+    for (let i = activeDyingBosses.length - 1; i >= 0; i--) {
+        const b = activeDyingBosses[i];
+        b.timer -= delta;
+        const elapsed = b.totalTime - b.timer;
+
+        // 관성 감속 및 통제 불능 회전/하강
+        b.speed = Math.max(30, (b.speed || 180) - delta * 60);
+        b.mesh.translateZ(-b.speed * 0.514444 * delta);
+        b.mesh.rotateZ(0.7 * delta);
+        b.mesh.rotateX(0.15 * delta);
+        b.mesh.position.y -= 25 * delta;
+
+        // 거대 보스(scale 9) 선체 곳곳에서 지속 연기 트레일 방출
+        b.smokeTimer -= delta;
+        if (b.smokeTimer <= 0) {
+            for (let k = 0; k < 2; k++) {
+                const offset = new THREE.Vector3(
+                    (Math.random() - 0.5) * 30,
+                    (Math.random() - 0.5) * 15,
+                    (Math.random() - 0.5) * 40
+                );
+                createSmokePuff(b.mesh.position.clone().add(offset));
+            }
+            b.smokeTimer = 0.05;
+        }
+
+        // 중간 단발성 연쇄 유폭 (약 0.35초 간격으로 선체 각 부위에서 폭발)
+        if (elapsed >= b.nextBurst && b.timer > 0.35) {
+            const burstOffset = new THREE.Vector3(
+                (Math.random() - 0.5) * 35,
+                (Math.random() - 0.5) * 20,
+                (Math.random() - 0.5) * 45
+            );
+            triggerExplosion(b.mesh.position.clone().add(burstOffset), 45, 2.8);
+            audio.playExplosion();
+            b.nextBurst = elapsed + (0.32 + Math.random() * 0.18);
+            b.mesh.rotateZ((Math.random() - 0.5) * 0.3);
+        }
+
+        // 3초 종료 시: 초대형 클라이맥스 대폭발 및 씬에서 제거
+        if (b.timer <= 0) {
+            triggerExplosion(b.mesh.position, 130, 5.5);
+            audio.playExplosion();
+            scene.remove(b.mesh);
+            activeDyingBosses.splice(i, 1);
+            gameEvents.emit(EVENTS.BOSS_SEQUENCE_COMPLETE);
+        }
+    }
+}
+
 export function killEnemy(enemy) {
     if (!enemy.alive || !gameState.isGameRunning || gameState.isGamePaused) return;
     enemy.alive = false;
-    triggerExplosion(enemy.mesh.position, 60, 2.5);
 
-    if (enemy.isShip) {
+    if (enemy.isBoss) {
+        enemy.isDying = true;
+        // 보스는 즉시 scene.remove 하지 않고 activeDyingBosses에 등록하여 3초 연출
+        activeDyingBosses.push({
+            mesh: enemy.mesh,
+            timer: 3.0,
+            totalTime: 3.0,
+            nextBurst: 0.25,
+            smokeTimer: 0,
+            speed: enemy.speed || 180,
+        });
+        triggerExplosion(enemy.mesh.position, 70, 3.5);
+        audio.playExplosion();
+        playerFlight.score += BALANCE.enemies.boss.scoreReward;
+    } else if (enemy.isShip) {
+        triggerExplosion(enemy.mesh.position, 60, 2.5);
         if (enemy.shipPart === 'HULL') {
             // [전함 본체 파괴] 전함 침몰 시작 및 연결된 모든 함포 연쇄 유폭!
             enemy.isSinking = true;
@@ -95,8 +171,9 @@ export function killEnemy(enemy) {
             playerFlight.score += BALANCE.enemies.ship_turret.scoreReward;
         }
     } else {
+        triggerExplosion(enemy.mesh.position, 60, 2.5);
         scene.remove(enemy.mesh); // 공중 적기나 탱크는 일반 제거
-        playerFlight.score += (enemy.isBoss ? BALANCE.enemies.boss : (enemy.isGround ? BALANCE.enemies.tank : (enemy.isElite ? BALANCE.enemies.elite : BALANCE.enemies.stage_aircraft))).scoreReward;
+        playerFlight.score += (enemy.isGround ? BALANCE.enemies.tank : (enemy.isElite ? BALANCE.enemies.elite : BALANCE.enemies.stage_aircraft)).scoreReward;
     }
 
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');
