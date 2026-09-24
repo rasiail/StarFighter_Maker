@@ -8,10 +8,15 @@ import { cameraFollowOffset } from '../camera/follow.js';
 
 export let playerMesh;
 export let playerFlight;
+export let playerVisual;
 
 
 export function initPlayer() {
-    playerMesh = createF104Mesh(false);
+    playerMesh = new THREE.Group();
+    playerMesh.name = "playerFlightRoot";
+    playerVisual = createF104Mesh(false);
+    playerVisual.name = "playerVisual";
+    playerMesh.add(playerVisual);
 
     playerMesh.position.set(0, 600, 1200);
 

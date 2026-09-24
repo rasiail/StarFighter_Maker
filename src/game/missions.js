@@ -4,7 +4,7 @@ import { clearCombatSchedule } from '../core/scheduler.js';
 import { STAGES, getStage } from '../config/stages.js';
 import { createEncounter, recordEncounterKill, advanceEncounter, reinforcementCount } from './encounter.js';
 import { createPlayerFlight, replenishPlayerForSortie } from '../player/state.js';
-import { playerFlight, playerMesh } from '../player/player.js';
+import { playerFlight, playerMesh, playerVisual } from '../player/player.js';
 import { resetProgression, progression } from '../progression/runtime.js';
 import { refreshProgressionUI, openUpgrades } from '../ui/upgrades.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
@@ -129,6 +129,7 @@ function enterHangar() {
     audio.stopFlightAudio();
     audio.playTitleBGM();
     replenishPlayerForSortie(playerFlight);
+    playerVisual.rotation.set(0, 0, 0);
     document.getElementById('hangar-modal').hidden = false;
     document.getElementById('hangar-depart').textContent = selectedStageId < STAGES.length ? `${getStage(selectedStageId + 1).title} 출격` : '런 완료';
     refreshProgressionUI();
@@ -178,6 +179,7 @@ export function launchStage(stageId, { newRun = true } = {}) {
     playerMesh.position.set(0, 800, 1200);
     playerMesh.quaternion.set(0, 0, 0, 1);
     replenishPlayerForSortie(playerFlight);
+    playerVisual.rotation.set(0, 0, 0);
     gameState.missileMode = 1;
     resetCamera();
     gameState.playerCrashed = false;

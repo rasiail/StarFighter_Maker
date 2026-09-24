@@ -442,3 +442,10 @@ button:focus, input:focus, .stage-card:focus {
     letter-spacing: 1.5px;
     box-shadow: 0 0 10px rgba(77, 245, 138, 0.15);
 }
+
+.option-row { gap: 16px; }
+.option-row > div { min-width: 0; overflow-wrap: anywhere; }
+.option-row .switch { flex: 0 0 50px; }
+.deadzone-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; color: #fff; font-size: 13px; font-weight: bold; }
+.deadzone-label output { color: #4df58a; font-family: monospace; }
+.option-hint { margin-top: 4px; color: #8edebb; font-size: 11px; line-height: 1.5; }

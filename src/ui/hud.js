@@ -4,6 +4,8 @@ import { camera, hudCanvas, hudCtx } from '../rendering/scene.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { enemies } from '../enemies/fleet.js';
 import { audio } from '../audio/audio.js';
+import { keys, mouseFlight } from '../input/state.js';
+import { padInput } from '../input/gamepad-state.js';
 import { HUD_LAYOUT } from './hud_layout.js';
 
 
@@ -21,6 +23,37 @@ export function renderHUD() {
     hudCtx.fillStyle = '#4df58a';
     hudCtx.lineWidth = 1.5;
     hudCtx.font = '13px "Share Tech Mono", monospace';
+
+    if (gameState.controlScheme === 'casual' && !gameState.isPlayerDead
+        && !(keys.targetCam || padInput.targetCam) && gameState.casualDeadzonePercent > 0) {
+        const side = Math.min(w, h) * gameState.casualDeadzonePercent / 100;
+        hudCtx.save();
+        hudCtx.globalAlpha = 0.25;
+        hudCtx.lineWidth = 1;
+        hudCtx.setLineDash([5, 7]);
+        hudCtx.strokeRect(cx - side / 2, cy - side / 2, side, side);
+        hudCtx.restore();
+    }
+
+    if (gameState.controlScheme === 'casual' && !gameState.isPlayerDead && mouseFlight.aimDirection) {
+        camera.updateMatrixWorld(true);
+        const origin = camera.getWorldPosition(new THREE.Vector3());
+        const drawDirection = (direction, goal) => {
+            const point = origin.clone().addScaledVector(direction, 10000).project(camera);
+            if (point.z < -1 || point.z > 1) return;
+            const x = (point.x + 1) * w / 2, y = (1 - point.y) * h / 2;
+            hudCtx.save();
+            hudCtx.strokeStyle = goal ? '#ffe08a' : '#4df58a';
+            hudCtx.lineWidth = goal ? 2 : 1.5;
+            hudCtx.beginPath();
+            hudCtx.arc(x, y, goal ? 10 : 4, 0, Math.PI * 2);
+            hudCtx.stroke();
+            if (goal) { hudCtx.fillStyle = '#ffe08a'; hudCtx.fillText('AIM', x + 14, y + 4); }
+            hudCtx.restore();
+        };
+        drawDirection(mouseFlight.aimDirection, true);
+        drawDirection(new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion), false);
+    }
 
     // 플레이어 기체 체력(HULL HP) 게이지 및 수치 실시간 갱신
     const hpEl = document.getElementById('player-hp-val');

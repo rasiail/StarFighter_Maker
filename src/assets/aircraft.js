@@ -1,7 +1,7 @@
 // assets/aircraft: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { createEngineEffects } from '../effects/exhaust.js';
-import { playerMesh } from '../player/player.js';
+import { playerVisual } from '../player/player.js';
 
 let textureLoader;
 let hasEmbeddedData;
@@ -305,23 +305,12 @@ function finalizeAssetLoading() {
     }
 }
 function refreshPlayerMesh() {
-    if (!playerMesh) return;
-    // cameraPivot이 playerMesh의 자식으로 등록되어 있다면 안전하게 임시 분리
-    if (gameState.cameraPivot && gameState.cameraPivot.parent === playerMesh) {
-        playerMesh.remove(gameState.cameraPivot);
-    }
-    while (playerMesh.children.length > 0) {
-        playerMesh.remove(playerMesh.children[0]);
-    }
+    if (!playerVisual) return;
+    playerVisual.clear();
     const newModel = createF104Mesh(false);
-    while (newModel.children.length > 0) {
-        playerMesh.add(newModel.children[0]);
-    }
-    playerMesh.baseGlow = newModel.baseGlow;
-    // 모델 교체 후 cameraPivot을 전투기 자식으로 다시 안전하게 재부착
-    if (gameState.cameraPivot) {
-        playerMesh.add(gameState.cameraPivot);
-    }
+    while (newModel.children.length > 0) playerVisual.add(newModel.children[0]);
+    playerVisual.baseGlow = newModel.baseGlow;
+    playerVisual.baseGlows = newModel.baseGlows;
 }
 
 export function initAircraft() {

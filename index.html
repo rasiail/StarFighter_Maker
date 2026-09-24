@@ -254,10 +254,32 @@
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
                         <div style="font-weight: bold; color: #ffffff; font-size: 14px;">CASUAL FLIGHT CONTROLS</div>
-                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">W/S: Pitch (Inverted), A/D: Yaw, Q/E: Roll</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">마우스: 목표 방향 지정<br>W/S: 속도 · A/D: 요 · Q/E: 롤<br>포커스 중 W/S: 피치 · A/D: 롤</div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-casual-controls">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="option-row" style="margin-bottom: 18px;">
+                    <div style="width: 100%;">
+                        <div class="deadzone-label">
+                            <label for="opt-casual-deadzone">캐주얼 카메라 데드존</label>
+                            <output id="opt-casual-deadzone-value" for="opt-casual-deadzone">25%</output>
+                        </div>
+                        <input type="range" id="opt-casual-deadzone" min="0" max="100" step="1" value="25" class="retro-slider">
+                        <div class="option-hint">정사각형 영역 · 마우스를 멈추면 AIM 중앙 복귀</div>
+                    </div>
+                </div>
+
+                <div class="option-row" style="margin-bottom: 18px;">
+                    <div>
+                        <label for="opt-target-follow" style="font-weight: bold; color: #ffffff; font-size: 14px;">타깃 자동 추적</label>
+                        <div class="option-hint">포커스 중 자동 추종 · WASD 입력 시 일시 중단</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="opt-target-follow" checked>
                         <span class="slider"></span>
                     </label>
                 </div>

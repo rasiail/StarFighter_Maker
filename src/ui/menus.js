@@ -119,6 +119,27 @@ export function initMenus() {
         optCasualControls.checked = (gameState.controlScheme === 'casual');
         optCasualControls.addEventListener('change', (e) => {
             gameState.controlScheme = e.target.checked ? 'casual' : 'standard';
+            clearCombatInput();
+        });
+    }
+
+    const optTargetFollow = document.getElementById('opt-target-follow');
+    if (optTargetFollow) {
+        optTargetFollow.checked = gameState.targetFollowEnabled;
+        optTargetFollow.addEventListener('change', (e) => {
+            gameState.targetFollowEnabled = e.target.checked;
+            clearCombatInput();
+        });
+    }
+
+    const deadzoneSlider = document.getElementById('opt-casual-deadzone');
+    const deadzoneValue = document.getElementById('opt-casual-deadzone-value');
+    if (deadzoneSlider && deadzoneValue) {
+        deadzoneSlider.value = gameState.casualDeadzonePercent;
+        deadzoneValue.textContent = `${gameState.casualDeadzonePercent}%`;
+        deadzoneSlider.addEventListener('input', () => {
+            gameState.casualDeadzonePercent = Math.max(0, Math.min(100, Number(deadzoneSlider.value)));
+            deadzoneValue.textContent = `${gameState.casualDeadzonePercent}%`;
         });
     }
 

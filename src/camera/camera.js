@@ -1,17 +1,22 @@
+import { cameraSyncBlend } from '../input/mouse-flight.js';
 // camera/camera: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { camera, scene } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
 import { activeDyingBosses } from '../enemies/lifecycle.js';
-import { keys } from '../input/state.js';
+import { keys, mouseFlight } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
+import { aimOutsideDeadzone } from '../player/mouse-aim.js';
 import { cameraFollowOffset } from './follow.js';
 
 export let cameraConfig;
 
 export function updateCamera(delta) {
+    const casualView = gameState.controlScheme === 'casual' && !gameState.isPlayerDead
+        && !(keys.targetCam || padInput.targetCam) && !activeDyingBosses?.length;
+    if (!casualView) cameraConfig.casualWorldQuaternion = null;
     if (gameState.isPlayerDead && gameState.playerCrashed && gameState.crashPosition) {
         if (camera.parent !== scene) {
             scene.attach(camera);
@@ -119,6 +124,32 @@ export function updateCamera(delta) {
         // Yaw 회전각 정규화 (-PI ~ PI 유지로 누적 방지)
         gameState.cameraPivot.rotation.y = THREE.MathUtils.euclideanModulo(gameState.cameraPivot.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
 
+    } else if (casualView) {
+        // Cancel inherited flight-root rotation. Translation still follows the
+        // aircraft, while the persistent aim goal drives the independent view.
+        if (!cameraConfig.casualWorldQuaternion) {
+            cameraConfig.casualWorldQuaternion = playerMesh.quaternion.clone()
+                .multiply(gameState.cameraPivot.quaternion);
+        }
+        const direction = mouseFlight.aimDirection;
+        const viewAttitude = cameraConfig.casualWorldQuaternion.clone().multiply(camera.quaternion);
+        const localAim = direction?.clone().applyQuaternion(viewAttitude.invert());
+        const desired = direction ? new THREE.Quaternion().setFromRotationMatrix(
+            new THREE.Matrix4().lookAt(new THREE.Vector3(), direction, new THREE.Vector3(0, 1, 0)))
+            .multiply(camera.quaternion.clone().invert()) : playerMesh.quaternion;
+        const maxStep = Math.max(playerFlight.maxPitchRate, playerFlight.maxYawRate * 3) * delta;
+        if (localAim && aimOutsideDeadzone(localAim, camera.fov, camera.aspect, gameState.casualDeadzonePercent)) {
+            // Camera follows the persistent goal outside the zone, not mouse velocity.
+            cameraConfig.casualWorldQuaternion.rotateTowards(desired, maxStep);
+        } else {
+            // Recenter only after mouse motion stops. Compensating the camera's
+            // local tilt above brings AIM to screen center, not above it.
+            const damped = cameraConfig.casualWorldQuaternion.clone().slerp(desired,
+                cameraSyncBlend(mouseFlight.idle, delta));
+            cameraConfig.casualWorldQuaternion.rotateTowards(damped, maxStep);
+        }
+        gameState.cameraPivot.quaternion.copy(playerMesh.quaternion).invert()
+            .multiply(cameraConfig.casualWorldQuaternion);
     } else {
         // 2. 프리룩 및 디폴트 시점 복귀 모드
         if (cameraConfig.freelookIdleTimer > 0) {
@@ -168,6 +199,7 @@ export function initCamera() {
         currentLook: new THREE.Vector3(0, 600, 1100),
         targetFov: 65,
         isTargetCamActive: false,
+        casualWorldQuaternion: null,
         freelookYaw: 0,
         freelookPitch: 0,
         freelookIdleTimer: 0
@@ -175,6 +207,7 @@ export function initCamera() {
 }
 
 export function resetCamera() {
+    if (cameraConfig) cameraConfig.casualWorldQuaternion = null;
     if (!gameState.cameraPivot) return;
     if (camera.parent !== gameState.cameraPivot) {
         gameState.cameraPivot.add(camera);

@@ -1,3 +1,4 @@
+import { updateVirtualCursorPos } from '../input/controls.js';
 import { updateGamepad } from '../input/gamepad.js';
 // core/loop: imports are side-effect free; main.js controls initialization.
 import { gameState } from './state.js';
@@ -140,6 +141,7 @@ export function stepSimulation(delta) {
     }
 
     updatePlayerFlight(delta);
+    updateVirtualCursorPos();
     if (!gameState.isGameRunning) return;
     updateEnemies(delta);
     updateSinkingShips(delta);

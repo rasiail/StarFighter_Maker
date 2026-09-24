@@ -11,6 +11,7 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
         pitchRate: 0,
         rollRate: 0,
         yawRate: 0,
+        casualYawRate: 0,
         throttlePercent: 50,
         isAfterburner: false,
         isAirbrake: false,
@@ -40,7 +41,7 @@ export function replenishPlayerForSortie(flight) {
     flight.multiReloadTimers = [];
     flight.multiReloadDebt = 0;
     flight.targetSpeed = flight.cruiseSpeed;
-    flight.pitchRate = flight.rollRate = flight.yawRate = 0;
+    flight.pitchRate = flight.rollRate = flight.yawRate = flight.casualYawRate = 0;
     flight.cannonCooldown = flight.stdShotCooldown = flight.multiShotCooldown = 0;
     flight.isAfterburner = flight.isAirbrake = false;
 }

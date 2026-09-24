@@ -1,7 +1,8 @@
+import { addMouseMotion, createMouseFlight } from './mouse-flight.js';
 import { resetGamepad } from './gamepad.js';
 // input/controls: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
-import { keys } from './state.js';
+import { keys, mouseFlight } from './state.js';
 import { fireCannon, tryFireMissile, updateWeaponHUD } from '../combat/weapons.js';
 import { cycleTarget } from '../combat/targeting.js';
 import { audio } from '../audio/audio.js';
@@ -32,6 +33,12 @@ let touchThr;
 let touchThrToggle;
 
 export function updateVirtualCursorPos() {
+    if (virtualMouse && gameState.controlScheme === 'casual') {
+        virtualMouse.x = window.innerWidth / 2 + mouseFlight.x * 240;
+        virtualMouse.y = window.innerHeight / 2 + mouseFlight.y * 240;
+    }
+    if (virtualCursorEl) virtualCursorEl.style.display = virtualMouse?.visible
+        && gameState.controlScheme !== 'casual' ? 'block' : 'none';
     if (virtualCursorEl && virtualMouse.visible) {
         virtualCursorEl.style.transform = `translate3d(${virtualMouse.x}px, ${virtualMouse.y}px, 0)`;
     }
@@ -39,6 +46,13 @@ export function updateVirtualCursorPos() {
 
 export function clearCombatInput() {
     resetGamepad();
+    Object.assign(mouseFlight, createMouseFlight());
+    if (virtualMouse && gameState.controlScheme === 'casual') {
+        virtualMouse.x = window.innerWidth / 2;
+        virtualMouse.y = window.innerHeight / 2;
+        updateVirtualCursorPos();
+    }
+    cameraConfig.freelookPitch = cameraConfig.freelookYaw = 0;
     Object.keys(keys).forEach(key => { keys[key] = false; });
     clearTimeout(leftClickTimeout);
     clearTimeout(rightClickTimeout);
@@ -77,10 +91,11 @@ export function initControls() {
             e.preventDefault();
         }
 
+        if (['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(code)) keys['key' + code.slice(3)] = true;
         // 비행 조작 키 매핑
         if (gameState.controlScheme === 'casual') {
-            if (code === 'KeyW') keys.pitchUp = true;
-            if (code === 'KeyS') keys.pitchDown = true;
+            if (code === 'KeyW') keys.casualThrottleUp = true;
+            if (code === 'KeyS') keys.casualThrottleDown = true;
             if (code === 'KeyA') keys.yawLeft = true;
             if (code === 'KeyD') keys.yawRight = true;
             if (code === 'KeyQ') keys.rollLeft = true;
@@ -134,9 +149,10 @@ export function initControls() {
     window.addEventListener('keyup', (e) => {
         const code = e.code;
         if (!gameState.isGameRunning || gameState.isGamePaused) { clearCombatInput(); return; }
+        if (['KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(code)) keys['key' + code.slice(3)] = false;
         if (gameState.controlScheme === 'casual') {
-            if (code === 'KeyW') keys.pitchUp = false;
-            if (code === 'KeyS') keys.pitchDown = false;
+            if (code === 'KeyW') keys.casualThrottleUp = false;
+            if (code === 'KeyS') keys.casualThrottleDown = false;
             if (code === 'KeyA') keys.yawLeft = false;
             if (code === 'KeyD') keys.yawRight = false;
             if (code === 'KeyQ') keys.rollLeft = false;
@@ -187,6 +203,7 @@ export function initControls() {
     }, { passive: true });
 
     window.addEventListener('blur', () => {
+        clearCombatInput();
         if (leftClickTimeout) {
             clearTimeout(leftClickTimeout);
             leftClickTimeout = null;
@@ -314,14 +331,23 @@ export function initControls() {
 
     window.addEventListener('mousemove', (e) => {
         const isLocked = (document.pointerLockElement === document.body);
+        const casual = gameState.controlScheme === 'casual';
+        if (casual && gameState.isGameRunning && !gameState.isGamePaused) {
+            addMouseMotion(mouseFlight, e.movementX || 0, e.movementY || 0,
+                window.innerWidth, window.innerHeight);
+        }
         if (isLocked) {
             // 게임 창 밖으로 나가지 못하도록 화면 경계(안쪽 16px 마진) 내에서 마우스 위치 제한
             virtualMouse.x = Math.max(16, Math.min(window.innerWidth - 16, virtualMouse.x + e.movementX));
             virtualMouse.y = Math.max(16, Math.min(window.innerHeight - 16, virtualMouse.y + e.movementY));
+            if (casual) {
+                virtualMouse.x = window.innerWidth / 2 + mouseFlight.x * 240;
+                virtualMouse.y = window.innerHeight / 2 + mouseFlight.y * 240;
+            }
             updateVirtualCursorPos();
 
             // 마우스 이동을 통한 자유 시점(Freelook) 카메라 회전 적용
-            if (!keys.targetCam) {
+            if (!casual && !keys.targetCam) {
                 cameraConfig.freelookYaw -= e.movementX * 0.0035;
                 cameraConfig.freelookPitch -= e.movementY * 0.0035;
                 // 상하 시야 한계 제한 (±80도)
