@@ -2,13 +2,10 @@
 // leave the old throttle or turn action stuck until another keyboard event.
 export function resolveFlightKeys(held, scheme, focusing) {
     const keys = { ...held, manualWasd: !!(held.keyW || held.keyS || held.keyA || held.keyD) };
-    if (scheme === 'casual' && focusing) {
-        keys.pitchDown = held.pitchDown || held.casualThrottleUp;
-        keys.pitchUp = held.pitchUp || held.casualThrottleDown;
-        keys.rollLeft = held.rollLeft || held.yawLeft;
-        keys.rollRight = held.rollRight || held.yawRight;
-        keys.casualThrottleUp = keys.casualThrottleDown = false;
-        keys.yawLeft = keys.yawRight = false;
+    if (scheme === 'casual') {
+        keys.rollLeft = !!(held.keyA || held.rollLeft);
+        keys.rollRight = !!(held.keyD || held.rollRight);
+
     }
     return keys;
 }

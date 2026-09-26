@@ -1,3 +1,5 @@
+import { createBomberMesh } from './bomber.js';
+import { FISH_SCHOOL, BOMBER, schoolOffset } from './special-types.js';
 // enemies/fleet: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { createBattleshipMesh, createTankMesh } from './models.js';
@@ -128,16 +130,18 @@ function spawnGroundTank(pos, callsign) {
     enemies.push(enemy);
     return enemy;
 }
-export function spawnEnemy(pos, { health = 60, boss = false, elite = false, altitudeOffset = 0 } = {}) {
-    elite = !boss && elite;
-    if (elite) health = enemyData.elite.health;
+export function spawnEnemy(pos, { health = 60, boss = false, elite = false, fish = false, bomber = false, altitudeOffset = 0 } = {}) {
+    bomber = !boss && bomber;
+    fish = !boss && !bomber && fish;
+    elite = !boss && !fish && (elite || bomber);
+    if (elite) health = enemyData.elite.health * (bomber ? BOMBER.healthMultiplier : 1);
     const groundY = getSurfaceHeight(pos.x, pos.z);
     pos.y = Math.max(groundY + 280, Math.min(1650, pos.y));
 
-    const enemyMesh = elite ? createEliteMesh() : createDroneMesh(boss);
+    const enemyMesh = bomber ? createBomberMesh() : elite ? createEliteMesh() : createDroneMesh(boss || fish);
     enemyMesh.userData.isBoss = boss;
     // 적기 크기: 원거리 및 도그파이트 시인성을 위해 2.5배로 크게 확대 설정
-    enemyMesh.scale.setScalar(boss ? 9 : 2.5);
+    enemyMesh.scale.setScalar(boss ? 9 : fish ? FISH_SCHOOL.scale : bomber ? BOMBER.scale : 2.5);
     enemyMesh.position.copy(pos);
     scene.add(enemyMesh);
 
@@ -147,8 +151,10 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, alti
         maxHealth: health,
         isBoss: boss,
         isElite: elite,
-        hitRadius: boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
-        speed: boss ? 240 : 340,
+        isFishSchool: fish,
+        isBomber: bomber,
+        hitRadius: bomber ? 28 : fish ? enemyData.boss.hitRadiusM * 0.5 : boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
+        speed: bomber ? BOMBER.speed : fish ? 280 : boss ? 240 : 340,
         velocity: new THREE.Vector3(0, 0, -1),
         altitudeOffset: boss ? 0 : altitudeOffset,
         state: 'PATROL', // PATROL, INTERCEPT, ENGAGE, EVADE
@@ -162,7 +168,7 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, alti
         isGround: false,
         isShip: false,
         type: 'AIR',
-        callsign: `${elite ? 'ELITE' : 'BANDIT'}-0${enemies.filter(e => !e.isGround).length + 1}`
+        callsign: `${bomber ? 'BOMBER' : fish ? 'FISH' : elite ? 'ELITE' : 'BANDIT'}-0${enemies.filter(e => !e.isGround).length + 1}`
     };
     enemies.push(enemy);
     return enemy;
@@ -181,6 +187,8 @@ export function clearFleet() {
 
 export function spawnFormation(count, options = {}) {
     let elitesRemaining = options.eliteCount || 0;
+    let bomberSpawned = false;
+    let schoolSpawned = false;
     for (let i = 0; i < count; i++) {
         // 플레이어 주변 사방 1500m ~ 3500m 반경에서 랜덤하게 스폰 (각도 및 거리 무작위)
         const angle = Math.random() * Math.PI * 2;
@@ -189,7 +197,9 @@ export function spawnFormation(count, options = {}) {
         const pz = playerMesh.position.z + Math.cos(angle) * range;
 
         // 보스가 아니고 약 25% 확률로 지상(또는 해상) 병력 스폰
-        const kind = options.boss ? 'aircraft' : formationKind(count - i, currentEnvironment?.theme === 'OCEAN', Math.random());
+        const schoolReady = !options.boss && !schoolSpawned && count - i - elitesRemaining >= FISH_SCHOOL.size;
+        let kind = options.boss || schoolReady || elitesRemaining >= count - i ? 'aircraft' : formationKind(count - i, currentEnvironment?.theme === 'OCEAN', Math.random());
+        if (kind === 'ship' && count - i - elitesRemaining < 3) kind = 'aircraft';
         if (kind !== 'aircraft') {
             const isOcean = (currentEnvironment && currentEnvironment.theme === 'OCEAN');
             if (kind === 'ship') {
@@ -227,12 +237,27 @@ export function spawnFormation(count, options = {}) {
             py = Math.max(groundY + 280, Math.min(1650, py));
 
             const pos = new THREE.Vector3(px, py, pz);
+            if (schoolReady) {
+                const school = { members: [] };
+                for (let slot = 0; slot < FISH_SCHOOL.size; slot++) {
+                    const fish = spawnEnemy(pos.clone(), { health: options.health, fish: true, altitudeOffset: altOffset });
+                    fish.mesh.lookAt(playerMesh.position); fish.mesh.rotateY(Math.PI);
+                    const offset = schoolOffset(slot);
+                    fish.mesh.position.add(new THREE.Vector3(offset.x, offset.y, offset.z).applyQuaternion(fish.mesh.quaternion));
+                    fish.school = school; fish.schoolSlot = slot;
+                    fish.state = 'INTERCEPT'; school.members.push(fish);
+                }
+                schoolSpawned = true; i += FISH_SCHOOL.size - 1;
+                continue;
+            }
             let isElite = false;
             if (!options.boss && elitesRemaining > 0) {
                 isElite = true;
                 elitesRemaining--;
             }
-            const enemy = spawnEnemy(pos, { ...options, elite: isElite, altitudeOffset: altOffset });
+            const bomber = isElite && !bomberSpawned;
+            if (bomber) bomberSpawned = true;
+            const enemy = spawnEnemy(pos, { ...options, elite: isElite, bomber, altitudeOffset: altOffset });
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI); // Aircraft nose points along local -Z.
             enemy.state = 'INTERCEPT';

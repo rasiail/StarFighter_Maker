@@ -145,7 +145,7 @@ export function updateTargeting() {
         const weapon = gameState.missileMode === 1 ? BALANCE.weapons.standard_missile : BALANCE.weapons.multi_missile;
         const maxLockRange = weapon.lockRangeM * playerFlight.lockRangeMultiplier;
         // 전투기 기수 전방 약 36도 이내(dot > 0.80) & 유효 사거리 이내
-        enemy.inCone = (dot > 0.80 && dist <= maxLockRange);
+        enemy.inCone = gameState.missileMode !== 3 && (dot > 0.80 && dist <= maxLockRange);
 
         enemy.isLocked = false;
         enemy.isMultiLock = false;
@@ -162,7 +162,7 @@ export function updateTargeting() {
         if (currentLockedEnemy && currentLockedEnemy.inCone) {
             currentLockedEnemy.isLocked = true;
         }
-    } else {
+    } else if (gameState.missileMode === 2) {
         // [모드 2] 멀티 미사일: 현재 타깃을 최우선으로 하되, 전방 콘 내 다른 적들도 함께 멀티 락온 (최대 4기)
         let lockedCount = 0;
         if (currentLockedEnemy && currentLockedEnemy.inCone) {

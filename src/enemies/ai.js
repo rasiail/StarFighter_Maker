@@ -1,3 +1,4 @@
+import { schoolOffset, RADIAL_DIRECTIONS, stepBomberWeapons } from './special-types.js';
 // enemies/ai: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { enemies } from './fleet.js';
@@ -83,6 +84,30 @@ export function updateEnemies(delta) {
             return; // 지상/해상 적은 공중 기동 스킵
         }
 
+        // Surviving school members follow the first living member; leader loss
+        // rebases offsets without pulling the formation back to its old slot.
+        const leader = enemy.school?.members.find(member => member.alive);
+        if (leader && leader !== enemy) {
+            const offset = schoolOffset(enemy.schoolSlot, leader.schoolSlot);
+            const destination = new THREE.Vector3(offset.x, offset.y, offset.z)
+                .applyQuaternion(leader.mesh.quaternion).add(leader.mesh.position);
+            const before = enemy.mesh.position.clone();
+            if (before.distanceTo(destination) > 1500) enemy.mesh.position.copy(destination);
+            else enemy.mesh.position.lerp(destination, 1 - Math.exp(-4 * delta));
+            enemy.mesh.position.y = Math.max(enemy.mesh.position.y,
+                getSurfaceHeight(enemy.mesh.position.x, enemy.mesh.position.z) + 100);
+            enemy.mesh.quaternion.slerp(leader.mesh.quaternion, 1 - Math.exp(-5 * delta));
+            enemy.velocity.copy(enemy.mesh.position).sub(before).divideScalar(Math.max(delta, 0.0001));
+            enemy.state = leader.state;
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.mesh.quaternion);
+            const aim = playerMesh.position.clone().sub(enemy.mesh.position);
+            const range = aim.length();
+            const shots = stepAirWeapons(enemy, delta, range, range ? aim.dot(forward) / range : -1,
+                attackers.has(enemy) && !gameState.isPlayerDead);
+            if (shots.cannon) { enemy.mesh.updateMatrixWorld(true); fireCannon(false, enemy.mesh); }
+            return;
+        }
+
         // Reposition distant aircraft once; local -Z is the nose.
         if (dist > 6500) {
             const pFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
@@ -109,7 +134,7 @@ export function updateEnemies(delta) {
         }
         const speed = enemy.speed * (enemy.state === 'INTERCEPT' ? 0.65 : 0.58);
         const flight = stepFlight(enemy.flight, enemy.mesh.position, playerMesh.position,
-            speed, delta, getSurfaceHeight, enemy.isBoss, enemy.evadeTimer > 0);
+            speed, delta, getSurfaceHeight, enemy.isBoss || enemy.isBomber, enemy.evadeTimer > 0);
         enemy.evadeTimer = Math.max(0, (enemy.evadeTimer || 0) - delta);
         enemy.state = flight.state;
         const visualBank = enemy.flight.bank * 1.35;
@@ -120,14 +145,34 @@ export function updateEnemies(delta) {
         const aim = playerMesh.position.clone().sub(enemy.mesh.position);
         const range = aim.length();
         const alignment = range > 0 ? (aim.x * flight.forward.x + aim.y * flight.forward.y + aim.z * flight.forward.z) / range : -1;
-        const shots = stepAirWeapons(enemy, delta, range, alignment, attackers.has(enemy) && !gameState.isPlayerDead,
-            Math.random, canLaunchMissile(missileLaunchCooldown, hostileMissiles));
-        if (shots.cannon || shots.missile) enemy.mesh.updateMatrixWorld(true);
-        if (shots.cannon) fireCannon(false, enemy.mesh);
-        if (shots.missile) {
-            fireMissile({ mesh: playerMesh }, false, enemy.mesh);
-            hostileMissiles++;
-            missileLaunchCooldown = enemy.isBoss ? ATTACK_POLICY.bossMissileSpacing : ATTACK_POLICY.missileSpacing;
+        if (enemy.isBomber) {
+            const launch = stepBomberWeapons(enemy, delta, range,
+                attackers.has(enemy) && !gameState.isPlayerDead && enemy.state !== 'RECOVER',
+                hostileMissiles, missileLaunchCooldown, ATTACK_POLICY.missileLimit);
+            const lamp = enemy.mesh.userData.salvoLight;
+            if (lamp) {
+                lamp.visible = enemy.salvoWarning > 0;
+                lamp.scale.setScalar(1 + Math.sin(enemy.salvoWarning * 22) * 0.35);
+            }
+            if (launch) {
+                enemy.mesh.updateMatrixWorld(true);
+                for (const axis of RADIAL_DIRECTIONS) {
+                    const direction = new THREE.Vector3(axis.x, axis.y, axis.z).applyQuaternion(enemy.mesh.quaternion);
+                    fireMissile({ mesh: playerMesh }, false, enemy.mesh, { direction, homingDelay: 0.9 });
+                }
+                hostileMissiles += RADIAL_DIRECTIONS.length;
+                missileLaunchCooldown = ATTACK_POLICY.missileSpacing;
+            }
+        } else {
+            const shots = stepAirWeapons(enemy, delta, range, alignment, attackers.has(enemy) && !gameState.isPlayerDead,
+                Math.random, canLaunchMissile(missileLaunchCooldown, hostileMissiles));
+            if (shots.cannon || shots.missile) enemy.mesh.updateMatrixWorld(true);
+            if (shots.cannon) fireCannon(false, enemy.mesh);
+            if (shots.missile) {
+                fireMissile({ mesh: playerMesh }, false, enemy.mesh);
+                hostileMissiles++;
+                missileLaunchCooldown = enemy.isBoss ? ATTACK_POLICY.bossMissileSpacing : ATTACK_POLICY.missileSpacing;
+            }
         }
 
         // 적기 엔진 불꽃 업데이트 (로우폴리 파티클)

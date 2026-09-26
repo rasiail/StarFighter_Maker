@@ -7,9 +7,11 @@ import { playerFlight, playerMesh } from '../player/player.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { scene } from '../rendering/scene.js';
 import { advanceHomingMissile } from './homing.js';
+import { updateBeamBolts } from './beam-bolt.js';
 
 
 export function updateProjectiles(delta) {
+    updateBeamBolts(delta);
     // 1. Bullets
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];

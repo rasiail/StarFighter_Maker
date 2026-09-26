@@ -449,3 +449,9 @@ button:focus, input:focus, .stage-card:focus {
 .deadzone-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; color: #fff; font-size: 13px; font-weight: bold; }
 .deadzone-label output { color: #4df58a; font-family: monospace; }
 .option-hint { margin-top: 4px; color: #8edebb; font-size: 11px; line-height: 1.5; }
+
+.upgrade-card.weapon-card { border: 2px solid #ffc85b; background: linear-gradient(145deg, #49331c, #171727); box-shadow: 0 0 24px #ffbd4433; }
+.weapon-card .upgrade-title, .weapon-card .upgrade-rank { color: #ffdb83; }
+#weapon-slots { display: flex; gap: 5px; margin-right: 8px; pointer-events: auto; }
+#weapon-slots button { background: #10202d; color: #9aafb7; border: 1px solid #52616a; padding: 5px; cursor: pointer; }
+#weapon-slots button.selected { color: #ffdc83; border-color: #ffdc83; }

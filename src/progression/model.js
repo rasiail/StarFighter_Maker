@@ -4,7 +4,7 @@ import { cardEffectValue } from './cards.js';
 
 export const STAT_NAMES = Object.freeze({ mobility: '기동력', stability: '안정성', speed: '속도', defense: '방어력', power: '화력', control: '관제력' });
 export function createProgression() {
-    return { level: 1, xp: 0, pending: 0, ranks: Object.fromEntries(Object.keys(STAT_NAMES).map(key => [key, 0])), cards: {} };
+    return { weapons: [1], level: 1, xp: 0, pending: 0, ranks: Object.fromEntries(Object.keys(STAT_NAMES).map(key => [key, 0])), cards: {} };
 }
 export function xpToNextLevel(level) {
     const row = BALANCE.levels[level - 1];
@@ -31,6 +31,10 @@ export function calculateStats(build) {
     const stability = cardEffectValue('stability', 'stability_multiplier');
     return {
         ...b,
+        beamWidth: 0.9 + Math.min(3, c.beamWidth || 0) * 0.7,
+        beamBoltWidth: 3 * (1 + (c.beamWidth || 0) * 0.3),
+        beamEfficiency: 1 - (c.beamEfficiency || 0) * 0.15,
+        beamReloadSeconds: 5 * (1 - (c.beamRecharge || 0) * 0.15),
         maxPitchRate: b.maxPitchRate * (1 + r.mobility * mobility),
         maxRollRate: b.maxRollRate * (1 + r.mobility * cardEffectValue('mobility', 'max_roll_rate_multiplier')),
         maxYawRate: b.maxYawRate * (1 + r.mobility * cardEffectValue('mobility', 'max_yaw_rate_multiplier')),
@@ -54,6 +58,9 @@ export function calculateStats(build) {
 
 // Preserve spent slots and elapsed reload progress when upgrading mid-combat.
 export function applyStats(flight, stats) {
+    if (flight.beamReloadRemaining > 0) {
+        flight.beamReloadRemaining *= stats.beamReloadSeconds / (flight.beamReloadSeconds ?? 5);
+    }
     const healthGain = Math.max(0, stats.maxHealth - flight.maxHealth);
     for (const mode of ['std', 'multi']) {
         const max = `${mode}MaxBursts`, ready = `${mode}Bursts`, time = `${mode}ReloadSeconds`, timers = `${mode}ReloadTimers`;

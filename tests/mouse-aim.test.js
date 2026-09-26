@@ -68,3 +68,20 @@ test('AIM angular travel is 70% of the previous sensitivity on both axes', () =>
     assert.ok(Math.abs(Math.atan2(horizontal.x, -horizontal.z) - expected) < 1e-12);
     assert.ok(Math.abs(Math.asin(vertical.y) - expected) < 1e-12);
 });
+
+test('pitch is faster than bank turn and tiny inputs have no deadzone', () => {
+    const pitch = mouseAimRates({ x: 0, y: 1, z: 0 }, 1.45, 0.55);
+    const turn = mouseAimRates({ x: 1, y: 0, z: 0 }, 1.45, 0.55);
+    assert.ok(pitch.pitch > Math.abs(turn.yaw));
+    assert.ok(mouseAimRates({ x: 0.00001, y: 0, z: -1 }, 1.45, 0.55).yaw < 0);
+});
+
+test('a horizontal goal becomes pitch in a ninety-degree bank', () => {
+    // Inverse roll rotates the same rightward world goal onto local +Y.
+    const level = mouseAimRates({ x: 0.5, y: 0, z: -0.866 }, 1.45, 0.55);
+    const banked = mouseAimRates({ x: 0, y: 0.5, z: -0.866 }, 1.45, 0.55);
+    assert.equal(level.pitch, 0);
+    assert.ok(level.yaw < 0);
+    assert.ok(banked.pitch > 0);
+    assert.equal(Math.abs(banked.yaw), 0);
+});

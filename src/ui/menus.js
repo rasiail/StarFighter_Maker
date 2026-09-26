@@ -132,17 +132,6 @@ export function initMenus() {
         });
     }
 
-    const deadzoneSlider = document.getElementById('opt-casual-deadzone');
-    const deadzoneValue = document.getElementById('opt-casual-deadzone-value');
-    if (deadzoneSlider && deadzoneValue) {
-        deadzoneSlider.value = gameState.casualDeadzonePercent;
-        deadzoneValue.textContent = `${gameState.casualDeadzonePercent}%`;
-        deadzoneSlider.addEventListener('input', () => {
-            gameState.casualDeadzonePercent = Math.max(0, Math.min(100, Number(deadzoneSlider.value)));
-            deadzoneValue.textContent = `${gameState.casualDeadzonePercent}%`;
-        });
-    }
-
     const optSmartGun = document.getElementById('opt-smart-gun');
     if (optSmartGun) {
         optSmartGun.checked = gameState.isSmartGunEnabled;

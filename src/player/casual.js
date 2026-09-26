@@ -34,3 +34,9 @@ export function focusRates(localTarget, maxPitchRate, maxYawRate) {
         yaw: horizontal < 0.001 ? 0 : clamp(-Math.atan2(localTarget.x, -localTarget.z) * 2.5, -enhancedYaw, enhancedYaw),
     };
 }
+
+// A/D uses the same coordinated turn and visual bank as mouse steering.
+export function keyboardBankRate(keys, maxPitchRate, maxYawRate) {
+    return (Number(!!keys.bankLeft) - Number(!!keys.bankRight))
+        * Math.max(maxPitchRate, maxYawRate * 3) * CASUAL_AIRCRAFT_SPEED;
+}

@@ -45,6 +45,10 @@ export function createUpgradePreview(build, card, flight) {
         }
     };
     switch (card.id) {
+        case 'unlockMulti': case 'unlockBeam': add('보유 무기', build.weapons?.length ?? 1, (build.weapons?.length ?? 1) + 1, '종'); break;
+        case 'beamWidth': stat('빔 굵기', 'beamWidth', 'm'); break;
+        case 'beamEfficiency': stat('에너지 소모율', 'beamEfficiency', '%', 100); break;
+        case 'beamRecharge': stat('빔 재장전 시간', 'beamReloadSeconds', '초'); break;
         case 'mobility':
             stat('피치 속도', 'maxPitchRate', '°/초', 180 / Math.PI);
             stat('롤 속도', 'maxRollRate', '°/초', 180 / Math.PI);

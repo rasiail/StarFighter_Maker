@@ -1,4 +1,3 @@
-import { cameraSyncBlend } from '../input/mouse-flight.js';
 // camera/camera: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
@@ -8,7 +7,6 @@ import { activeDyingBosses } from '../enemies/lifecycle.js';
 import { keys, mouseFlight } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
-import { aimOutsideDeadzone } from '../player/mouse-aim.js';
 import { cameraFollowOffset } from './follow.js';
 
 export let cameraConfig;
@@ -132,22 +130,14 @@ export function updateCamera(delta) {
                 .multiply(gameState.cameraPivot.quaternion);
         }
         const direction = mouseFlight.aimDirection;
-        const viewAttitude = cameraConfig.casualWorldQuaternion.clone().multiply(camera.quaternion);
-        const localAim = direction?.clone().applyQuaternion(viewAttitude.invert());
         const desired = direction ? new THREE.Quaternion().setFromRotationMatrix(
             new THREE.Matrix4().lookAt(new THREE.Vector3(), direction, new THREE.Vector3(0, 1, 0)))
             .multiply(camera.quaternion.clone().invert()) : playerMesh.quaternion;
-        const maxStep = Math.max(playerFlight.maxPitchRate, playerFlight.maxYawRate * 3) * delta;
-        if (localAim && aimOutsideDeadzone(localAim, camera.fov, camera.aspect, gameState.casualDeadzonePercent)) {
-            // Camera follows the persistent goal outside the zone, not mouse velocity.
-            cameraConfig.casualWorldQuaternion.rotateTowards(desired, maxStep);
-        } else {
-            // Recenter only after mouse motion stops. Compensating the camera's
-            // local tilt above brings AIM to screen center, not above it.
-            const damped = cameraConfig.casualWorldQuaternion.clone().slerp(desired,
-                cameraSyncBlend(mouseFlight.idle, delta));
-            cameraConfig.casualWorldQuaternion.rotateTowards(damped, maxStep);
-        }
+        // Fixed view speed independent of aircraft performance, without a deadzone.
+        cameraConfig.casualWorldQuaternion.rotateTowards(desired, 1.8 * delta);
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(cameraConfig.casualWorldQuaternion);
+        cameraConfig.casualWorldQuaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(
+            new THREE.Vector3(), forward, new THREE.Vector3(0, 1, 0)));
         gameState.cameraPivot.quaternion.copy(playerMesh.quaternion).invert()
             .multiply(cameraConfig.casualWorldQuaternion);
     } else {

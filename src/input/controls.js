@@ -1,9 +1,10 @@
+import { clearBeam } from '../combat/beam.js';
 import { addMouseMotion, createMouseFlight } from './mouse-flight.js';
 import { resetGamepad } from './gamepad.js';
 // input/controls: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { keys, mouseFlight } from './state.js';
-import { fireCannon, tryFireMissile, updateWeaponHUD } from '../combat/weapons.js';
+import { fireCannon, tryFireMissile, updateWeaponHUD, selectWeaponSlot } from '../combat/weapons.js';
 import { cycleTarget } from '../combat/targeting.js';
 import { audio } from '../audio/audio.js';
 import { toggleOptionsMenu } from '../ui/menus.js';
@@ -45,6 +46,7 @@ export function updateVirtualCursorPos() {
 }
 
 export function clearCombatInput() {
+    clearBeam();
     resetGamepad();
     Object.assign(mouseFlight, createMouseFlight());
     if (virtualMouse && gameState.controlScheme === 'casual') {
@@ -96,10 +98,10 @@ export function initControls() {
         if (gameState.controlScheme === 'casual') {
             if (code === 'KeyW') keys.casualThrottleUp = true;
             if (code === 'KeyS') keys.casualThrottleDown = true;
-            if (code === 'KeyA') keys.yawLeft = true;
-            if (code === 'KeyD') keys.yawRight = true;
-            if (code === 'KeyQ') keys.rollLeft = true;
-            if (code === 'KeyE') keys.rollRight = true;
+            if (code === 'KeyA') keys.rollLeft = true;
+            if (code === 'KeyD') keys.rollRight = true;
+            if (code === 'KeyQ') keys.yawLeft = true;
+            if (code === 'KeyE') keys.yawRight = true;
         } else {
             if (code === 'KeyW') keys.pitchDown = true;
             if (code === 'KeyS') keys.pitchUp = true;
@@ -120,26 +122,15 @@ export function initControls() {
         }
         if (code === 'KeyF') {
             keys.fireMissile = true;
-            tryFireMissile();
+            if (!e.repeat) tryFireMissile();
         }
         if (code === 'KeyC') cycleTarget();
         if (code === 'KeyT') {
             keys.targetCam = true;
             keys.targetCamKey = true;
         }
-        // 1번 키: 표준 미사일(단발), 2번 키: 멀티 미사일(전방 콘 다중 락온)
-        if (code === 'Digit1' || code === 'Numpad1' || e.key === '1') {
-            gameState.missileMode = 1;
-            updateWeaponHUD();
-            audio.playLockBeep(false);
-            console.log('[WEAPON] MODE 1: Standard Missile');
-        }
-        if (code === 'Digit2' || code === 'Numpad2' || e.key === '2') {
-            gameState.missileMode = 2;
-            updateWeaponHUD();
-            audio.playLockBeep(false);
-            console.log('[WEAPON] MODE 2: Multi Missile');
-        }
+        const slot = /^(?:Digit|Numpad)([1-3])$/.exec(code);
+        if (slot && !e.repeat) selectWeaponSlot(Number(slot[1]) - 1);
         // ESC 키: 옵션 메뉴 열기/닫기 및 게임 일시정지 (포인터 락 해제)
         if (code === 'Escape') {
             toggleOptionsMenu();
@@ -153,10 +144,10 @@ export function initControls() {
         if (gameState.controlScheme === 'casual') {
             if (code === 'KeyW') keys.casualThrottleUp = false;
             if (code === 'KeyS') keys.casualThrottleDown = false;
-            if (code === 'KeyA') keys.yawLeft = false;
-            if (code === 'KeyD') keys.yawRight = false;
-            if (code === 'KeyQ') keys.rollLeft = false;
-            if (code === 'KeyE') keys.rollRight = false;
+            if (code === 'KeyA') keys.rollLeft = false;
+            if (code === 'KeyD') keys.rollRight = false;
+            if (code === 'KeyQ') keys.yawLeft = false;
+            if (code === 'KeyE') keys.yawRight = false;
         } else {
             if (code === 'KeyW') keys.pitchDown = false;
             if (code === 'KeyS') keys.pitchUp = false;
@@ -239,12 +230,21 @@ export function initControls() {
     window.addEventListener('mousedown', (e) => {
         if (!gameState.isGameRunning || gameState.isGamePaused || e.target.closest('button, .run-modal')) return;
         if (e.button === 0) { // Left click: 짧은 탭은 미사일, 길게 누르면 기관총
+            if (gameState.missileMode === 3) {
+                if (leftClickTimeout) clearTimeout(leftClickTimeout);
+                leftClickTimeout = null;
+                keys.fireCannon = false;
+                keys.beamMouse = true;
+                tryFireMissile();
+                return;
+            }
             leftClickTime = performance.now();
             isLeftClickHeld = false;
 
             if (leftClickTimeout) clearTimeout(leftClickTimeout);
             // 0.18초 이상 홀딩 시 즉각 기관총 연속 사격 모드 진입
             leftClickTimeout = setTimeout(() => {
+                if (gameState.missileMode === 3) { keys.fireCannon = false; return; }
                 isLeftClickHeld = true;
                 keys.fireCannon = true; // 홀드 시 기관포 발사 시작
                 if (gameState.isGameRunning && !gameState.isGamePaused) {
@@ -269,6 +269,7 @@ export function initControls() {
     window.addEventListener('mouseup', (e) => {
         if (!gameState.isGameRunning || gameState.isGamePaused) { clearCombatInput(); return; }
         if (e.button === 0) { // Left click
+            if (keys.beamMouse) { keys.beamMouse = false; return; }
             // 타이머 취소 및 기관포 발사 중지
             if (leftClickTimeout) {
                 clearTimeout(leftClickTimeout);
@@ -303,6 +304,7 @@ export function initControls() {
         }
     });
 
+    window.addEventListener('pointercancel', clearCombatInput);
     window.addEventListener('pointerup', (e) => {
         if (e.button === 0) {
             if (leftClickTimeout) {
@@ -438,6 +440,7 @@ export function initControls() {
     touchMsl.addEventListener('pointerdown', () => { if (gameState.isGameRunning && !gameState.isGamePaused) { keys.fireMissile = true; tryFireMissile(); } });
 
     touchMsl.addEventListener('pointerup', () => { keys.fireMissile = false; });
+    touchMsl.addEventListener('pointercancel', () => { keys.fireMissile = false; });
 
     touchThr = document.getElementById('touch-throttle');
 
@@ -463,6 +466,7 @@ export function initControls() {
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
+            clearCombatInput();
             // 키 입력 및 마우스 버튼 상태 초기화 (계속 눌려있는 현상 방지)
             keys.throttleUp = false;
             keys.throttleDown = false;

@@ -35,7 +35,7 @@ test('small motions respond immediately, and reversing direction works at the sc
     assert.ok(mouse.x > 0 && mouse.motionX < 0);
 });
 
-test('synchronization waits 180ms then damps to the aircraft without frame-rate drift', () => {
+test('synchronization waits 500ms then damps to the aircraft without frame-rate drift', () => {
     assert.equal(cameraSyncBlend(MOUSE_SYNC_DELAY, 0.02), 0);
     for (const hz of [30, 144]) {
         const mouse = createMouseFlight();
@@ -63,6 +63,8 @@ test('continuous movement suppresses idle recentering; stopping enables it and m
         assert.equal(cameraSyncBlend(mouse.idle, 1 / 60), 0);
     }
     for (let frame = 0; frame < 20; frame++) consumeMouseMotion(mouse, 1 / 60);
+    assert.equal(cameraSyncBlend(mouse.idle, 1 / 60), 0, 'still held after the former return delay');
+    for (let frame = 0; frame < 12; frame++) consumeMouseMotion(mouse, 1 / 60);
     assert.ok(cameraSyncBlend(mouse.idle, 1 / 60) > 0);
     addMouseMotion(mouse, 1, 0, 1280, 800);
     consumeMouseMotion(mouse, 1 / 60);

@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Special enemy runtime verification</title></head>
+<body style="margin:0;background:#0b1420;color:#e6efff;font:16px sans-serif"><pre id="result">Loading game and fish asset…</pre>
+<iframe id="game" src="../index.html" style="width:100%;height:85vh;border:0"></iframe>
+<script>
+document.querySelector('iframe').addEventListener('load',event=>{
+ const script=event.target.contentDocument.createElement('script');script.type='module';script.src='/tests/special-enemies.browser.js';event.target.contentDocument.body.append(script);
+});
+</script></body></html>

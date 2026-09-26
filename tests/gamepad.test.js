@@ -75,7 +75,7 @@ test('Runtime mapping, pause, disconnect and API failure clear only controller i
         current.axes = [1, -1, 0, 0];
         updateGamepad(0.016, 1);
         updateGamepad(0.016, 1.3);
-        assert.deepEqual(padInput, { pitch: -1, roll: -1, yaw: 1, throttleUp: true, throttleDown: true, fireCannon: true, targetCam: true });
+        assert.deepEqual(padInput, { pitch: -1, roll: -1, yaw: 1, throttleUp: true, throttleDown: true, fireCannon: true, beamHeld: false, targetCam: true });
         gameState.isGamePaused = true;
         updateGamepad(0.016, 1.4);
         assert.equal(padInput.fireCannon, false);

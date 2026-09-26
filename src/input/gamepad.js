@@ -2,7 +2,7 @@ import { createPadReader, padInput, clearPadInput } from './gamepad-state.js';
 import { gameState } from '../core/state.js';
 import { playerFlight } from '../player/player.js';
 import { cameraConfig } from '../camera/camera.js';
-import { tryFireMissile, updateWeaponHUD } from '../combat/weapons.js';
+import { tryFireMissile, updateWeaponHUD, selectWeaponSlot } from '../combat/weapons.js';
 import { cycleTarget } from '../combat/targeting.js';
 import { openUpgrades } from '../ui/upgrades.js';
 import { toggleOptionsMenu } from '../ui/menus.js';
@@ -60,12 +60,12 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
         return;
     }
     if (input.pressed[0]) { openUpgrades(); if (gameState.isGamePaused) { resetGamepad(); return; } }
-    if (input.pressed[2]) { gameState.missileMode = gameState.missileMode === 1 ? 2 : 1; updateWeaponHUD(); }
-    if (input.tap[1]) tryFireMissile();
+    if (input.pressed[2]) { const owned = gameState.ownedWeapons || [1]; selectWeaponSlot((owned.indexOf(gameState.missileMode) + 1) % owned.length); }
+    if (gameState.missileMode === 3 ? input.pressed[1] : input.tap[1]) tryFireMissile();
     if (input.tap[6]) cycleTarget();
     Object.assign(padInput, {
         pitch: input.axes[1], roll: -input.axes[0], yaw: Number(input.down[4]) - Number(input.down[5]),
-        throttleUp: input.down[7], throttleDown: input.down[3], fireCannon: input.hold[1], targetCam: input.hold[6],
+        throttleUp: input.down[7], throttleDown: input.down[3], fireCannon: gameState.missileMode !== 3 && input.hold[1], beamHeld: gameState.missileMode === 3 && input.down[1], targetCam: input.hold[6],
     });
     if (wasThrottle && !padInput.throttleUp && !padInput.throttleDown) playerFlight.cruiseSpeed = playerFlight.defaultCruiseSpeed;
     if (wasTargetCam && !padInput.targetCam) {

@@ -24,17 +24,6 @@ export function renderHUD() {
     hudCtx.lineWidth = 1.5;
     hudCtx.font = '13px "Share Tech Mono", monospace';
 
-    if (gameState.controlScheme === 'casual' && !gameState.isPlayerDead
-        && !(keys.targetCam || padInput.targetCam) && gameState.casualDeadzonePercent > 0) {
-        const side = Math.min(w, h) * gameState.casualDeadzonePercent / 100;
-        hudCtx.save();
-        hudCtx.globalAlpha = 0.25;
-        hudCtx.lineWidth = 1;
-        hudCtx.setLineDash([5, 7]);
-        hudCtx.strokeRect(cx - side / 2, cy - side / 2, side, side);
-        hudCtx.restore();
-    }
-
     if (gameState.controlScheme === 'casual' && !gameState.isPlayerDead && mouseFlight.aimDirection) {
         camera.updateMatrixWorld(true);
         const origin = camera.getWorldPosition(new THREE.Vector3());

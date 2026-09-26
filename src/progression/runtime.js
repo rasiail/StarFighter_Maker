@@ -10,12 +10,16 @@ import { enemyExperience } from './rewards.js';
 export const progression = createProgression();
 export function resetProgression() {
     Object.assign(progression, createProgression());
+    gameState.ownedWeapons = progression.weapons;
+    playerFlight.beamEnergy = 100;
+    playerFlight.beamCooldown = playerFlight.beamOverload = playerFlight.beamReloadRemaining = 0;
     // New run is reset by missions before calculating its baseline stats.
     applyStats(playerFlight, calculateStats(progression));
     gameEvents.emit(EVENTS.PROGRESSION_CHANGED);
 }
 export function chooseUpgrade(id, offered) {
     const card = selectCard(progression, id, offered);
+    gameState.ownedWeapons = progression.weapons;
     applyStats(playerFlight, calculateStats(progression));
     if (card.id === 'repair') {
         const restore = card.effects?.find(effect => effect.effectKey === 'health_restore')?.value ?? 0.3;

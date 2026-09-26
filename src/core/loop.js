@@ -26,7 +26,7 @@ import { triggerExplosion, createSmokePuff } from '../effects/particles.js';
 
 export function stepSimulation(delta) {
     if (!gameState.isGameRunning || gameState.isGamePaused) return;
-    gameState.isFiringGun = keys.fireCannon;
+    gameState.isFiringGun = gameState.missileMode !== 3 && keys.fireCannon;
 
     if (gameState.isPlayerDead) {
         gameState.deathTimer -= delta;

@@ -7,7 +7,7 @@ export const BUTTON_HOLD_SECONDS = {
 };
 export const padInput = {};
 export function clearPadInput() {
-    Object.assign(padInput, { pitch: 0, roll: 0, yaw: 0, throttleUp: false, throttleDown: false, fireCannon: false, targetCam: false });
+    Object.assign(padInput, { pitch: 0, roll: 0, yaw: 0, throttleUp: false, throttleDown: false, fireCannon: false, beamHeld: false, targetCam: false });
 }
 clearPadInput();
 export function deadzone(value = 0, threshold = 0.18) {

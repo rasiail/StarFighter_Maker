@@ -72,3 +72,46 @@ test('keyboard keyup still clears physical WASD state and missile hold', () => {
     assert.equal(context.keys.casualThrottleUp, false);
     assert.equal(context.keys.fireMissile, false);
 });
+
+test('beam mouse press clears pending cannon input and starts only the beam', () => {
+    let timers = 0;
+    const { handler, context, calls } = releaseHandler('mousedown', {
+        gameState: { isGameRunning: true, isGamePaused: false, missileMode: 3 },
+        setTimeout: () => { timers++; },
+    });
+    handler({ button: 0, target: { closest: () => null } });
+    assert.equal(context.keys.fireCannon, false);
+    assert.equal(context.keys.beamMouse, true);
+    assert.equal(context.leftClickTimeout, null);
+    assert.equal(calls.missiles, 1);
+    assert.equal(timers, 0);
+});
+
+test('switching to beam while a cannon hold timer is pending prevents the shot', () => {
+    let timeout, shots = 0;
+    const { handler, context } = releaseHandler('mousedown', {
+        gameState: { isGameRunning: true, isGamePaused: false, missileMode: 1 },
+        setTimeout: fn => { timeout = fn; return 3; },
+        fireCannon: () => { shots++; }, playerFlight: {}, playerMesh: {},
+    });
+    handler({ button: 0, target: { closest: () => null } });
+    context.gameState.missileMode = 3;
+    timeout();
+    assert.equal(context.keys.fireCannon, false);
+    assert.equal(shots, 0);
+});
+
+test('cannon spawn gate blocks every player input in beam mode but leaves enemies unchanged', () => {
+    const weapons = readFileSync(new URL('../src/combat/weapons.js', import.meta.url), 'utf8');
+    const start = weapons.indexOf('export function fireCannon(');
+    const end = weapons.indexOf('export function fireAntiAirBullet', start);
+    const context = { gameState: { missileMode: 3 }, playerMesh: {}, bulletGeom: {}, bulletMat: {},
+        THREE: { Mesh: class { constructor() { throw new Error('projectile allocation'); } } } };
+    vm.runInNewContext(weapons.slice(start, end).replace('export function', 'function'), context);
+    assert.doesNotThrow(() => context.fireCannon(true));
+    assert.throws(() => context.fireCannon(false), /projectile allocation/);
+    for (const mode of [1, 2]) {
+        context.gameState.missileMode = mode;
+        assert.throws(() => context.fireCannon(true), /projectile allocation/);
+    }
+});

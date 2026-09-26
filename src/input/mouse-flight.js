@@ -1,5 +1,5 @@
 const clamp = (value, limit) => Math.max(-limit, Math.min(limit, value));
-export const MOUSE_SYNC_DELAY = 0.18;
+export const MOUSE_SYNC_DELAY = 0.5;
 export function createMouseFlight() {
     return { x: 0, y: 0, pendingX: 0, pendingY: 0, frameX: 0, frameY: 0, aimDirection: null, motionX: 0, motionY: 0, idle: 0, syncAge: 0, motionStarted: false };
 }

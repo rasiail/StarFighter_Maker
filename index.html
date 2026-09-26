@@ -76,8 +76,9 @@
                         <span style="font-size: 16px; line-height: 12px;">&infin;</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span>MSL: &nbsp;</span><span id="missile-stat" style="display:flex; justify-content:space-between; flex-grow:1; color: #ff6b6b;"><span>STD READY</span><span>9/20</span></span>
+                        <span>WPN: &nbsp;</span><span id="missile-stat" style="display:flex; justify-content:space-between; flex-grow:1; color: #ff6b6b;"><span>STD READY</span><span>9/20</span></span>
                     </div>
+                    <div id="weapon-slots"></div>
                     <div>
                         <span>FLARE: <span id="flare-stat" style="color: #4df58a;">ACTIVE</span></span>
                     </div>
@@ -131,7 +132,7 @@
                     <div><span class="control-key">SHIFT / ALT</span> : THROTTLE / AIRBRAKE</div>
                     <div><span class="control-key">SPACE / L-CLICK (HOLD)</span> : 20mm VULCAN CANNON</div>
                     <div><span class="control-key">F / L-CLICK (TAP)</span> : AAM-GUIDED MISSILE</div>
-                    <div><span class="control-key">1 / 2</span> : STD / MULTI MISSILE</div>
+                    <div><span class="control-key">1 / 2 / 3</span> : 획득 순서로 무기 선택 · 빔: 클릭/F 단발, 홀드 지속</div>
                     <div><span class="control-key">R-CLICK (HOLD)</span> : TARGET CAM (DOGFIGHT)</div>
                     <div><span class="control-key">C / R-CLICK TAP</span> : SWITCH TARGET LOCK</div>
                 </div>
@@ -254,23 +255,12 @@
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
                         <div style="font-weight: bold; color: #ffffff; font-size: 14px;">CASUAL FLIGHT CONTROLS</div>
-                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">마우스: 목표 방향 지정<br>W/S: 속도 · A/D: 요 · Q/E: 롤<br>포커스 중 W/S: 피치 · A/D: 롤</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">마우스: 피치 / 뱅크 턴 (데드존 없음)<br>W/S: 속도 · A/D: 롤 · Q/E: 요<br>마우스 목표 방향 유지 · 롤 해제 후 수평 복귀</div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-casual-controls">
                         <span class="slider"></span>
                     </label>
-                </div>
-
-                <div class="option-row" style="margin-bottom: 18px;">
-                    <div style="width: 100%;">
-                        <div class="deadzone-label">
-                            <label for="opt-casual-deadzone">캐주얼 카메라 데드존</label>
-                            <output id="opt-casual-deadzone-value" for="opt-casual-deadzone">25%</output>
-                        </div>
-                        <input type="range" id="opt-casual-deadzone" min="0" max="100" step="1" value="25" class="retro-slider">
-                        <div class="option-hint">정사각형 영역 · 마우스를 멈추면 AIM 중앙 복귀</div>
-                    </div>
                 </div>
 
                 <div class="option-row" style="margin-bottom: 18px;">

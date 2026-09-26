@@ -13,6 +13,7 @@ const shotsOnly={...DEFAULT_ASSUMPTIONS,cannonUptime:0,missileAccuracy:1,standar
 test('멀티 관제 확장은 관제력 2에서 해금되고 4→6→8발을 발사한다',()=>{
  const build=createProgression();
  assert.ok(!eligibleCards(build).some(c=>c.id==='multiSalvo'));
+ build.pending=1; selectCard(build,'unlockMulti',eligibleCards(build));
  build.ranks.control=2;build.pending=2;
  assert.equal(calculateStats(build).multiLockCount,4);
  const card=CARDS.find(c=>c.id==='multiSalvo');

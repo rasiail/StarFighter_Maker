@@ -12,11 +12,16 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
         rollRate: 0,
         yawRate: 0,
         casualYawRate: 0,
+        casualRollIdle: 1,
         throttlePercent: 50,
         isAfterburner: false,
         isAirbrake: false,
         health: effectiveStats.maxHealth,
         score: 0,
+        beamEnergy: 100,
+        beamCooldown: 0,
+        beamOverload: 0,
+        beamReloadRemaining: 0,
         cannonCooldown: 0,
         stdBursts: effectiveStats.stdMaxBursts,
         stdShotCooldown: 0,
@@ -31,6 +36,8 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
 
 // 기존 출격 시 보충 정책을 유지합니다. 점수와 기체 유효 스탯은 출격 간 유지됩니다.
 export function replenishPlayerForSortie(flight) {
+    flight.beamEnergy = 100;
+    flight.beamCooldown = flight.beamOverload = flight.beamReloadRemaining = 0;
     flight.speed = flight.cruiseSpeed;
     flight.throttlePercent = 50;
     flight.health = flight.maxHealth;
@@ -42,6 +49,7 @@ export function replenishPlayerForSortie(flight) {
     flight.multiReloadDebt = 0;
     flight.targetSpeed = flight.cruiseSpeed;
     flight.pitchRate = flight.rollRate = flight.yawRate = flight.casualYawRate = 0;
+    flight.casualRollIdle = 1;
     flight.cannonCooldown = flight.stdShotCooldown = flight.multiShotCooldown = 0;
     flight.isAfterburner = flight.isAirbrake = false;
 }

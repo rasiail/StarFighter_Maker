@@ -29,14 +29,14 @@ function renderChoices() {
     list.replaceChildren();
     for (const card of offered) {
         const button = document.createElement('button');
-        button.className = 'upgrade-card';
+        button.className = card.weapon ? 'upgrade-card weapon-card' : 'upgrade-card';
         button.dataset.card = card.id;
         const label = document.createElement('strong');
         label.className = 'upgrade-title';
         label.textContent = card.name;
         const rank = document.createElement('span');
         rank.className = 'upgrade-rank';
-        rank.textContent = card.id === 'repair' ? '즉시 적용' : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
+        rank.textContent = card.weapon ? `무기 획득 · ${progression.weapons.length + 1}번 슬롯` : card.id === 'repair' ? '즉시 적용' : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
         const description = document.createElement('p');
         const preview = createUpgradePreview(progression, card, playerFlight);
         description.className = 'upgrade-description';

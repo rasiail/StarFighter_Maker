@@ -1,0 +1,546 @@
+{
+  "runs": 300,
+  "seed": 104,
+  "assumptions": {
+    "runs": 300,
+    "seed": 104,
+    "cannonAccuracy": 0.32,
+    "missileAccuracy": 0.82,
+    "cannonUptime": 0.28,
+    "standardMissileShare": 0.35,
+    "multiMissileShare": 0.65,
+    "engagementSecondsPerTarget": 1.15,
+    "waveTransitionSeconds": 5,
+    "hangarSeconds": 25,
+    "enemyCountScale": 1,
+    "multiReloadScale": 1,
+    "xpRequirementScale": 1,
+    "combatModel": "events",
+    "weaponSwitchSeconds": 0.25,
+    "missileFlightSeconds": 1,
+    "mobilityTimeBenefit": 0.5,
+    "speedTimeBenefit": 0.25,
+    "stabilityAccuracyBenefit": 0.1,
+    "guidanceAccuracyBenefit": 0.1
+  },
+  "sources": {
+    "src/data/generated/balance.js": "4588a807cc35e2e4ba34732aee1561cc9d83dbcc2edf2ce5bbdf9d21ce47a31e",
+    "src/combat/beam.js": "bbf367983e6447a4739e054c1bb0fe9f72f215c0738db563a6c7b6bc554b6d82",
+    "src/combat/beam-energy.js": "3658a6fa628935c99204f9866adfbe7122c4c8c4828c29010d709a3b1d5444e6",
+    "src/combat/magazine.js": "f9edec1c1870f80db226efac1e3fa1424d185b15d006222074f08a0459360721",
+    "src/progression/cards.js": "4ad11a3ce2e95cf4442ca085b49e730dd70b4be7d7d66245c2e2afbd6a8628b3",
+    "src/progression/model.js": "276915fe84f90b26983bd8fdf758bb0551df7c59890a9a073ce43a5b332f3dcd"
+  },
+  "campaigns": {
+    "standard-only": {
+      "minutes": 20.868260924043486,
+      "p10": 19.924024810066452,
+      "p90": 21.869761904761877,
+      "selections": 17.003333333333334,
+      "multiShots": 0,
+      "unlockRate": 0,
+      "unlockSelection": null,
+      "unlockMinutes": null,
+      "unlockByStageOne": 0
+    },
+    "multi-card": {
+      "minutes": 20.074056294181467,
+      "p10": 19.225929487179464,
+      "p90": 20.92997944104369,
+      "selections": 17.003333333333334,
+      "multiShots": 227.34333333333333,
+      "unlockRate": 0.9933333333333333,
+      "unlockSelection": 3.5167785234899327,
+      "unlockMinutes": 2.4633567525958537,
+      "unlockByStageOne": 0.8133333333333334
+    },
+    "multi-at-start": {
+      "minutes": 19.5236729477636,
+      "p10": 18.710660660660643,
+      "p90": 20.371826923076902,
+      "selections": 17.003333333333334,
+      "multiShots": 269.98,
+      "unlockRate": 0,
+      "unlockSelection": null,
+      "unlockMinutes": null,
+      "unlockByStageOne": 0
+    }
+  },
+  "acquisition": {
+    "unlockMulti": {
+      "by3": 0.6142,
+      "by5": 0.7956,
+      "missingAt14": 0.0128,
+      "medianChoice": 3,
+      "p90Choice": 7
+    },
+    "unlockBeam": {
+      "by3": 0.621,
+      "by5": 0.7975,
+      "missingAt14": 0.0129,
+      "medianChoice": 3,
+      "p90Choice": 7
+    }
+  },
+  "missileBenchmarks": [
+    {
+      "mode": "std",
+      "targets": 1,
+      "shots": 800,
+      "dps": 60.13333333333333,
+      "lateDps": 60.13333333333333
+    },
+    {
+      "mode": "multi",
+      "targets": 1,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    },
+    {
+      "mode": "std",
+      "targets": 4,
+      "shots": 800,
+      "dps": 60.13333333333333,
+      "lateDps": 60.13333333333333
+    },
+    {
+      "mode": "multi",
+      "targets": 4,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    },
+    {
+      "mode": "std",
+      "targets": 8,
+      "shots": 800,
+      "dps": 60.13333333333333,
+      "lateDps": 60.13333333333333
+    },
+    {
+      "mode": "multi",
+      "targets": 8,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    }
+  ],
+  "missileUpgrades": [
+    {
+      "name": "base",
+      "controlPrerequisite": 0,
+      "volley": 4,
+      "magazine": 8,
+      "openingDamage": 340,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    },
+    {
+      "name": "salvo-1",
+      "controlPrerequisite": 2,
+      "volley": 6,
+      "magazine": 8,
+      "openingDamage": 510,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    },
+    {
+      "name": "salvo-2",
+      "controlPrerequisite": 2,
+      "volley": 8,
+      "magazine": 8,
+      "openingDamage": 680,
+      "shots": 160,
+      "dps": 18.586666666666666,
+      "lateDps": 18.586666666666666
+    },
+    {
+      "name": "rack-1",
+      "controlPrerequisite": 0,
+      "volley": 4,
+      "magazine": 10,
+      "openingDamage": 340,
+      "shots": 200,
+      "dps": 23.233333333333334,
+      "lateDps": 23.233333333333334
+    },
+    {
+      "name": "reload-1",
+      "controlPrerequisite": 0,
+      "volley": 4,
+      "magazine": 8,
+      "openingDamage": 340,
+      "shots": 184,
+      "dps": 21.374666666666666,
+      "lateDps": 20.44533333333333
+    }
+  ],
+  "beamGrid": [
+    {
+      "efficiency": 0,
+      "recharge": 0,
+      "cards": 0,
+      "reloadSeconds": 5,
+      "drain": 45,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 26.10185185185177,
+        "lateDps": 25.305555555555483,
+        "depletedAt": 2.14,
+        "energy": 42.999999999999716,
+        "pulses": 14
+      },
+      "tap": {
+        "dps": 44.333333333333336,
+        "lateDps": 42,
+        "depletedAt": null,
+        "energy": 4,
+        "pulses": 152
+      }
+    },
+    {
+      "efficiency": 0,
+      "recharge": 1,
+      "cards": 1,
+      "reloadSeconds": 4.25,
+      "drain": 45,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 28.819444444444347,
+        "lateDps": 28.34074074074064,
+        "depletedAt": 2.14,
+        "energy": 0,
+        "pulses": 15
+      },
+      "tap": {
+        "dps": 49.875,
+        "lateDps": 48.416666666666664,
+        "depletedAt": null,
+        "energy": 64,
+        "pulses": 171
+      }
+    },
+    {
+      "efficiency": 0,
+      "recharge": 2,
+      "cards": 2,
+      "reloadSeconds": 3.5,
+      "drain": 45,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 30.740740740740637,
+        "lateDps": 30.74074074074064,
+        "depletedAt": 2.14,
+        "energy": 0,
+        "pulses": 16
+      },
+      "tap": {
+        "dps": 58.333333333333336,
+        "lateDps": 57.75,
+        "depletedAt": null,
+        "energy": 4,
+        "pulses": 200
+      }
+    },
+    {
+      "efficiency": 0,
+      "recharge": 3,
+      "cards": 3,
+      "reloadSeconds": 2.75,
+      "drain": 45,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 34.583333333333215,
+        "lateDps": 34.58333333333322,
+        "depletedAt": 2.14,
+        "energy": 0,
+        "pulses": 18
+      },
+      "tap": {
+        "dps": 67.66666666666667,
+        "lateDps": 65.33333333333333,
+        "depletedAt": null,
+        "energy": 4,
+        "pulses": 232
+      }
+    },
+    {
+      "efficiency": 1,
+      "recharge": 0,
+      "cards": 1,
+      "reloadSeconds": 5,
+      "drain": 38.25,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 29.225217864923874,
+        "lateDps": 26.97712418300664,
+        "depletedAt": 2.5300000000000002,
+        "energy": 0,
+        "pulses": 13
+      },
+      "tap": {
+        "dps": 48.708333333333336,
+        "lateDps": 48.416666666666664,
+        "depletedAt": null,
+        "energy": 48.999999999999986,
+        "pulses": 167
+      }
+    },
+    {
+      "efficiency": 1,
+      "recharge": 1,
+      "cards": 2,
+      "reloadSeconds": 4.25,
+      "drain": 38.25,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 31.473311546841096,
+        "lateDps": 31.47331154684108,
+        "depletedAt": 2.5300000000000002,
+        "energy": 0,
+        "pulses": 14
+      },
+      "tap": {
+        "dps": 55.125,
+        "lateDps": 53.083333333333336,
+        "depletedAt": null,
+        "energy": 8.199999999999985,
+        "pulses": 189
+      }
+    },
+    {
+      "efficiency": 1,
+      "recharge": 2,
+      "cards": 3,
+      "reloadSeconds": 3.5,
+      "drain": 38.25,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 33.721405228758314,
+        "lateDps": 31.47331154684108,
+        "depletedAt": 2.5300000000000002,
+        "energy": 0,
+        "pulses": 15
+      },
+      "tap": {
+        "dps": 63,
+        "lateDps": 63,
+        "depletedAt": null,
+        "energy": 8.199999999999985,
+        "pulses": 216
+      }
+    },
+    {
+      "efficiency": 1,
+      "recharge": 3,
+      "cards": 4,
+      "reloadSeconds": 2.75,
+      "drain": 38.25,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 38.21759259259275,
+        "lateDps": 37.249019607843294,
+        "depletedAt": 2.5300000000000002,
+        "energy": 0,
+        "pulses": 17
+      },
+      "tap": {
+        "dps": 73.5,
+        "lateDps": 73.5,
+        "depletedAt": null,
+        "energy": 8.199999999999985,
+        "pulses": 252
+      }
+    },
+    {
+      "efficiency": 2,
+      "recharge": 0,
+      "cards": 2,
+      "reloadSeconds": 5,
+      "drain": 31.499999999999996,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 32.579365079365196,
+        "lateDps": 32.579365079365196,
+        "depletedAt": 3.09,
+        "energy": 0,
+        "pulses": 12
+      },
+      "tap": {
+        "dps": 56.875,
+        "lateDps": 56,
+        "depletedAt": null,
+        "energy": 32.79999999999998,
+        "pulses": 195
+      }
+    },
+    {
+      "efficiency": 2,
+      "recharge": 1,
+      "cards": 3,
+      "reloadSeconds": 4.25,
+      "drain": 31.499999999999996,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 35.2943121693123,
+        "lateDps": 32.579365079365196,
+        "depletedAt": 3.09,
+        "energy": 0,
+        "pulses": 13
+      },
+      "tap": {
+        "dps": 63.875,
+        "lateDps": 63.583333333333336,
+        "depletedAt": null,
+        "energy": 15.999999999999986,
+        "pulses": 219
+      }
+    },
+    {
+      "efficiency": 2,
+      "recharge": 2,
+      "cards": 4,
+      "reloadSeconds": 3.5,
+      "drain": 31.499999999999996,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 38.009259259259395,
+        "lateDps": 38.009259259259395,
+        "depletedAt": 3.09,
+        "energy": 0,
+        "pulses": 14
+      },
+      "tap": {
+        "dps": 70.58333333333333,
+        "lateDps": 70.58333333333333,
+        "depletedAt": null,
+        "energy": 7.599999999999987,
+        "pulses": 242
+      }
+    },
+    {
+      "efficiency": 2,
+      "recharge": 3,
+      "cards": 5,
+      "reloadSeconds": 2.75,
+      "drain": 31.499999999999996,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 42.86587301587316,
+        "lateDps": 42.29259259259273,
+        "depletedAt": 3.09,
+        "energy": 21.670000000000382,
+        "pulses": 16
+      },
+      "tap": {
+        "dps": 83.125,
+        "lateDps": 82.83333333333333,
+        "depletedAt": null,
+        "energy": 15.999999999999986,
+        "pulses": 285
+      }
+    },
+    {
+      "efficiency": 3,
+      "recharge": 0,
+      "cards": 3,
+      "reloadSeconds": 5,
+      "drain": 24.750000000000004,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 37.80092592592573,
+        "lateDps": 34.36447811447795,
+        "depletedAt": 3.96,
+        "energy": 0,
+        "pulses": 11
+      },
+      "tap": {
+        "dps": 70,
+        "lateDps": 70,
+        "depletedAt": null,
+        "energy": 1.000000000000016,
+        "pulses": 240
+      }
+    },
+    {
+      "efficiency": 3,
+      "recharge": 1,
+      "cards": 4,
+      "reloadSeconds": 4.25,
+      "drain": 24.750000000000004,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 41.237373737373524,
+        "lateDps": 41.23737373737354,
+        "depletedAt": 3.96,
+        "energy": 0,
+        "pulses": 12
+      },
+      "tap": {
+        "dps": 77.58333333333333,
+        "lateDps": 76.41666666666667,
+        "depletedAt": null,
+        "energy": 27.40000000000002,
+        "pulses": 266
+      }
+    },
+    {
+      "efficiency": 3,
+      "recharge": 2,
+      "cards": 5,
+      "reloadSeconds": 3.5,
+      "drain": 24.750000000000004,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 44.673821548821316,
+        "lateDps": 42.42693602693579,
+        "depletedAt": 3.96,
+        "energy": 0,
+        "pulses": 13
+      },
+      "tap": {
+        "dps": 86.91666666666667,
+        "lateDps": 86.33333333333333,
+        "depletedAt": null,
+        "energy": 14.200000000000017,
+        "pulses": 298
+      }
+    },
+    {
+      "efficiency": 3,
+      "recharge": 3,
+      "cards": 6,
+      "reloadSeconds": 2.75,
+      "drain": 24.750000000000004,
+      "unlimitedHold": false,
+      "hold": {
+        "dps": 48.1102693602691,
+        "lateDps": 48.11026936026913,
+        "depletedAt": 3.96,
+        "energy": 0,
+        "pulses": 14
+      },
+      "tap": {
+        "dps": 96.54166666666667,
+        "lateDps": 96.25,
+        "depletedAt": null,
+        "energy": 93.4,
+        "pulses": 331
+      }
+    }
+  ],
+  "limitations": [
+    "캠페인은 완주 조건부 추정: 피격·사망·실제 3D 조준·특수 적 행동을 생략합니다.",
+    "캠페인은 기관포+미사일만 비교합니다. 빔 포함 캠페인 완주 시간으로 해석하면 안 됩니다.",
+    "카드 선택은 웨이브 종료에 묶어 처리하므로 실제 웨이브 도중 해금보다 늦습니다.",
+    "멀티 최초 지급은 카드 1회 비용도 없는 과거 방식의 가상 비교군입니다.",
+    "미사일 벤치는 충분한 표적이 계속 존재하고 명중률 82%, 빔은 100% 명중 상한입니다. 실제 명중률을 곱해 비교해야 합니다.",
+    "빔 피해·지연·에너지 함수는 런타임 코드를 공유합니다. 홀드는 고갈 후 버튼을 놓고 2초 과부하 및 재장전 완료를 기다린 뒤 다시 누르는 정책입니다.",
+    "빔은 첫 표적 하나만 타격합니다. 빔 폭은 피해 증가가 아니라 명중 기회 증가이며 실제 조준 분포 없이 DPS 이득을 확정하지 않습니다.",
+    "탭 벤치는 발사 가능 즉시 재입력하며, 정확히 고갈되면 과부하를 겪습니다. 에너지를 남기는 숙련된 탭 조절의 최적값은 아닙니다.",
+    "미사일은 런타임 재장전 부채 감소를 반영합니다. 구형 DPS 산식의 고정 재장전 분모와 다릅니다."
+  ]
+}

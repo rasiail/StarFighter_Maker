@@ -20,8 +20,11 @@ export function moveAimDirection(direction, dx, dy, cameraRight, cameraUp) {
 export function mouseAimRates(localDirection, maxPitchRate, maxYawRate) {
     // focusRates accepts a target displacement; scale the unit direction so its
     // coincident-target guard cannot suppress small floating-point deviations.
-    return focusRates({ x: localDirection.x * 1000, y: localDirection.y * 1000, z: localDirection.z * 1000 },
+    const rates = focusRates({ x: localDirection.x * 1000, y: localDirection.y * 1000, z: localDirection.z * 1000 },
         maxPitchRate * CASUAL_AIRCRAFT_SPEED, maxYawRate * CASUAL_AIRCRAFT_SPEED);
+    const bankLimit = Math.min(maxPitchRate * 0.55, maxYawRate * 2);
+    rates.yaw = Math.max(-bankLimit, Math.min(bankLimit, rates.yaw));
+    return rates;
 }
 export function aimOutsideDeadzone(localDirection, fov, aspect, percent) {
     const fraction = Math.max(0, Math.min(100, percent)) / 100;

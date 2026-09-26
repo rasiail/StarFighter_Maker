@@ -7,7 +7,7 @@ import { tickMagazines } from '../combat/magazine.js';
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh, playerVisual } from './player.js';
 import { keys as heldKeys, mouseFlight } from '../input/state.js';
-import { stepCasualTurn, levelingRates, focusRates } from './casual.js';
+import { levelingRates, focusRates } from './casual.js';
 import { enemies } from '../enemies/fleet.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
 import { padInput } from '../input/gamepad-state.js';
@@ -16,7 +16,7 @@ import { audio } from '../audio/audio.js';
 import { getSurfaceHeight } from '../world/environment.js';
 import { triggerExplosion } from '../effects/particles.js';
 import { gameEvents, EVENTS } from '../core/events.js';
-import { fireCannon, tryFireMissile, updateWeaponHUD } from '../combat/weapons.js';
+import { fireCannon, tryFireMissile, updateWeaponHUD, updateBeam } from '../combat/weapons.js';
 
 
 export function updatePlayerFlight(delta) {
@@ -105,7 +105,6 @@ export function updatePlayerFlight(delta) {
 
     let focus = null;
     let aim = null;
-    const manualRotation = keys.manualWasd || targetPitch !== 0 || targetYaw !== 0 || targetRoll !== 0;
     // Target-follow is shared by both schemes; physical WASD always wins.
     if (targetFollowActive(gameState.targetFollowEnabled, keys, padInput)) {
         const locked = enemies[gameState.lockedEnemyIndex];
@@ -132,23 +131,24 @@ export function updatePlayerFlight(delta) {
         mouseFlight.aimDirection.set(moved.x, moved.y, moved.z);
         const inverseAttitude = playerMesh.quaternion.clone().invert();
         const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(inverseAttitude);
-        const level = levelingRates(localUp, maxPitchRate, maxRollRate);
-        // Focus owns pitch/yaw while held; manual roll remains available.
-        // Otherwise assist only neutral axes, never fight a pilot's input.
-        if (focus) {
-            targetPitch = focus.pitch;
-            targetYaw = 0;
-        } else if (!manualRotation) {
-            aim = mouseAimRates(mouseFlight.aimDirection.clone().applyQuaternion(inverseAttitude), maxPitchRate, maxYawRate);
-            targetPitch = aim.pitch;
-            targetYaw = 0;
+        const manualRoll = keys.rollLeft || keys.rollRight || padInput.roll !== 0;
+        playerFlight.casualRollIdle = manualRoll ? 0 : (playerFlight.casualRollIdle ?? 1) + delta;
+        // Local goal coordinates naturally blend horizontal input into pitch when banked.
+        aim = mouseAimRates(mouseFlight.aimDirection.clone().applyQuaternion(inverseAttitude), maxPitchRate, maxYawRate);
+        if (!padInput.pitch && !keys.pitchUp && !keys.pitchDown) targetPitch = aim.pitch;
+        if (!padInput.yaw && !keys.yawLeft && !keys.yawRight) targetYaw = aim.yaw;
+        if (!manualRoll && playerFlight.casualRollIdle >= 0.75) {
+            const bank = Math.atan2(localUp.x, localUp.y);
+            const desiredBank = Math.max(-0.9, Math.min(0.9, aim.yaw * 1.2));
+            const error = Math.atan2(Math.sin(desiredBank - bank), Math.cos(desiredBank - bank));
+            targetRoll = Math.hypot(localUp.x, localUp.y) < 0.05 ? 0 : error * 2;
         }
-        if (targetRoll === 0) targetRoll = level.roll;
     }
 
     targetPitch = Math.max(-maxPitchRate, Math.min(maxPitchRate, targetPitch));
     targetRoll = Math.max(-maxRollRate, Math.min(maxRollRate, targetRoll));
-    const yawLimit = !casual && focus ? Math.max(maxPitchRate, maxYawRate * 3) : maxYawRate;
+    const yawLimit = casual ? Math.max(maxYawRate, Math.min(maxPitchRate * 0.55, maxYawRate * 2))
+        : focus ? Math.max(maxPitchRate, maxYawRate * 3) : maxYawRate;
     targetYaw = Math.max(-yawLimit, Math.min(yawLimit, targetYaw));
 
     playerFlight.pitchRate += (targetPitch - playerFlight.pitchRate) * Math.min(1, delta * 7.0 * ((targetPitch === 0 || Math.sign(targetPitch) !== Math.sign(playerFlight.pitchRate)) ? playerFlight.stabilityMultiplier : 1));
@@ -160,25 +160,8 @@ export function updatePlayerFlight(delta) {
     playerMesh.rotateZ(playerFlight.rollRate * delta);
     playerMesh.rotateY(playerFlight.yawRate * delta);
 
-    if (casual) {
-        const turn = stepCasualTurn(playerFlight.casualYawRate || 0, 0,
-            maxPitchRate, maxYawRate, speedRatio, delta, focus?.yaw ?? aim?.yaw ?? 0);
-        playerFlight.casualYawRate = turn.rate;
-        playerMesh.rotateY(turn.rate * delta);
-        const blend = 1 - Math.exp(-9 * delta);
-        // ZXY banks first, then lifts the nose in the banked model's local frame.
-        playerVisual.rotation.order = 'ZXY';
-        playerVisual.rotation.z += (turn.bank - playerVisual.rotation.z) * blend;
-        playerVisual.rotation.x += (turn.pitch - playerVisual.rotation.x) * blend;
-    } else {
-        playerFlight.casualYawRate = 0;
-        playerVisual.rotation.set(0, 0, 0);
-    }
-
-    if (casual && manualRotation && !focus) {
-        // Keyboard/pad manoeuvres take priority; release holds the new heading.
-        mouseFlight.aimDirection.set(0, 0, -1).applyQuaternion(playerMesh.quaternion);
-    }
+    playerFlight.casualYawRate = 0;
+    playerVisual.rotation.set(0, 0, 0);
 
     // Move forward in local Z-axis
     const forwardSpeedMps = playerFlight.speed * 0.514444; // 1 knot ~ 0.514 m/s
@@ -201,13 +184,14 @@ export function updatePlayerFlight(delta) {
 
     if (tickMagazines(playerFlight, delta)) updateWeaponHUD();
 
-    if ((keys.fireCannon || padInput.fireCannon) && playerFlight.cannonCooldown <= 0) {
+    if (gameState.missileMode !== 3 && (keys.fireCannon || padInput.fireCannon) && playerFlight.cannonCooldown <= 0) {
         fireCannon(true, playerMesh);
         playerFlight.cannonCooldown = 0.05; // 20 rounds per sec
     }
 
     // ─── 미사일 연속 발사 제어 (표준 1발씩 20발, 멀티 최대 4발씩 16발) ─────────────────────
-    if (keys.fireMissile) {
+    updateBeam(delta, keys.fireMissile || keys.beamMouse || padInput.beamHeld);
+    if (keys.fireMissile && gameState.missileMode !== 3) {
         tryFireMissile();
     }
 }

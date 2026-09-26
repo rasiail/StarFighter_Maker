@@ -211,6 +211,7 @@ export function initMissions() {
     gameEvents.on(EVENTS.PLAYER_DESTROYED, () => {
         if (gameState.isGameRunning && !gameState.isPlayerDead) {
             gameState.isPlayerDead = true;
+            clearCombatInput();
             gameState.deathTimer = 5.0;
             gameState.deathTotalTime = 5.0;
             gameState.playerCrashed = false;

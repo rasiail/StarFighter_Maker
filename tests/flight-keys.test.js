@@ -2,29 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveFlightKeys, targetFollowActive } from '../src/input/flight-keys.js';
 
-test('casual focus remaps held WASD to pitch and bank without throttle or rudder', () => {
-    const held = { keyW: true, keyA: true, casualThrottleUp: true, yawLeft: true };
-    const focused = resolveFlightKeys(held, 'casual', true);
-    assert.equal(focused.pitchDown, true);
-    assert.equal(focused.rollLeft, true);
-    assert.equal(focused.casualThrottleUp, false);
-    assert.equal(focused.yawLeft, false);
-    assert.equal(focused.manualWasd, true);
-    const releasedFocus = resolveFlightKeys(held, 'casual', false);
-    assert.equal(releasedFocus.casualThrottleUp, true);
-    assert.equal(releasedFocus.yawLeft, true);
-    assert.equal(held.casualThrottleUp, true);
-});
-
-test('S/D map to climb and right bank; Shift and Alt remain available in focus', () => {
-    const result = resolveFlightKeys({ keyS: true, keyD: true, casualThrottleDown: true, yawRight: true,
-        throttleUp: true, throttleDown: true }, 'casual', true);
-    assert.equal(result.pitchUp, true);
-    assert.equal(result.rollRight, true);
-    assert.equal(result.casualThrottleDown, false);
-    assert.equal(result.yawRight, false);
-    assert.equal(result.throttleUp, true);
-    assert.equal(result.throttleDown, true);
+test('casual keeps speed, roll and rudder bindings while focusing', () => {
+    for (const focusing of [false, true]) {
+        const held = { keyW: true, keyS: true, keyA: true, keyD: true,
+            casualThrottleUp: true, casualThrottleDown: true, yawLeft: true, yawRight: true };
+        const result = resolveFlightKeys(held, 'casual', focusing);
+        assert.equal(result.casualThrottleUp, true);
+        assert.equal(result.casualThrottleDown, true);
+        assert.equal(result.rollLeft, true);
+        assert.equal(result.rollRight, true);
+        assert.equal(result.yawLeft, true);
+        assert.equal(result.yawRight, true);
+        assert.ok(!result.pitchUp && !result.pitchDown);
+    }
 });
 
 test('both schemes detect held keys even when opposing inputs cancel, and release clears the override', () => {

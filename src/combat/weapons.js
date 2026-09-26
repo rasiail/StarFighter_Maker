@@ -1,3 +1,6 @@
+import { pulseBeam, clearBeam } from './beam.js';
+import { clearBeamBolts } from './beam-bolt.js';
+export { updateBeam } from './beam.js';
 import { updateTargeting } from './targeting.js';
 // combat/weapons: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
@@ -18,9 +21,20 @@ let aaBulletMat;
 let missileTemplate;
 
 export function updateWeaponHUD() {
+    const slots = document.getElementById('weapon-slots');
+    if (slots) slots.innerHTML = (gameState.ownedWeapons || [1]).map((mode, i) => `<button data-slot="${i}" class="${mode === gameState.missileMode ? 'selected' : ''}">${i + 1} · ${['', 'STD', 'MULTI', 'BEAM'][mode]}</button>`).join('');
     const statEl = document.getElementById('missile-stat');
     if (!statEl) return;
     
+    if (gameState.missileMode === 3) {
+        const overload = playerFlight.beamOverload ?? 0;
+        const reload = playerFlight.beamReloadRemaining ?? 0;
+        statEl.style.color = overload > 0 ? '#ff6b6b' : reload > 0 ? '#ffcc00' : '#78eaff';
+        statEl.textContent = overload > 0 ? `BEAM OVERLOAD · ${overload.toFixed(1)}s`
+            : reload > 0 ? `BEAM RELOAD · ${reload.toFixed(1)}s`
+            : `BEAM · ${Math.round(playerFlight.beamEnergy ?? 100)} / 100`;
+        return;
+    }
     if (gameState.missileMode === 1) {
         const count = `${playerFlight.stdBursts}/${playerFlight.stdMaxBursts}`;
         if (playerFlight.stdReloadTimers.length > 0) {
@@ -44,6 +58,8 @@ export function updateWeaponHUD() {
     }
 }
 export function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
+    // Enforce weapon exclusivity even for delayed mouse callbacks or stale input.
+    if (isPlayer && gameState.missileMode === 3) return;
     const bullet = new THREE.Mesh(bulletGeom, bulletMat);
     // Spawn from nose cannon position
     const noseZ = isPlayer ? -4.8 : -8.5;
@@ -129,11 +145,13 @@ function createMissileMesh() {
     return missileTemplate.clone(true);
 }
 export function clearProjectiles() {
+    clearBeam();
+    clearBeamBolts();
     bullets.forEach(b => scene.remove(b));
     missiles.forEach(m => scene.remove(m.mesh));
     bullets.length = missiles.length = 0;
 }
-export function fireMissile(target, isPlayer = true, sourceMesh = playerMesh) {
+export function fireMissile(target, isPlayer = true, sourceMesh = playerMesh, launch = {}) {
 
 
     // 락온 완료 조건 엄격화: 플레이어 발사 시 오직 isLocked가 true인 대상만 호밍(유도) 대상으로 지정
@@ -148,11 +166,17 @@ export function fireMissile(target, isPlayer = true, sourceMesh = playerMesh) {
     mslMesh.quaternion.copy(sourceMesh.quaternion);
 
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
+    if (launch.direction) {
+        forward.copy(launch.direction).normalize();
+        mslMesh.position.copy(sourceMesh.position).addScaledVector(forward, 38);
+        mslMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), forward);
+    }
     const config = isPlayer
         ? (gameState.missileMode === 2 ? weaponData.multi_missile : weaponData.standard_missile)
         : (sourceMesh.userData.isBoss ? weaponData.boss_missile : weaponData.enemy_missile);
     const missileData = {
         mesh: mslMesh,
+        homingDelay: launch.homingDelay || 0,
         target: validTarget,
         velocity: forward.clone().multiplyScalar(Math.min(400, config.projectileSpeedMps)),
         speed: config.projectileSpeedMps,
@@ -171,6 +195,8 @@ export function fireMissile(target, isPlayer = true, sourceMesh = playerMesh) {
 }
 export function tryFireMissile() {
     if (!gameState.isGameRunning || gameState.isGamePaused) return;
+    if (gameState.isPlayerDead || !(gameState.ownedWeapons || [1]).includes(gameState.missileMode)) return;
+    if (gameState.missileMode === 3) { pulseBeam(); return; }
     updateTargeting();
     // 현재 타겟이 살아있고 락온이 완료된 상태인지 확인
     const currentEnemy = enemies[gameState.lockedEnemyIndex];
@@ -215,7 +241,19 @@ export function tryFireMissile() {
     }
 }
 
+export function selectWeaponSlot(index) {
+    const mode = (gameState.ownedWeapons || [1])[index];
+    if (!mode) return;
+    clearBeam();
+    gameState.missileMode = mode;
+    updateWeaponHUD();
+}
 export function initWeapons() {
+    gameState.ownedWeapons = [1];
+    document.getElementById('weapon-slots')?.addEventListener('click', event => {
+        const button = event.target.closest('[data-slot]');
+        if (button && gameState.isGameRunning && !gameState.isGamePaused) selectWeaponSlot(Number(button.dataset.slot));
+    });
     gameState.missileMode = 1;
 
     bullets = [];
