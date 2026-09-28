@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import { BALANCE } from '../src/data/generated/balance.js';
 
 // Node test environment mock for THREE
 class MockVector3 {
@@ -57,6 +60,49 @@ class MockVector3 {
 }
 
 globalThis.THREE = { Vector3: MockVector3 };
+
+test('standard missile locks and fires at a forward fallback while preserving selected target priority', () => {
+    const selected = createMockEnemy(0, 0, 500);
+    const centered = createMockEnemy(0, 0, -900);
+    const offAxis = createMockEnemy(100, 0, -500);
+    const dead = createMockEnemy(0, 0, -100, false);
+    const far = createMockEnemy(0, 0, -100000);
+    let fired;
+    const context = vm.createContext({
+        THREE: { Vector3: MockVector3 }, BALANCE, weaponData: BALANCE.weapons,
+        enemies: [selected, offAxis, centered, dead, far],
+        gameState: { missileMode: 1, lockedEnemyIndex: 0, isGameRunning: true, ownedWeapons: [1, 2, 3] },
+        playerMesh: { position: new MockVector3(), quaternion: {} },
+        playerFlight: { lockRangeMultiplier: 1, stdShotCooldown: 0, multiLockCount: 2 },
+        acquireNextBestTarget: () => null,
+        consumeMagazine: () => 1, fireMissile: target => { fired = target; }, updateWeaponHUD: () => {},
+    });
+    const targeting = readFileSync(new URL('../src/combat/targeting.js', import.meta.url), 'utf8');
+    vm.runInContext(targeting.slice(targeting.indexOf('export function updateTargeting')).replace('export ', ''), context);
+    const weapons = readFileSync(new URL('../src/combat/weapons.js', import.meta.url), 'utf8');
+    const start = weapons.indexOf('export function tryFireMissile');
+    vm.runInContext(weapons.slice(start, weapons.indexOf('\nexport function', start + 1)).replace('export ', ''), context);
+    context.tryFireMissile();
+    assert.equal(fired, centered, 'fallback prefers the nose center over distance');
+    assert.equal(context.gameState.lockedEnemyIndex, 0, 'focus selection is preserved');
+    assert.equal(context.enemies.filter(enemy => enemy.isLocked).length, 1);
+    selected.mesh.position.set(200, 0, -1000);
+    context.playerFlight.stdShotCooldown = 0;
+    context.tryFireMissile();
+    assert.equal(fired, selected, 'selected target wins even when another is more centered');
+    selected.mesh.position.set(0, 0, 500);
+    centered.alive = offAxis.alive = false;
+    context.playerFlight.stdShotCooldown = 0;
+    context.tryFireMissile();
+    assert.equal(fired, null, 'dead, rear and out-of-range targets cannot be homed');
+    centered.alive = offAxis.alive = true;
+    context.gameState.missileMode = 2;
+    context.updateTargeting();
+    assert.equal(context.enemies.filter(enemy => enemy.isLocked).length, 2);
+    context.gameState.missileMode = 3;
+    context.updateTargeting();
+    assert.equal(context.enemies.some(enemy => enemy.isLocked), false);
+});
 
 const { evaluateTargetCandidates, acquireNextBestTarget, cycleTarget } = await import('../src/combat/targeting.js');
 const { gameState } = await import('../src/core/state.js');

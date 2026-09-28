@@ -211,30 +211,30 @@ export function spawnFormation(count, options = {}) {
                 spawnGroundTank(new THREE.Vector3(px, 0, pz));
             }
         } else {
-            // 공중 병력 스폰: 에이스 컴뱃 스타일 고저차(Low/Mid/High) 분배 및 고도 상한 1650m 제한
+            // 공중 병력 스폰: 에이스 컴뱃 스타일 고저차(Low/Mid/High) 분배 및 고도 상한 2250m 제한
             const groundY = getSurfaceHeight(px, pz);
             let py;
             let altOffset;
             if (options.boss) {
-                py = Math.max(groundY + 450, 1150);
+                py = Math.max(groundY + 450, 1750);
                 altOffset = 0;
             } else {
                 const roll = Math.random();
                 if (roll < 0.3) {
-                    // Low 레이어 (약 30%): 저고도 지형 활용 (지형 위 320m ~ 580m)
-                    py = groundY + 320 + Math.random() * 260;
+                    // Low 레이어 (약 30%): 하단 교전 고도 (920m ~ 1180m, 지형 여유 확보)
+                    py = Math.max(groundY + 320, 920 + Math.random() * 260);
                     altOffset = -220 - Math.random() * 180;
                 } else if (roll < 0.7) {
-                    // Mid 레이어 (약 40%): 중고도 일반 순항 (850m ~ 1150m)
-                    py = Math.max(groundY + 380, 850 + Math.random() * 300);
+                    // Mid 레이어 (약 40%): 중고도 일반 순항 (1450m ~ 1750m)
+                    py = Math.max(groundY + 380, 1450 + Math.random() * 300);
                     altOffset = (Math.random() - 0.5) * 200;
                 } else {
-                    // High 레이어 (약 30%): 고고도 요격 (1250m ~ 1600m)
-                    py = Math.max(groundY + 480, 1250 + Math.random() * 350);
+                    // High 레이어 (약 30%): 고고도 요격 (1850m ~ 2200m)
+                    py = Math.max(groundY + 480, 1850 + Math.random() * 350);
                     altOffset = 220 + Math.random() * 200;
                 }
             }
-            py = Math.max(groundY + 280, Math.min(1650, py));
+            py = Math.max(groundY + 280, Math.min(2250, py));
 
             const pos = new THREE.Vector3(px, py, pz);
             if (schoolReady) {

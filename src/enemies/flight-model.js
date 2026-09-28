@@ -1,15 +1,26 @@
+import { createManeuverState, stepManeuver } from './maneuvers.js';
 // Flight controller uses world heading/pitch, with bank only as visual attitude.
 // Local -Z is the nose. No Euler extraction/clamping across the +/- PI seam.
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 const approach = (a, b, step) => a + clamp(b - a, -step, step);
 
+// Enemy speed is already in m/s (player HUD speed is in knots).
+export function updateEnemySpeed(enemy, dt) {
+    const factor = enemy.state === 'INTERCEPT' ? 1.05 : enemy.state === 'EXTEND' ? 1
+        : enemy.state === 'RECOVER' ? 0.85 : 0.9;
+    const target = enemy.speed * factor;
+    enemy.currentSpeed = approach(enemy.currentSpeed ?? target, target, enemy.speed * 0.2 * dt);
+    return enemy.currentSpeed;
+}
+
 export function createFlightState(forward, altitudeOffset = 0) {
     return {
         heading: Math.atan2(-forward.x, -forward.z),
         pitch: Math.asin(clamp(forward.y, -1, 1)), bank: 0,
         recovering: false, recoveryHeading: 0, egressTime: 0, egressHeading: 0,
-        altitudeOffset, egressManeuver: 0
+        altitudeOffset, egressManeuver: 0,
+        ...createManeuverState(Math.atan2(-forward.x, -forward.z), altitudeOffset)
     };
 }
 
@@ -31,7 +42,7 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
     }
     if (flight.recovering && position.y > terrain + 340 && flight.pitch >= 0) flight.recovering = false;
 
-    if (!flight.recovering && flight.egressTime <= 0 && (distance < 480 || evade)) {
+    if (!flight.recovering && flight.egressTime <= 0 && (distance < 480 || (boss && evade))) {
         flight.egressTime = 3.5;
         flight.egressHeading = flight.heading;
         if ((flight.altitudeOffset || 0) > 50) {
@@ -45,18 +56,24 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
     const egress = flight.egressTime > 0;
     flight.egressTime = Math.max(0, flight.egressTime - dt);
     let heading = Math.hypot(dx, dz) > 1 ? Math.atan2(-dx, -dz) : flight.heading;
-    const desiredAlt = clamp(target.y + (flight.altitudeOffset || 0), ground + 280, 1650);
+    const desiredAlt = clamp(target.y + (flight.altitudeOffset || 0), ground + 280, 2250);
     let pitch = clamp(Math.atan2(desiredAlt - position.y,
         Math.max(450, Math.hypot(dx, dz))), -0.38, 0.48);
     if (egress) {
         heading = flight.egressHeading;
-        if (flight.egressManeuver === 0 && position.y < 1600) {
+        if (flight.egressManeuver === 0 && position.y < 2200) {
             pitch = 0.28;
         } else if (flight.egressManeuver === 1 && position.y > ground + 360) {
             pitch = -0.22;
         } else {
             pitch = clamp((desiredAlt - position.y) / 1000, -0.18, 0.28);
         }
+    }
+    const maneuver = stepManeuver(flight, { dt, distance, altitude: position.y, terrain,
+        heavy: boss, recovering: flight.recovering, extending: egress, evade });
+    if (maneuver.active && !flight.recovering) {
+        heading += maneuver.heading;
+        pitch = clamp(pitch + maneuver.pitch, -0.65, 0.8);
     }
     if (position.y > 1650) {
         pitch = Math.min(pitch, -0.22); // 1650m 고도 상한선 엄수
@@ -66,12 +83,13 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
         pitch = clamp(Math.atan2(terrain + 420 - position.y, speed * 2), 0.22, 0.72);
         flight.egressTime = 0;
     }
-    const turnRate = boss ? 0.38 : 0.55;
+    const turnRate = boss ? 0.38 : 0.75;
     const turn = clamp(wrap(heading - flight.heading), -turnRate * dt, turnRate * dt);
     flight.heading = wrap(flight.heading + turn);
-    flight.pitch = approach(flight.pitch, pitch, (flight.recovering ? 0.8 : 0.38) * dt);
-    const bank = flight.recovering ? 0 : clamp(turn / Math.max(dt, 0.0001) * 0.9, -0.5, 0.5);
-    flight.bank = approach(flight.bank, bank, 0.75 * dt);
+    flight.pitch = approach(flight.pitch, pitch, (flight.recovering ? 0.8 : boss ? 0.38 : 0.7) * dt);
+    const bankLimit = boss ? 0.5 : 1.05;
+    const bank = flight.recovering ? 0 : clamp(turn / Math.max(dt, 0.0001) * (boss ? 0.9 : 1.6), -bankLimit, bankLimit);
+    flight.bank = approach(flight.bank, bank, (boss ? 0.75 : 1.6) * dt);
     const forward = {
         x: -Math.sin(flight.heading) * Math.cos(flight.pitch),
         y: Math.sin(flight.pitch), z: -Math.cos(flight.heading) * Math.cos(flight.pitch),
@@ -81,7 +99,7 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
     position.z += forward.z * speed * dt;
     // Last-resort collision guard for discontinuous terrain, never a steering input.
     position.y = Math.max(position.y, surface(position.x, position.z) + 60);
-    return { forward, state: flight.recovering ? 'RECOVER' : egress ? 'EXTEND' : distance < 2200 ? 'ENGAGE' : 'INTERCEPT' };
+    return { forward, state: flight.recovering ? 'RECOVER' : maneuver.active ? 'MANEUVER' : egress ? 'EXTEND' : distance < 2200 ? 'ENGAGE' : 'INTERCEPT' };
 }
 
 export function stepAirWeapons(enemy, dt, distance, alignment, allowed, random = Math.random, missileAllowed = true) {

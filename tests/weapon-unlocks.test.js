@@ -39,10 +39,10 @@ test('weapons unlock once, preserve acquisition order and gate their upgrades', 
 });
 test('beam pulse cost, cooldown, recharge and held drain remain bounded', () => {
     const s = { energy: 100, cooldown: 0 };
-    assert.equal(spendBeamPulse(s), true); assert.equal(s.energy, 88);
+    assert.equal(spendBeamPulse(s), true); assert.equal(s.energy, 94);
     assert.equal(spendBeamPulse(s), false);
-    advanceBeamEnergy(s, 1, true); assert.equal(s.energy, 43);
-    advanceBeamEnergy(s, 5, false); assert.equal(s.energy, 43);
+    advanceBeamEnergy(s, 1, true); assert.equal(s.energy, 64);
+    advanceBeamEnergy(s, 5, false); assert.equal(s.energy, 64);
     s.energy = 0; assert.equal(spendBeamPulse(s), false);
     s.primed = false;
     const duration = advanceBeamEnergy(s, 0.1, true);

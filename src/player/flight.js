@@ -132,14 +132,19 @@ export function updatePlayerFlight(delta) {
         const inverseAttitude = playerMesh.quaternion.clone().invert();
         const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(inverseAttitude);
         const manualRoll = keys.rollLeft || keys.rollRight || padInput.roll !== 0;
+        const manualYaw = keys.yawLeft || keys.yawRight || padInput.yaw !== 0;
         playerFlight.casualRollIdle = manualRoll ? 0 : (playerFlight.casualRollIdle ?? 1) + delta;
         // Local goal coordinates naturally blend horizontal input into pitch when banked.
         aim = mouseAimRates(mouseFlight.aimDirection.clone().applyQuaternion(inverseAttitude), maxPitchRate, maxYawRate);
         if (!padInput.pitch && !keys.pitchUp && !keys.pitchDown) targetPitch = aim.pitch;
-        if (!padInput.yaw && !keys.yawLeft && !keys.yawRight) targetYaw = aim.yaw;
+        if (!manualYaw) {
+            targetYaw = aim.yaw;
+        } else {
+            mouseFlight.aimDirection.set(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+        }
         if (!manualRoll && playerFlight.casualRollIdle >= 0.75) {
             const bank = Math.atan2(localUp.x, localUp.y);
-            const desiredBank = Math.max(-0.9, Math.min(0.9, aim.yaw * 1.2));
+            const desiredBank = manualYaw ? 0 : Math.max(-0.9, Math.min(0.9, aim.yaw * 1.2));
             const error = Math.atan2(Math.sin(desiredBank - bank), Math.cos(desiredBank - bank));
             targetRoll = Math.hypot(localUp.x, localUp.y) < 0.05 ? 0 : error * 2;
         }
@@ -160,6 +165,9 @@ export function updatePlayerFlight(delta) {
     playerMesh.rotateZ(playerFlight.rollRate * delta);
     playerMesh.rotateY(playerFlight.yawRate * delta);
 
+    if (casual && (keys.yawLeft || keys.yawRight || padInput.yaw !== 0)) {
+        mouseFlight.aimDirection.set(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+    }
     playerFlight.casualYawRate = 0;
     playerVisual.rotation.set(0, 0, 0);
 

@@ -355,6 +355,7 @@ export function initControls() {
                 // 상하 시야 한계 제한 (±80도)
                 cameraConfig.freelookPitch = THREE.MathUtils.clamp(cameraConfig.freelookPitch, -Math.PI * 0.45, Math.PI * 0.45);
                 // 마우스를 움직이면 타이머를 리셋하여 복귀를 지연시킴
+                cameraConfig.padFreelook = false;
                 cameraConfig.freelookIdleTimer = 1.2;
             }
         } else {

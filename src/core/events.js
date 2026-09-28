@@ -22,6 +22,7 @@ export const EVENTS = Object.freeze({
     // payload: { enemyType: 'aircraft'|'tank'|'ship'|'turret', killCount: number, score: number }
     ENEMY_DESTROYED: 'enemy:destroyed',
     PLAYER_DESTROYED: 'player:destroyed',
+    PLAYER_HIT: 'player:hit', // payload: { damage: number }
     PROGRESSION_CHANGED: 'progression:changed',
     BOSS_SEQUENCE_COMPLETE: 'boss:sequence_complete',
 });

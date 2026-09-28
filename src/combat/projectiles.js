@@ -36,6 +36,7 @@ export function updateProjectiles(delta) {
         } else {
             if (b.position.distanceTo(playerMesh.position) < 6.0) {
                 playerFlight.health -= b.damage;
+                gameEvents.emit(EVENTS.PLAYER_HIT, { damage: b.damage });
                 triggerExplosion(b.position, 5, 0.4);
                 b.life = -1;
                 if (playerFlight.health <= 0) gameEvents.emit(EVENTS.PLAYER_DESTROYED);
@@ -115,6 +116,7 @@ export function updateProjectiles(delta) {
                 const hitDist = m.mesh.position.distanceTo(m.target.mesh.position);
                 if (hitDist < 10.0) {
                     playerFlight.health -= m.damage;
+                    gameEvents.emit(EVENTS.PLAYER_HIT, { damage: m.damage });
                     triggerExplosion(m.mesh.position, 20, 1.2);
                     m.life = -1;
                     if (playerFlight.health <= 0) gameEvents.emit(EVENTS.PLAYER_DESTROYED);

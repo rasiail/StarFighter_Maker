@@ -7,7 +7,7 @@ import { fireAntiAirBullet, fireCannon, fireMissile, missiles } from '../combat/
 import { getSurfaceHeight } from '../world/environment.js';
 import { getStage } from '../config/stages.js';
 
-import { createFlightState, stepFlight, stepAirWeapons } from './flight-model.js';
+import { createFlightState, stepFlight, stepAirWeapons, updateEnemySpeed } from './flight-model.js';
 import { ATTACK_POLICY, selectAttackers, canLaunchMissile } from './attack-policy.js';
 
 let missileLaunchCooldown = 0;
@@ -116,7 +116,7 @@ export function updateEnemies(delta) {
             const z = playerMesh.position.z + pFwd.z * spawnDist + (Math.random() - 0.5) * 600;
             const groundY = getSurfaceHeight(x, z);
             const targetY = playerMesh.position.y + (enemy.altitudeOffset || 0);
-            const reY = Math.max(groundY + 280, Math.min(1650, targetY));
+            const reY = Math.max(groundY + 280, Math.min(2250, targetY));
             enemy.mesh.position.set(x, reY, z);
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI);
@@ -132,12 +132,15 @@ export function updateEnemies(delta) {
                 enemy.altitudeOffset || 0
             );
         }
-        const speed = enemy.speed * (enemy.state === 'INTERCEPT' ? 0.65 : 0.58);
+        const heavy = enemy.isBoss || enemy.isBomber || enemy.isFishSchool;
+        const missileThreat = !heavy && missiles.some(m => m.isPlayer && m.life > 0 && m.target === enemy
+            && m.mesh.position.distanceTo(enemy.mesh.position) < 700);
+        const speed = updateEnemySpeed(enemy, delta);
         const flight = stepFlight(enemy.flight, enemy.mesh.position, playerMesh.position,
-            speed, delta, getSurfaceHeight, enemy.isBoss || enemy.isBomber, enemy.evadeTimer > 0);
+            speed, delta, getSurfaceHeight, heavy, missileThreat || enemy.evadeTimer > 0);
         enemy.evadeTimer = Math.max(0, (enemy.evadeTimer || 0) - delta);
         enemy.state = flight.state;
-        const visualBank = enemy.flight.bank * 1.35;
+        const visualBank = enemy.flight.bank + enemy.flight.rollOffset;
         enemy.mesh.rotation.set(enemy.flight.pitch, enemy.flight.heading, visualBank, 'YXZ');
         enemy.velocity.set(flight.forward.x, flight.forward.y, flight.forward.z).multiplyScalar(speed);
 

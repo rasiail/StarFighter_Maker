@@ -1,6 +1,6 @@
 import { BALANCE } from '../data/generated/balance.js';
 import { createSeededRandom } from './simulator.js';
-import { createFlightState, stepFlight, stepAirWeapons } from '../enemies/flight-model.js';
+import { createFlightState, stepFlight, stepAirWeapons, updateEnemySpeed } from '../enemies/flight-model.js';
 import { ATTACK_POLICY, selectAttackers, canLaunchMissile } from '../enemies/attack-policy.js';
 import { advanceHomingMissile } from '../combat/homing.js';
 import { isEliteSpawn } from '../enemies/formation.js';
@@ -71,7 +71,7 @@ export function simulateIncomingFire({ balance = BALANCE, policy = ATTACK_POLICY
                 }
                 continue;
             }
-            const result = stepFlight(e.flight, e.position, player, e.speed * (e.state === 'INTERCEPT' ? 0.65 : 0.58), dt, flat, e.isBoss);
+            const result = stepFlight(e.flight, e.position, player, updateEnemySpeed(e, dt), dt, flat, e.isBoss);
             e.state = result.state;
             const shots = stepAirWeapons(e, dt, distance(e.position, player), dot(result.forward, direction(e.position, player)), attackers.has(e), random,
                 canLaunchMissile(launchCooldown, missiles.length, policy));

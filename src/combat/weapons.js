@@ -200,7 +200,8 @@ export function tryFireMissile() {
     updateTargeting();
     // 현재 타겟이 살아있고 락온이 완료된 상태인지 확인
     const currentEnemy = enemies[gameState.lockedEnemyIndex];
-    const lockedTarget = (currentEnemy && currentEnemy.alive && currentEnemy.isLocked) ? currentEnemy : null;
+    const lockedTarget = (currentEnemy && currentEnemy.alive && currentEnemy.isLocked) ? currentEnemy
+        : gameState.missileMode === 1 ? enemies.find(enemy => enemy.alive && enemy.isLocked) || null : null;
 
     if (gameState.missileMode === 2) {
         // 동시 발사는 멀티 관제 확장으로 4 → 6 → 8발까지 증가합니다.

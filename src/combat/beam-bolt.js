@@ -3,7 +3,7 @@ import { enemies } from '../enemies/fleet.js';
 import { killEnemy } from '../enemies/lifecycle.js';
 import { triggerExplosion } from '../effects/particles.js';
 
-export const BEAM_BOLT = Object.freeze({ length: 18, diameter: 0.6, speed: 1800, range: 1800 });
+export const BEAM_BOLT = Object.freeze({ length: 18, diameter: 1.5, speed: 1800, range: 1800 });
 export const beamBolts = [];
 let geometry, coreMaterial, glowMaterial;
 
@@ -19,7 +19,7 @@ export function beamBoltIntersection(origin, direction, center, radius, distance
     return entry <= distance ? entry : null;
 }
 
-export function spawnBeamBolt(source, damage, width = 3) {
+export function spawnBeamBolt(source, damage, width = 3, aimDirection = null) {
     if (!geometry) {
         geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 12);
         geometry.rotateX(Math.PI / 2);
@@ -34,10 +34,12 @@ export function spawnBeamBolt(source, damage, width = 3) {
     const glow = new THREE.Mesh(geometry, glowMaterial);
     glow.scale.set(diameter * 1.65, diameter * 1.65, BEAM_BOLT.length * 1.03);
     mesh.add(core, glow);
-    const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(source.quaternion);
+    const direction = aimDirection ? aimDirection.clone()
+        : new THREE.Vector3(0, 0, -1).applyQuaternion(source.quaternion);
     const tail = source.position.clone().addScaledVector(direction, 5);
     mesh.position.copy(tail).addScaledVector(direction, BEAM_BOLT.length / 2);
-    mesh.quaternion.copy(source.quaternion);
+    if (aimDirection) mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
+    else mesh.quaternion.copy(source.quaternion);
     scene.add(mesh);
     beamBolts.push({ mesh, tail, direction, damage, radius: diameter / 2, traveled: 0 });
 }

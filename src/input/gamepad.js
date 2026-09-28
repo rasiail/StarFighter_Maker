@@ -1,4 +1,4 @@
-import { createPadReader, padInput, clearPadInput } from './gamepad-state.js';
+import { createPadReader, padInput, clearPadInput, selectActivePad } from './gamepad-state.js';
 import { gameState } from '../core/state.js';
 import { playerFlight } from '../player/player.js';
 import { cameraConfig } from '../camera/camera.js';
@@ -9,7 +9,15 @@ import { toggleOptionsMenu } from '../ui/menus.js';
 
 const reader = createPadReader();
 let device = null;
+function showPadStatus(message) {
+    const status = document.getElementById('gamepad-status');
+    if (status && status.textContent !== message) status.textContent = message;
+}
 export function resetGamepad() {
+    if (cameraConfig?.padFreelook) {
+        cameraConfig.padFreelook = false;
+        cameraConfig.freelookIdleTimer = 0;
+    }
     clearPadInput();
     reader.reset();
 }
@@ -37,14 +45,24 @@ function navigateMenu(input) {
 }
 export function updateGamepad(delta, now = performance.now() / 1000) {
     if (document.hidden) { resetGamepad(); return; }
+    if (typeof navigator.getGamepads !== 'function') {
+        showPadStatus('게임패드 API를 사용할 수 없습니다. HTTPS 또는 localhost에서 실행해 주세요.');
+        resetGamepad(); return;
+    }
     let pads;
     try { pads = Array.from(navigator.getGamepads?.() || []); }
-    catch { resetGamepad(); return; }
-    const pad = pads.find(p => p?.connected && p.mapping === 'standard' && `${p.index}:${p.id}` === device)
-        || pads.find(p => p?.connected && p.mapping === 'standard')
-        || pads.find(p => p?.connected && `${p.index}:${p.id}` === device)
-        || pads.find(p => p?.connected);
-    if (!pad) { device = null; resetGamepad(); return; }
+    catch {
+        showPadStatus('브라우저가 게임패드 접근을 차단했습니다. 게임을 별도 탭에서 열어 주세요.');
+        resetGamepad(); return;
+    }
+    const pad = selectActivePad(pads, device);
+    if (!pad) {
+        showPadStatus('패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요.');
+        device = null; resetGamepad(); return;
+    }
+    const buttons = pad.buttons.flatMap((button, index) => button.pressed || button.value > 0.5 ? [index + 1] : []);
+    const stick = pad.axes.slice(0, 4).some(axis => Math.abs(axis) > 0.18);
+    showPadStatus(`연결됨 · ${pad.id} · ${pad.mapping === 'standard' ? '표준 버튼 배치' : '비표준 버튼 배치 (조작이 다를 수 있음)'} · ${buttons.length ? `버튼 ${buttons.join(', ')}` : stick ? '스틱 입력 중' : '입력 대기'}`);
     const identity = `${pad.index}:${pad.id}`;
     if (identity !== device) { resetGamepad(); device = identity; }
     const context = `${gameState.phase}:${gameState.activeModal}:${gameState.isGameRunning}:${gameState.isGamePaused}`;
@@ -71,10 +89,16 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
     if (wasTargetCam && !padInput.targetCam) {
         cameraConfig.freelookYaw = cameraConfig.freelookPitch = cameraConfig.freelookIdleTimer = 0;
     }
-    if (!padInput.targetCam && (input.axes[2] || input.axes[3])) {
+    const stickLook = !padInput.targetCam && !!(input.axes[2] || input.axes[3]);
+    if (cameraConfig?.padFreelook && !stickLook) {
+        cameraConfig.padFreelook = false;
+        cameraConfig.freelookIdleTimer = 0;
+    }
+    if (stickLook) {
+        cameraConfig.padFreelook = true;
         cameraConfig.freelookYaw -= input.axes[2] * delta * 2;
         cameraConfig.freelookPitch = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, cameraConfig.freelookPitch - input.axes[3] * delta * 2));
-        cameraConfig.freelookIdleTimer = 1.2;
+        cameraConfig.freelookIdleTimer = 0;
     }
 }
 export function initGamepad() {

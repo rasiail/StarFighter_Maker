@@ -7,7 +7,7 @@ test('overload and full-recovery restart reduce base hold DPS below continuous r
     const stats = calculateStats(createProgression());
     assert.ok(benchmarkBeam(stats).lateDps < 100 * 20 / 45);
     assert.ok(benchmarkBeam(stats).lateDps > 15);
-    assert.ok(benchmarkBeam(stats, { mode: 'tap' }).lateDps <= 35 * 20 / 12 + 1);
+    assert.ok(benchmarkBeam(stats, { mode: 'tap' }).lateDps <= 66 * 20 / 6 + 1);
 });
 test('even maximum energy upgrades still deplete and reload', () => {
     const build = createProgression(); build.cards = { beamEfficiency: 2, beamRecharge: 2 };

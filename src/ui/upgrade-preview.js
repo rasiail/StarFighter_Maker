@@ -17,7 +17,7 @@ const descriptions = {
     guidance: '미사일의 유도 선회 성능을 높여 움직이는 표적을 더 잘 추적합니다.',
     repair: '최대 체력에 비례해 즉시 수리하고 점수를 얻습니다. 체력 상한은 넘지 않습니다.',
     multiSalvo: '멀티 미사일로 한 번에 락온하고 발사할 수 있는 표적 수를 늘립니다.',
-    smartAim: '기관포 조준 보조가 작동하는 화면상의 범위를 넓힙니다.',
+    smartAim: '기관포와 빔의 조준 보조가 작동하는 화면상의 범위를 넓힙니다.',
 };
 const number = value => Number(value.toFixed(2)).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
 

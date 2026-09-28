@@ -1,3 +1,4 @@
+import { localSave } from '../core/local-save.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { gameState } from '../core/state.js';
 import { clearCombatSchedule } from '../core/scheduler.js';
@@ -119,7 +120,16 @@ export function updateMission(delta) {
     }
     updateMissionUI();
 }
+function refreshSavedStages() {
+    const cleared = localSave.data.progress.clearedStages;
+    document.querySelectorAll('.stage-card').forEach(card => {
+        const stage = getStage(Number(card.dataset.stage));
+        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)}기 + BOSS${cleared.includes(stage.id) ? ' · CLEARED' : ''}`;
+    });
+}
 function enterHangar() {
+    localSave.recordResult(selectedStageId, playerFlight.score, true);
+    refreshSavedStages();
     gameState.phase = 'hangar';
     gameState.isGameRunning = false;
     gameState.isGamePaused = true;
@@ -139,6 +149,8 @@ function enterHangar() {
 }
 export function gameOver(victory = false) {
     if (gameState.activeModal === 'cards') return;
+    localSave.recordResult(selectedStageId, playerFlight.score, victory);
+    refreshSavedStages();
     gameState.phase = victory ? 'complete' : 'defeat';
     gameState.isGameRunning = false;
     gameState.isGamePaused = false;
@@ -166,6 +178,7 @@ export function launchStage(stageId, { newRun = true } = {}) {
     clearCombatInput();
     clearBattle();
     selectedStageId = stageId;
+    localSave.selectStage(stageId);
     if (newRun) {
         runStartStage = stageId;
         Object.assign(playerFlight, createPlayerFlight(new THREE.Vector3(0, 0, -1)));
@@ -176,7 +189,7 @@ export function launchStage(stageId, { newRun = true } = {}) {
     gameState.currentStageInfo = { stage: stageId, name: `${stage.name} [${currentEnvironment.theme} | ${currentEnvironment.timeOfDay}]` };
     document.getElementById('mission-name').textContent = gameState.currentStageInfo.name;
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');
-    playerMesh.position.set(0, 800, 1200);
+    playerMesh.position.set(0, 1400, 1200);
     playerMesh.quaternion.set(0, 0, 0, 1);
     replenishPlayerForSortie(playerFlight);
     playerVisual.rotation.set(0, 0, 0);
@@ -243,16 +256,15 @@ export function initMissions() {
         }
     });
     const cards = document.querySelectorAll('.stage-card');
-    cards[0]?.classList.add('selected');
+    selectedStageId = localSave.data.progress.selectedStage;
+    cards.forEach(card => card.classList.toggle('selected', Number(card.dataset.stage) === selectedStageId));
     cards.forEach(card => card.addEventListener('click', () => {
         cards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
         selectedStageId = Number(card.dataset.stage);
+        localSave.selectStage(selectedStageId);
     }));
-    cards.forEach(card => {
-        const stage = getStage(Number(card.dataset.stage));
-        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)}기 + BOSS`;
-    });
+    refreshSavedStages();
     document.getElementById('btn-start-selected-stage').addEventListener('click', () => launchStage(selectedStageId));
     document.getElementById('hangar-depart').addEventListener('click', departHangar);
     document.getElementById('btn-restart').addEventListener('click', () => launchStage(runStartStage));

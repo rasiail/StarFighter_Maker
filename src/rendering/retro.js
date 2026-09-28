@@ -1,5 +1,4 @@
 // rendering/retro: imports are side-effect free; main.js controls initialization.
-import { gameState } from '../core/state.js';
 
 export let retroRenderTarget;
 export let retroPostScene;
@@ -40,8 +39,6 @@ function initRetroShader() {
 }
 
 export function initRetro() {
-    gameState.retroFilterEnabled = true;
-
     retroRenderTarget = null;
 
     retroPostScene = null;

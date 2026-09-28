@@ -8,11 +8,18 @@ import { keys, mouseFlight } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
 import { cameraFollowOffset } from './follow.js';
+import { gameEvents, EVENTS } from '../core/events.js';
+import { createHitShake, addHitShake, stepHitShake } from './hit-shake.js';
 
 export let cameraConfig;
+let hitShake = createHitShake();
+let unsubscribeHit;
 
 export function updateCamera(delta) {
+    cameraConfig.hitShake = stepHitShake(hitShake, delta);
+    if (gameState.isPlayerDead || hitShake.strength === 0) cameraConfig.hitShake = null;
     const casualView = gameState.controlScheme === 'casual' && !gameState.isPlayerDead
+        && !cameraConfig.padFreelook
         && !(keys.targetCam || padInput.targetCam) && !activeDyingBosses?.length;
     if (!casualView) cameraConfig.casualWorldQuaternion = null;
     if (gameState.isPlayerDead && gameState.playerCrashed && gameState.crashPosition) {
@@ -30,6 +37,28 @@ export function updateCamera(delta) {
         camera.position.lerp(targetCamPos, camLerp);
         camera.lookAt(gameState.crashPosition);
         return;
+    }
+
+    const dyingBoss = activeDyingBosses?.[0];
+    if (!gameState.isPlayerDead && dyingBoss?.mesh) {
+        if (cameraConfig.bossShot?.mesh !== dyingBoss.mesh) {
+            // Capture the entry angle once so the camera follows translation without tumbling.
+            cameraConfig.bossShot = {
+                mesh: dyingBoss.mesh,
+                offset: new THREE.Vector3(65, 38, 85).applyQuaternion(dyingBoss.mesh.quaternion),
+            };
+        }
+        if (camera.parent !== scene) scene.attach(camera);
+        camera.position.copy(dyingBoss.mesh.position).add(cameraConfig.bossShot.offset);
+        camera.lookAt(dyingBoss.mesh.position);
+        cameraConfig.targetFov = 58;
+        camera.fov += (58 - camera.fov) * (1 - Math.exp(-4 * delta));
+        camera.updateProjectionMatrix();
+        return;
+    }
+    if (cameraConfig.bossShot) {
+        cameraConfig.bossShot = null;
+        resetCamera();
     }
 
     // 속도에 따른 동적 FOV 조정
@@ -53,29 +82,6 @@ export function updateCamera(delta) {
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, posLerp);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, posLerp);
     camera.rotation.set(-0.13, 0, 0);
-
-    // 보스 격추 파괴 시네마틱 킬캠: 카메라가 월드 씬으로 분리되어 파괴 중인 거대 보스를 중심(Boss-Centered)으로 포커싱
-    const dyingBoss = activeDyingBosses && activeDyingBosses[0];
-    if (!gameState.isPlayerDead && dyingBoss && dyingBoss.mesh) {
-        cameraConfig.targetFov = 58;
-        camera.fov += (cameraConfig.targetFov - camera.fov) * (delta * 4);
-        camera.updateProjectionMatrix();
-
-        // 보스 선체 기준 전측방 상공 오프셋 (거리 약 110m, 높이 약 40m)
-        const bossCamOffset = new THREE.Vector3(65, 38, 85);
-        const targetCamPos = dyingBoss.mesh.position.clone().add(bossCamOffset);
-
-        if (camera.parent !== scene) {
-            scene.attach(camera);
-            // 시네마틱 컷 전환: 보스 주변 시네마틱 앵글로 즉각 배치
-            camera.position.copy(targetCamPos);
-        } else {
-            const camLerp = 1.0 - Math.exp(-5.0 * delta);
-            camera.position.lerp(targetCamPos, camLerp);
-        }
-        camera.lookAt(dyingBoss.mesh.position);
-        return;
-    }
 
     let targetEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
 
@@ -142,7 +148,7 @@ export function updateCamera(delta) {
             .multiply(cameraConfig.casualWorldQuaternion);
     } else {
         // 2. 프리룩 및 디폴트 시점 복귀 모드
-        if (cameraConfig.freelookIdleTimer > 0) {
+        if (cameraConfig.padFreelook || cameraConfig.freelookIdleTimer > 0) {
             cameraConfig.freelookIdleTimer -= delta;
 
             // 마우스 이동으로 쌓인 freelook 회전 각도로 카메라 피봇을 부드럽게 보간
@@ -182,6 +188,9 @@ export function updateCamera(delta) {
 }
 
 export function initCamera() {
+    unsubscribeHit?.();
+    hitShake = createHitShake();
+    unsubscribeHit = gameEvents.on(EVENTS.PLAYER_HIT, ({ damage }) => addHitShake(hitShake, damage));
     cameraConfig = {
         idealOffset: new THREE.Vector3(0, 4.2, 17.5),
         idealLook: new THREE.Vector3(0, 1.2, -30),
@@ -190,6 +199,7 @@ export function initCamera() {
         targetFov: 65,
         isTargetCamActive: false,
         casualWorldQuaternion: null,
+        hitShake: null,
         freelookYaw: 0,
         freelookPitch: 0,
         freelookIdleTimer: 0
@@ -197,6 +207,10 @@ export function initCamera() {
 }
 
 export function resetCamera() {
+    if (cameraConfig) cameraConfig.padFreelook = false;
+    if (cameraConfig) cameraConfig.bossShot = null;
+    hitShake = createHitShake();
+    if (cameraConfig) cameraConfig.hitShake = null;
     if (cameraConfig) cameraConfig.casualWorldQuaternion = null;
     if (!gameState.cameraPivot) return;
     if (camera.parent !== gameState.cameraPivot) {

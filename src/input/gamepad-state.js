@@ -10,6 +10,14 @@ export function clearPadInput() {
     Object.assign(padInput, { pitch: 0, roll: 0, yaw: 0, throttleUp: false, throttleDown: false, fireCannon: false, beamHeld: false, targetCam: false });
 }
 clearPadInput();
+export function selectActivePad(pads, identity) {
+    const connected = pads.filter(pad => pad?.connected);
+    const active = pad => pad.buttons.some(button => button.pressed || button.value > 0.5)
+        || pad.axes.slice(0, 4).some(axis => Math.abs(axis) > 0.35);
+    const current = connected.find(pad => `${pad.index}:${pad.id}` === identity);
+    if (current && active(current)) return current;
+    return connected.find(active) || current || connected.find(pad => pad.mapping === 'standard') || connected[0];
+}
 export function deadzone(value = 0, threshold = 0.18) {
     return Math.abs(value) <= threshold ? 0 : Math.sign(value) * (Math.min(1, Math.abs(value)) - threshold) / (1 - threshold);
 }

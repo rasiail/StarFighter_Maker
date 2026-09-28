@@ -8,7 +8,5 @@ export function initSession() {
 
     gameState.isGamePaused = false;
 
-    gameState.isPointerLockEnabled = true;
-
     gameState.wasPointerLocked = false;
 }

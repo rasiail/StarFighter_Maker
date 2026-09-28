@@ -4,6 +4,16 @@ import { audio } from '../audio/audio.js';
 import { releaseGamePointerLock, requestGamePointerLock } from '../input/pointer-lock.js';
 import { clearCombatInput } from '../input/controls.js';
 import { refreshProgressionUI } from './upgrades.js';
+import { localSave, saveLocalOptions } from '../core/local-save.js';
+
+function refreshSaveStatus() {
+    const status = document.getElementById('local-save-status');
+    if (!status) return;
+    const progress = localSave.data.progress;
+    status.textContent = localSave.available
+        ? `자동 저장 · 클리어 ${progress.clearedStages.length}개 · 최고 점수 ${progress.bestScore}`
+        : '현재 브라우저에서 저장할 수 없습니다. 이번 플레이는 계속할 수 있습니다.';
+}
 
 let btnOptStart;
 let btnOptStage;
@@ -37,6 +47,7 @@ export function openOptionsMenu() {
     }
     releaseGamePointerLock(); // 옵션 메뉴 활성화 시 마우스 커서 표시
     refreshProgressionUI();
+    refreshSaveStatus();
 }
 function closeOptionsMenu() {
     if (gameState.activeModal === 'cards') return;
@@ -82,6 +93,8 @@ export function initMenus() {
     optBgmVal = document.getElementById('opt-bgm-val');
 
     if (optBgmSlider && optBgmVal) {
+        optBgmSlider.value = Math.round(audio.bgmVolume * 100);
+        optBgmVal.textContent = optBgmSlider.value + '%';
         optBgmSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value, 10);
             optBgmVal.textContent = val + '%';
@@ -94,6 +107,8 @@ export function initMenus() {
     optSfxVal = document.getElementById('opt-sfx-val');
 
     if (optSfxSlider && optSfxVal) {
+        optSfxSlider.value = Math.round(audio.sfxVolume * 100);
+        optSfxVal.textContent = optSfxSlider.value + '%';
         optSfxSlider.addEventListener('input', (e) => {
             const val = parseInt(e.target.value, 10);
             optSfxVal.textContent = val + '%';
@@ -140,6 +155,21 @@ export function initMenus() {
         });
     }
 
+
+    const optionsModal = document.getElementById('options-modal');
+    const persistOptions = event => {
+        if (!event.target.id?.startsWith('opt-')) return;
+        saveLocalOptions();
+        refreshSaveStatus();
+    };
+    optionsModal.addEventListener('input', persistOptions);
+    optionsModal.addEventListener('change', persistOptions);
+    document.getElementById('btn-reset-save')?.addEventListener('click', () => {
+        if (!window.confirm('클리어 기록, 최고 점수, 옵션을 모두 초기화하고 타이틀로 돌아갑니다. 진행 중인 출격도 종료됩니다. 초기화할까요?')) return;
+        if (localSave.reset()) window.location.reload();
+        else document.getElementById('local-save-status').textContent = '초기화하지 못했습니다. 브라우저의 저장 권한을 확인해 주세요.';
+    });
+    refreshSaveStatus();
 
     document.getElementById('btn-sortie').addEventListener('click', () => {
         audio.init();

@@ -6,12 +6,10 @@ import { killEnemy } from '../enemies/lifecycle.js';
 import { spawnBeamBolt } from './beam-bolt.js';
 import { spendBeamPulse, advanceBeamEnergy, BEAM_PULSE_DAMAGE, BEAM_HOLD_DPS, BEAM_HOLD_DELAY } from './beam-energy.js';
 let mesh;
-let visibleTime = 0;
 let heldTime = 0;
 const energy = { energy: 100, cooldown: 0 };
 export function clearBeam() {
     if (mesh) mesh.visible = false;
-    visibleTime = 0;
     heldTime = 0;
     energy.primed = false;
 }
@@ -27,6 +25,15 @@ function saveEnergy() {
     playerFlight.beamOverload = energy.overload;
     playerFlight.beamReloadRemaining = energy.reload;
 }
+function beamAimDirection(origin) {
+    const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
+    const target = enemies[gameState.lockedEnemyIndex];
+    if (gameState.isGunAimOnTarget && target?.alive) {
+        const toTarget = target.mesh.position.clone().sub(origin).normalize();
+        direction.lerp(toTarget, gameState.isSmartGunEnabled ? 1.0 : 0.42).normalize();
+    }
+    return direction;
+}
 function castBeam(damage) {
     if (!mesh) {
         const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 12);
@@ -34,8 +41,9 @@ function castBeam(damage) {
         mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x74efff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
         scene.add(mesh);
     }
-    const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
-    const origin = playerMesh.position.clone().addScaledVector(direction, 5);
+    // Rebuild the attached beam from the aircraft origin each frame; it never travels.
+    const origin = playerMesh.position.clone();
+    const direction = beamAimDirection(origin);
     const width = playerFlight.beamWidth ?? 0.9;
     let length = 1800, target = null;
     for (const enemy of enemies) {
@@ -51,10 +59,9 @@ function castBeam(damage) {
         target = enemy;
     }
     mesh.position.copy(origin).addScaledVector(direction, length / 2);
-    mesh.quaternion.copy(playerMesh.quaternion);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
     mesh.scale.set(width, width, Math.max(0.01, length));
     mesh.visible = true;
-    visibleTime = 0.1;
     if (target) {
         target.health -= damage * playerFlight.damageMultiplier;
         if (target.health <= 0) killEnemy(target);
@@ -68,7 +75,8 @@ export function pulseBeam() {
     if (!fired) return;
     heldTime = 0;
     saveEnergy();
-    spawnBeamBolt(playerMesh, BEAM_PULSE_DAMAGE * playerFlight.damageMultiplier, playerFlight.beamBoltWidth ?? 3);
+    spawnBeamBolt(playerMesh, BEAM_PULSE_DAMAGE * playerFlight.damageMultiplier,
+        playerFlight.beamBoltWidth ?? 3, beamAimDirection(playerMesh.position));
 }
 export function updateBeam(delta, held) {
     loadEnergy();
@@ -90,7 +98,7 @@ export function updateBeam(delta, held) {
             hud.style.color = energy.overload > 0 ? '#ff6b6b' : energy.reload > 0 ? '#ffcc00' : '#78eaff';
         }
     }
-    visibleTime -= delta;
     if (duration > 0) castBeam(BEAM_HOLD_DPS * duration);
-    else if (mesh && visibleTime <= 0) mesh.visible = false;
+    // Do not leave a world-space afterimage behind a moving aircraft.
+    if (mesh && (duration <= 0 || !energy.primed)) mesh.visible = false;
 }

@@ -100,6 +100,7 @@ export function updateDyingBosses(delta) {
         // 4.2초 시점 (남은 시간 0.8초): 피날레 클라이맥스 연쇄 대폭발 시작
         if (b.timer <= 0.8 && !b.finalPhaseStarted) {
             b.finalPhaseStarted = true;
+            b.mesh.visible = false;
             triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(-15, 8, -20)), 110, 5.5);
             scheduleCombat(0.18, () => {
                 if (b.mesh) triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(20, -5, 10)), 120, 6.0);
@@ -118,6 +119,7 @@ export function updateDyingBosses(delta) {
                 triggerExplosion(b.mesh.position.clone().add(new THREE.Vector3(15, 5, -10)), 90, 5.0);
             });
             audio.playExplosion();
+            b.mesh.visible = false;
             scene.remove(b.mesh);
             activeDyingBosses.splice(i, 1);
             gameState.bossDyingSequence = false;

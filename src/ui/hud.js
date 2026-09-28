@@ -114,10 +114,12 @@ export function renderHUD() {
         const vRight = new THREE.Vector3(1, 0, 0).applyQuaternion(playerMesh.quaternion);
 
         const truePitch = Math.asin(vForward.y); // 양수 = 상승(Climb), 음수 = 하강(Dive)
-        const roll = Math.atan2(vRight.y, vUp.y); // 비행기의 정확한 롤(Roll)
+        // 캐주얼 조작에서는 카메라가 월드 수평을 고정 유지하므로 평지 표시 UI(수평선)는 회전하지 않음
+        const isCasual = gameState.controlScheme === 'casual';
+        const roll = isCasual ? 0 : Math.atan2(vRight.y, vUp.y); // 비행기의 정확한 롤(Roll)
 
         // 기체가 롤링할 때 실제 지평선과 동일하게 유지하도록 캔버스 회전
-        hudCtx.rotate(roll);
+        if (roll !== 0) hudCtx.rotate(roll);
 
         const pitchPxPerRad = 450;
         // 기수가 하늘을 향하면(truePitch>0) 수평선이 스크린상 아래(Canvas +Y)로 내려감
@@ -194,11 +196,11 @@ export function renderHUD() {
     const targetInLockCone = !!currentLockedEnemy?.isLocked;
     let isCurrentTargetOnScreenCenter = false;
 
-    // 사운드 비프음 처리 (락온된 적기가 하나라도 있으면 락온음 재생)
+    // 표준 미사일은 탐색/락온 비프음을 재생하지 않습니다.
     const anyLocked = enemies.some(e => e.alive && e.isLocked);
-    if (anyLocked) {
+    if (gameState.missileMode !== 1 && anyLocked) {
         audio.playLockBeep(true);
-    } else if (currentLockedEnemy && currentLockedEnemy.dotForward > 0.65) {
+    } else if (gameState.missileMode !== 1 && currentLockedEnemy && currentLockedEnemy.dotForward > 0.65) {
         audio.playLockBeep(false);
     }
 
@@ -287,26 +289,33 @@ export function renderHUD() {
     gameState.isGunAimOnTarget = false;
     gameState.currentGunLeadPredictedPos = null;
 
-    const GUN_RANGE = BALANCE.weapons.player_cannon.lockRangeM;
+    const isBeamMode = gameState.missileMode === 3;
+    const AIM_RANGE = isBeamMode ? 1800 : BALANCE.weapons.player_cannon.lockRangeM;
 
     if (currentLockedEnemy && currentLockedEnemy.alive) {
         const pPos = playerMesh.position;
         const ePos = currentLockedEnemy.mesh.position;
-        const gunTargetDist = pPos.distanceTo(ePos);
+        const targetDist = pPos.distanceTo(ePos);
 
-        // 기총 사거리 이내일 때만 UI 표시
-        if (gunTargetDist <= GUN_RANGE) {
-            const muzzleVel = 1600; // 20mm M61A2 탄속 m/s
-            const flightTime = gunTargetDist / muzzleVel;
+        // 유효 사거리 이내일 때만 UI 표시 (기총 1000m, 빔 1800m)
+        if (targetDist <= AIM_RANGE) {
+            let predictedInterceptPos;
+            if (isBeamMode) {
+                // 빔은 즉발 레이저이므로 타겟의 현재 중심 좌표가 조준점
+                predictedInterceptPos = ePos.clone();
+            } else {
+                const muzzleVel = 1600; // 20mm M61A2 탄속 m/s
+                const flightTime = targetDist / muzzleVel;
 
-            // 적기 실제 이동 속도 벡터
-            const eFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(currentLockedEnemy.mesh.quaternion);
-            const speedMultiplier = (currentLockedEnemy.state === 'INTERCEPT') ? 0.65 : 0.50;
-            const eSpeedMs = (currentLockedEnemy.speed || 340) * speedMultiplier;
-            const eVel = eFwd.clone().multiplyScalar(eSpeedMs);
+                // 적기 실제 이동 속도 벡터
+                const eFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(currentLockedEnemy.mesh.quaternion);
+                const speedMultiplier = (currentLockedEnemy.state === 'INTERCEPT') ? 0.65 : 0.50;
+                const eSpeedMs = (currentLockedEnemy.speed || 340) * speedMultiplier;
+                const eVel = eFwd.clone().multiplyScalar(eSpeedMs);
 
-            // 탄착 미래 예측 지점
-            const predictedInterceptPos = ePos.clone().addScaledVector(eVel, flightTime);
+                // 탄착 미래 예측 지점
+                predictedInterceptPos = ePos.clone().addScaledVector(eVel, flightTime);
+            }
             gameState.currentGunLeadPredictedPos = predictedInterceptPos;
 
             // 예측 지점 화면 투영 (SHOOT 판정 기준점)
@@ -332,7 +341,7 @@ export function renderHUD() {
                     const distToCenter = Math.hypot(bsX - ppX, bsY - ppY);
                     if (distToCenter <= smartAssistRadius && pipperProj.z < 1.0) {
                         isAimAligned = true;
-                        if (gameState.isFiringGun) {
+                        if (gameState.isFiringGun || (isBeamMode && gameState.isFiringMissile)) {
                             snappedX = ppX;
                             snappedY = ppY;
                         }
@@ -340,7 +349,7 @@ export function renderHUD() {
                     
                     hudCtx.save();
                     hudCtx.setLineDash([6, 6]);
-                    hudCtx.strokeStyle = 'rgba(77, 245, 138, 0.4)';
+                    hudCtx.strokeStyle = isBeamMode ? 'rgba(116, 239, 255, 0.45)' : 'rgba(77, 245, 138, 0.4)';
                     hudCtx.lineWidth = 1.2;
                     hudCtx.beginPath();
                     hudCtx.arc(bsX, bsY, smartAssistRadius, 0, Math.PI * 2);
@@ -358,7 +367,8 @@ export function renderHUD() {
 
                 // ── 보어사이트 원형 레티클 렌더링 ────────────────────────────
                 const pipperRadius = 22;
-                const mainColor = isAimAligned ? '#ff3344' : '#4df58a';
+                const modeColor = isBeamMode ? '#74efff' : '#4df58a';
+                const mainColor = isAimAligned ? '#ff3344' : modeColor;
                 hudCtx.strokeStyle = mainColor;
                 hudCtx.fillStyle = mainColor;
                 hudCtx.shadowBlur = isAimAligned ? 18 : 5;
@@ -386,10 +396,10 @@ export function renderHUD() {
                 hudCtx.moveTo(snappedX + tickInner, snappedY); hudCtx.lineTo(snappedX + tickOuter, snappedY);
                 hudCtx.stroke();
 
-                // 잔여 거리 아크 게이지 (GUN_RANGE 기준, 가까울수록 아크 채워짐)
-                const rangeRatio = Math.max(0, Math.min(1, gunTargetDist / GUN_RANGE));
+                // 잔여 거리 아크 게이지 (AIM_RANGE 기준, 가까울수록 아크 채워짐)
+                const rangeRatio = Math.max(0, Math.min(1, targetDist / AIM_RANGE));
                 hudCtx.lineWidth = 3.0;
-                hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : 'rgba(77, 245, 138, 0.75)';
+                hudCtx.strokeStyle = isAimAligned ? 'rgba(255, 51, 68, 0.9)' : (isBeamMode ? 'rgba(116, 239, 255, 0.75)' : 'rgba(77, 245, 138, 0.75)');
                 hudCtx.beginPath();
                 hudCtx.arc(snappedX, snappedY, pipperRadius - 5,
                     -Math.PI * 0.5,
@@ -397,6 +407,7 @@ export function renderHUD() {
                 hudCtx.stroke();
 
                 // ── SHOOT 경고 & 거리 텍스트 ─────────────────────────────────
+                const weaponLabel = isBeamMode ? 'BEAM' : 'GUN';
                 hudCtx.textAlign = 'center';
                 if (isAimAligned) {
                     const blink = Math.floor(Date.now() / 140) % 2 === 0;
@@ -410,12 +421,12 @@ export function renderHUD() {
                     hudCtx.shadowBlur = 0;
                     hudCtx.fillStyle = '#ff6677';
                     hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
-                    hudCtx.fillText(`GUN [${Math.round(gunTargetDist)}m]`, snappedX, snappedY + pipperRadius + 17);
+                    hudCtx.fillText(`${weaponLabel} [${Math.round(targetDist)}m]`, snappedX, snappedY + pipperRadius + 17);
                 } else {
                     hudCtx.shadowBlur = 0;
-                    hudCtx.fillStyle = '#4df58a';
+                    hudCtx.fillStyle = modeColor;
                     hudCtx.font = 'bold 11px "Share Tech Mono", monospace';
-                    hudCtx.fillText(`GUN ${Math.round(gunTargetDist)}m`, snappedX, snappedY + pipperRadius + 17);
+                    hudCtx.fillText(`${weaponLabel} ${Math.round(targetDist)}m`, snappedX, snappedY + pipperRadius + 17);
                 }
 
                 hudCtx.restore();

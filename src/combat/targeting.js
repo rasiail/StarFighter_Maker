@@ -158,10 +158,11 @@ export function updateTargeting() {
     }
 
     if (gameState.missileMode === 1) {
-        // [모드 1] 표준 미사일: 오직 현재 지정된 타깃만 기수 전방 콘 내에 있을 때 락온!
-        if (currentLockedEnemy && currentLockedEnemy.inCone) {
-            currentLockedEnemy.isLocked = true;
-        }
+        // 지정 타깃 우선, 불가능하면 기수 중심에 가장 가까운 유효 적 1기를 락온.
+        const candidate = currentLockedEnemy?.inCone ? currentLockedEnemy : enemies
+            .filter(enemy => enemy.alive && enemy.inCone)
+            .sort((a, b) => b.dotForward - a.dotForward || a.distToPlayer - b.distToPlayer)[0];
+        if (candidate) candidate.isLocked = true;
     } else if (gameState.missileMode === 2) {
         // [모드 2] 멀티 미사일: 현재 타깃을 최우선으로 하되, 전방 콘 내 다른 적들도 함께 멀티 락온 (최대 4기)
         let lockedCount = 0;

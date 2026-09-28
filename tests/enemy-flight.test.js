@@ -1,9 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createFlightState, stepFlight, stepAirWeapons } from '../src/enemies/flight-model.js';
+import { createFlightState, stepFlight, stepAirWeapons, updateEnemySpeed } from '../src/enemies/flight-model.js';
 
 const flat = () => 0;
 const nose = { x: 0, y: 0, z: -1 };
+
+test('fighters can keep up with cruise but not player maximum speed; heavy aircraft stay slower', () => {
+    const fighter = { speed: 340, state: 'ENGAGE' };
+    assert.equal(updateEnemySpeed(fighter, 1 / 60), 306);
+    assert.ok(fighter.currentSpeed > 550 * 0.514444);
+    fighter.state = 'INTERCEPT';
+    const next = updateEnemySpeed(fighter, 1 / 60);
+    assert.ok(next > 306 && next < 308, 'acceleration is gradual');
+    for (let i = 0; i < 120; i++) updateEnemySpeed(fighter, 1 / 60);
+    assert.equal(fighter.currentSpeed, 357);
+    assert.ok(fighter.currentSpeed < 950 * 0.514444);
+    assert.ok(updateEnemySpeed({ speed: 210, state: 'ENGAGE' }, 1) < 306);
+});
 
 test('a target ahead remains ahead, without reverse steering or roll', () => {
     const f = createFlightState(nose), p = { x: 0, y: 800, z: 0 };
@@ -19,7 +32,7 @@ test('low descending aircraft climb away without circling toward a low player', 
         for (let t = 0; t < 6; t += dt) {
             stepFlight(f, p, { x: 0, y: 50, z: 200 }, 200, dt, flat);
             assert.ok(p.y >= 60);
-            assert.ok(Math.abs(f.bank) <= 0.5);
+            assert.ok(Math.abs(f.bank) <= 1.05);
         }
         assert.ok(!f.recovering && p.y > 300);
         assert.ok(p.z < -800);
@@ -55,8 +68,8 @@ test('heading seam and targets behind cannot cause roll flips; time steps agree'
         for (let t = 0; t < 10 - dt / 2; t += dt) {
             const bank = f.bank;
             stepFlight(f, p, { x: 1000, y: 1000, z: 4000 }, 200, dt, flat);
-            assert.ok(Math.abs(f.bank - bank) <= 0.75 * dt + 1e-9);
-            assert.ok(Math.abs(f.bank) <= 0.5);
+            assert.ok(Math.abs(f.bank - bank) <= 1.6 * dt + 1e-9);
+            assert.ok(Math.abs(f.bank) <= 1.05);
         }
         results.push(p);
     }
@@ -70,7 +83,7 @@ test('weapons require attack permission, stable lock and safe firing distances',
     e.missileCooldown = 0;
     stepAirWeapons(e, 1, 1200, 0, true);
     assert.equal(stepAirWeapons(e, 0.2, 1200, 1, true).missile, false);
-    for (const state of ['RECOVER', 'EXTEND', 'INTERCEPT']) {
+    for (const state of ['RECOVER', 'EXTEND', 'INTERCEPT', 'MANEUVER']) {
         e.state = state; e.fireCooldown = 0; e.missileCooldown = 0;
         assert.deepEqual(stepAirWeapons(e, 2, 1200, 1, true), { cannon: false, missile: false });
     }

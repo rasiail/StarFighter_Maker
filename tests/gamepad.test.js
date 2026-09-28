@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPadReader, deadzone, padInput } from '../src/input/gamepad-state.js';
+import { createPadReader, deadzone, padInput, selectActivePad } from '../src/input/gamepad-state.js';
 import { updateGamepad, resetGamepad } from '../src/input/gamepad.js';
 import { gameState } from '../src/core/state.js';
 
@@ -8,6 +8,17 @@ function pad(...buttons) {
     return { index: 0, id: 'Test controller', connected: true, mapping: 'standard', axes: [0, 0, 0, 0],
         buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: buttons.includes(i), value: buttons.includes(i) ? 1 : 0 })) };
 }
+
+test('an active wireless pad can replace an idle controller and survives sparse slots', () => {
+    const idle = pad();
+    const wireless = { ...pad(0), index: 2, id: 'DualSense Wireless Controller' };
+    assert.equal(selectActivePad([null, idle, wireless], '0:Test controller'), wireless);
+    wireless.buttons[0] = { pressed: false, value: 0 };
+    assert.equal(selectActivePad([idle, null, wireless], '2:DualSense Wireless Controller'), wireless);
+    wireless.connected = false;
+    assert.equal(selectActivePad([null, idle, wireless], '2:DualSense Wireless Controller'), idle);
+    assert.equal(selectActivePad([null], null), undefined);
+});
 test('Circle holds at 180ms and L2 holds at 280ms, and never tap after a hold', () => {
     // Circle (button 1): 180ms
     {

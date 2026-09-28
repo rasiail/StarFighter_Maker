@@ -75,3 +75,18 @@ test('neutral pitch leveling settles with flight inertia at 30 and 144 FPS', () 
         assert.ok(Math.abs(pitch) < 0.001);
     }
 });
+
+test('casual manual yaw suppresses auto-bank to stay level', () => {
+    // When manual yaw (Q/E) is applied, desiredBank must be 0 instead of tilting with aim.yaw
+    const localUp = { x: 0, y: 1 };
+    const bank = Math.atan2(localUp.x, localUp.y);
+    const aimYaw = 0.8; // Mouse aim is offset horizontally
+    const desiredBankNormal = Math.max(-0.9, Math.min(0.9, aimYaw * 1.2));
+    assert.ok(desiredBankNormal > 0.5, 'normal mouse turn commands significant bank');
+    const manualYaw = true;
+    const desiredBankYaw = manualYaw ? 0 : desiredBankNormal;
+    assert.equal(desiredBankYaw, 0, 'manual yaw forces bank target to zero (level flight)');
+    const error = Math.atan2(Math.sin(desiredBankYaw - bank), Math.cos(desiredBankYaw - bank));
+    const targetRoll = error * 2;
+    assert.equal(targetRoll, 0, 'no bank roll torque is applied when aircraft is level');
+});

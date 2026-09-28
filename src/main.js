@@ -1,4 +1,5 @@
 import { initGamepad } from './input/gamepad.js';
+import { initLocalSave } from './core/local-save.js';
 import { initAudio } from './audio/audio.js';
 import { initAircraft } from './assets/aircraft.js';
 import { initExhaust } from './effects/exhaust.js';
@@ -24,6 +25,7 @@ import { initUpgrades } from './ui/upgrades.js';
 
 // Initialize once, in dependency order, after the document is parsed.
 initAudio();
+initLocalSave();
 initAircraft();
 initExhaust();
 initScene();

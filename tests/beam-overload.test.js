@@ -4,10 +4,10 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import * as beam from '../src/combat/beam-energy.js';
 import { createPlayerFlight, replenishPlayerForSortie } from '../src/player/state.js';
-import { createPadReader } from '../src/input/gamepad-state.js';
+import { createPadReader, selectActivePad } from '../src/input/gamepad-state.js';
 
 test('depletion requires overload then a full reload; no gradual recharge', () => {
-    const state = { energy: 45, cooldown: 0, primed: true };
+    const state = { energy: 30, cooldown: 0, primed: true };
     assert.equal(beam.advanceBeamEnergy(state, 1, true), 1);
     assert.equal(state.energy, 0);
     assert.equal(state.overload, 2);
@@ -23,7 +23,7 @@ test('depletion requires overload then a full reload; no gradual recharge', () =
     assert.equal(state.energy, 100);
     assert.equal(state.primed, false);
     assert.equal(beam.spendBeamPulse(state), true);
-    assert.equal(state.energy, 88);
+    assert.equal(state.energy, 94);
 });
 
 test('idle energy stays spent and a sub-shot remainder reloads without getting stuck', () => {
@@ -36,7 +36,7 @@ test('idle energy stays spent and a sub-shot remainder reloads without getting s
     assert.equal(state.overload, 0);
     beam.advanceBeamEnergy(state, 5, false);
     assert.equal(state.energy, 100);
-    state.energy = 12;
+    state.energy = 6;
     assert.equal(beam.spendBeamPulse(state), true);
     assert.equal(state.overload, 2);
     assert.equal(state.reload, 5);
@@ -47,13 +47,14 @@ test('a held beam cannot start without paying its pulse cost', () => {
     assert.equal(beam.advanceBeamEnergy(state, 1, true), 0);
     assert.equal(state.energy, 100);
     assert.equal(beam.spendBeamPulse(state), true);
-    assert.equal(state.energy, 88);
+    assert.equal(state.energy, 94);
     assert.equal(beam.advanceBeamEnergy(state, 1, true), 1);
+    assert.equal(state.energy, 64);
 });
 
 test('depletion and cooling are frame-rate independent, including long frames', () => {
     const run = dt => {
-        const state = { energy: 45, cooldown: 0, primed: true };
+        const state = { energy: 30, cooldown: 0, primed: true };
         let duration = 0;
         for (let i = 0; i < Math.round(4 / dt); i++) duration += beam.advanceBeamEnergy(state, dt, true);
         return { state, duration };
@@ -71,8 +72,8 @@ test('depletion and cooling are frame-rate independent, including long frames', 
 function runtime() {
     let source = readFileSync(new URL('../src/combat/beam.js', import.meta.url), 'utf8');
     source = source.replace(/^import .*;\r?\n/gm, '').replaceAll('export function', 'function');
-    const start = source.indexOf('function castBeam('), end = source.indexOf('function pulseBeam()', start);
-    source = source.slice(0, start) + 'function castBeam(damage) { hits.push(damage); }\n' + source.slice(end);
+    const start = source.indexOf('function beamAimDirection('), end = source.indexOf('function pulseBeam()', start);
+    source = source.slice(0, start) + 'function beamAimDirection() { return null; }\nfunction castBeam(damage) { hits.push(damage); }\n' + source.slice(end);
     const hud = { style: {} };
     const hits = [];
     const context = vm.createContext({ ...beam, playerFlight: createPlayerFlight(null), playerMesh: {}, hits,
@@ -85,10 +86,10 @@ function runtime() {
 test('runtime charges once, preserves overload on clear/switch, and requires a new press', () => {
     const { context: c, hud } = runtime();
     c.pulseBeam();
-    assert.equal(c.playerFlight.beamEnergy, 88);
+    assert.equal(c.playerFlight.beamEnergy, 94);
     c.updateBeam(0.18, true);
     assert.equal(c.hits.length, 1);
-    c.updateBeam(2, true);
+    c.updateBeam(3.2, true);
     assert.ok(c.playerFlight.beamOverload > 0);
     assert.match(hud.textContent, /OVERLOAD/);
     const remaining = c.playerFlight.beamOverload;
@@ -101,7 +102,7 @@ test('runtime charges once, preserves overload on clear/switch, and requires a n
     assert.equal(c.hits.length, shots);
     assert.equal(c.playerFlight.beamEnergy, 100);
     c.pulseBeam();
-    assert.equal(c.playerFlight.beamEnergy, 88);
+    assert.equal(c.playerFlight.beamEnergy, 94);
     replenishPlayerForSortie(c.playerFlight);
     assert.equal(c.playerFlight.beamOverload, 0);
     assert.equal(c.playerFlight.beamCooldown, 0);
@@ -120,7 +121,9 @@ test('controller press pays once immediately and release does not add a second p
         buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
     Object.assign(c.gameState, { phase: 'combat', activeModal: null, isGameRunning: true, isGamePaused: false });
     c.navigator = { getGamepads: () => [pad] };
+    c.cameraConfig = { freelookYaw: 0, freelookPitch: 0, freelookIdleTimer: 0 };
     c.createPadReader = createPadReader;
+    c.selectActivePad = selectActivePad;
     c.padInput = {};
     c.clearPadInput = () => Object.assign(c.padInput, { throttleUp: false, throttleDown: false, targetCam: false });
     c.tryFireMissile = c.pulseBeam;
@@ -130,7 +133,7 @@ test('controller press pays once immediately and release does not add a second p
     c.updateGamepad(0.01, 0);
     pad.buttons[1].pressed = true;
     c.updateGamepad(0.01, 1);
-    assert.equal(c.playerFlight.beamEnergy, 88);
+    assert.equal(c.playerFlight.beamEnergy, 94);
     assert.equal(c.padInput.beamHeld, true);
     c.updateGamepad(0.01, 1.1);
     assert.equal(c.hits.length, 1);

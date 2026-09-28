@@ -6,7 +6,8 @@ import { updatePlayerFlight } from '../player/flight.js';
 import { updateEnemies } from '../enemies/ai.js';
 import { updateSinkingShips, updateDyingBosses } from '../enemies/lifecycle.js';
 import { updateProjectiles } from '../combat/projectiles.js';
-import { updateCamera } from '../camera/camera.js';
+import { updateCamera, cameraConfig } from '../camera/camera.js';
+import { renderWithHitShake } from '../camera/hit-shake.js';
 import { renderHUD } from '../ui/hud.js';
 import { setupStageEnvironment, skyMesh, getSurfaceHeight } from '../world/environment.js';
 import { playerMesh, playerFlight } from '../player/player.js';
@@ -82,6 +83,7 @@ export function stepSimulation(delta) {
                 // 지면 격돌 초대형 폭발 발생
                 triggerExplosion(playerMesh.position, 85, 4.2);
                 audio.playExplosion();
+                playerMesh.visible = false;
 
                 playerFlight.speed = 0;
                 gameState.deathNextBurst = elapsed + 0.7; // 지면 2차 유폭
@@ -180,12 +182,12 @@ function animate() {
     try {
         if (gameState.retroFilterEnabled && retroRenderTarget && retroPostScene && retroPostCamera) {
             renderer.setRenderTarget(retroRenderTarget);
-            renderer.render(scene, camera);
+            renderWithHitShake(camera, gameState.isGamePaused ? null : cameraConfig.hitShake, () => renderer.render(scene, camera));
             renderer.setRenderTarget(null);
             renderer.render(retroPostScene, retroPostCamera);
         } else {
             renderer.setRenderTarget(null);
-            renderer.render(scene, camera);
+            renderWithHitShake(camera, gameState.isGamePaused ? null : cameraConfig.hitShake, () => renderer.render(scene, camera));
         }
     } catch (err) {
         console.error("Render error:", err);
