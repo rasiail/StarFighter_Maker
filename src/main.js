@@ -19,6 +19,8 @@ import { initControls } from './input/controls.js';
 import { initSession } from './core/session.js';
 import { initPointerLock } from './input/pointer-lock.js';
 import { initMissions } from './game/missions.js';
+import { applyLanguage } from './ui/i18n.js';
+import { initSetup } from './ui/setup.js';
 import { initMenus } from './ui/menus.js';
 import { initProgression } from './progression/runtime.js';
 import { initUpgrades } from './ui/upgrades.js';
@@ -26,6 +28,7 @@ import { initUpgrades } from './ui/upgrades.js';
 // Initialize once, in dependency order, after the document is parsed.
 initAudio();
 initLocalSave();
+applyLanguage();
 initAircraft();
 initExhaust();
 initScene();
@@ -47,6 +50,7 @@ initMissions();
 initMenus();
 initUpgrades();
 initGamepad();
+initSetup();
 
 // Start the frame loop only after every system and listener is ready.
 initLoop();

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSeededRandom, simulateRun, simulateMany, weaponPerformance } from '../src/balance/simulator.js';
 import { calculateStats, createProgression } from '../src/progression/model.js';
+import { BALANCE } from '../src/data/generated/balance.js';
 
 test('같은 시드와 가정은 같은 시뮬레이션 결과를 만든다', () => {
     assert.deepEqual(simulateRun({ seed: 77, strategy: 'balanced' }), simulateRun({ seed: 77, strategy: 'balanced' }));
@@ -9,10 +10,11 @@ test('같은 시드와 가정은 같은 시뮬레이션 결과를 만든다', ()
     assert.deepEqual(Array.from({ length: 5 }, first), Array.from({ length: 5 }, second));
 });
 
-test('경험치 요구량 증가는 카드 선택을 줄이고 현재 곡선은 런당 약 14회를 제공한다', () => {
+test('경험치 요구량 증가는 카드 선택을 줄이고 현재 곡선의 선택권은 모두 소비된다', () => {
     const normal = simulateMany({ runs: 50, seed: 104 });
     const harder = simulateMany({ runs: 50, seed: 104, xpRequirementScale: 2 });
-    assert.ok(normal.averageSelections >= 13 && normal.averageSelections <= 15);
+    assert.ok(normal.averageSelections >= 16 && normal.averageSelections <= 18);
+    assert.ok(Math.abs(normal.averageSelections - (normal.averageFinalLevel - 1)) < 1e-9);
     assert.ok(harder.averageSelections < normal.averageSelections);
     assert.throws(() => simulateMany({ xpRequirementScale: 0 }), RangeError);
 });
@@ -21,7 +23,8 @@ test('명중률이 높으면 예상 플레이 시간이 줄어든다', () => {
     const slow = simulateMany({ runs: 20, cannonAccuracy: 0.15, missileAccuracy: 0.5, seed: 9 });
     const fast = simulateMany({ runs: 20, cannonAccuracy: 0.6, missileAccuracy: 0.95, seed: 9 });
     assert.ok(fast.averageSeconds < slow.averageSeconds);
-    assert.equal(fast.timeline.at(-1).cumulativeTargets, 583);
+    const expectedTargets = BALANCE.stages.reduce((sum, stage) => sum + stage.waves.reduce((a, b) => a + b, 0) + 1, 0);
+    assert.equal(fast.timeline.at(-1).cumulativeTargets, expectedTargets);
 });
 
 test('무기 성능 계산은 화력 배율과 재장전 성장에 반응한다', () => {

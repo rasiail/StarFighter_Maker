@@ -1,3 +1,4 @@
+import { t } from '../src/ui/i18n.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -56,7 +57,7 @@ test('options reset requires confirmation; cancel and storage failure never relo
     for (const [confirm, succeeds, resets, reloads] of [[false, true, 0, 0], [true, false, 1, 0], [true, true, 1, 1]]) {
         let handler, resetCount = 0, reloadCount = 0;
         const status = {};
-        vm.runInNewContext(source.slice(start, end), {
+        vm.runInNewContext(source.slice(start, end), { t,
             document: { getElementById: id => id === 'btn-reset-save' ? { addEventListener: (_, fn) => { handler = fn; } } : status },
             window: { confirm: () => confirm, location: { reload: () => { reloadCount++; } } },
             localSave: { reset: () => { resetCount++; return succeeds; } },

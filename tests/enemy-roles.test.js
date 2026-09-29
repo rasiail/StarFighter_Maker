@@ -29,9 +29,9 @@ test('elites and bosses can launch missiles and still respect common launch deni
     }
 });
 
-test('air spawn distribution is 30% elite and uses elite health in combat simulation', () => {
-    assert.equal(Array.from({ length: 100 }, (_, i) => isEliteSpawn(i / 100)).filter(Boolean).length, 30);
-    const targets = createWaveTargets(BALANCE.stages[0], 10000, createSeededRandom(104));
+test('combat simulation uses the wave elite ratio and elite health', () => {
+    assert.equal(Array.from({ length: 100 }, (_, i) => isEliteSpawn(i / 100)).filter(Boolean).length, 20);
+    const targets = createWaveTargets(BALANCE.stages[0], 10000, createSeededRandom(104), 0.3);
     const elites = targets.filter(t => t.id === 'elite');
     const air = targets.filter(t => t.id === 'elite' || t.id === 'stage_aircraft');
     assert.ok(elites.length / air.length > 0.28 && elites.length / air.length < 0.32);

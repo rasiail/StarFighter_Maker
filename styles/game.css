@@ -455,3 +455,15 @@ button:focus, input:focus, .stage-card:focus {
 #weapon-slots { display: flex; gap: 5px; margin-right: 8px; pointer-events: auto; }
 #weapon-slots button { background: #10202d; color: #9aafb7; border: 1px solid #52616a; padding: 5px; cursor: pointer; }
 #weapon-slots button.selected { color: #ffdc83; border-color: #ffdc83; }
+
+#setup-modal { z-index: 200; }
+.setup-panel { max-width: 640px; box-sizing: border-box; }
+.setup-panel fieldset { border: 0; padding: 0; margin: 24px 0; text-align: left; }
+.setup-panel legend { color: #a3bdb5; margin-bottom: 10px; }
+.setup-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.setup-choices button, #opt-language { font: inherit; color: #e2fff0; background: #0d2a2e; border: 1px solid #4df58a77; padding: 14px; cursor: pointer; }
+.setup-choices button[aria-pressed="true"] { border-color: #4df58a; background: #174a36; box-shadow: inset 0 0 0 1px #4df58a; }
+.setup-choices button:focus-visible, #opt-language:focus-visible { outline: 2px solid #ffde59; outline-offset: 3px; }
+.setup-choices strong, .setup-choices span { display: block; }
+.setup-choices span { margin-top: 10px; font-size: 12px; line-height: 1.6; }
+@media (max-width: 520px) { .setup-panel { padding: 20px; } .setup-choices { grid-template-columns: 1fr; } }

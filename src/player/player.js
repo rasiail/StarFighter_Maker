@@ -4,7 +4,7 @@ import { gameState } from '../core/state.js';
 import { createF104Mesh } from '../assets/aircraft.js';
 import { camera, scene } from '../rendering/scene.js';
 import { JetExhaustSystem } from '../effects/exhaust.js';
-import { cameraFollowOffset } from '../camera/follow.js';
+import { cameraFollowOffset, CAMERA_FOLLOW_PITCH } from '../camera/follow.js';
 
 export let playerMesh;
 export let playerFlight;
@@ -39,7 +39,7 @@ export function initPlayer() {
     const cameraOffset = cameraFollowOffset();
     camera.position.set(0, cameraOffset.y, cameraOffset.z);
 
-    camera.rotation.set(-0.13, 0, 0);
+    camera.rotation.set(CAMERA_FOLLOW_PITCH, 0, 0);
 
     gameState.jetExhaustSystem = new JetExhaustSystem();
 

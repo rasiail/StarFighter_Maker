@@ -1,3 +1,5 @@
+import { BEAM_RANGE } from '../combat/beam-energy.js';
+import { getBeamAssistTarget } from '../combat/beam-assist.js';
 import { gameState } from '../core/state.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { camera, hudCanvas, hudCtx } from '../rendering/scene.js';
@@ -108,17 +110,14 @@ export function renderHUD() {
         hudCtx.save();
         hudCtx.translate(cx, cy);
 
-        // 실제 비행기의 방향 벡터를 추출하여 완벽하게 정렬된 피치/롤 각도 계산
-        const vForward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
-        const vUp = new THREE.Vector3(0, 1, 0).applyQuaternion(playerMesh.quaternion);
-        const vRight = new THREE.Vector3(1, 0, 0).applyQuaternion(playerMesh.quaternion);
-
-        const truePitch = Math.asin(vForward.y); // 양수 = 상승(Climb), 음수 = 하강(Dive)
-        // 캐주얼 조작에서는 카메라가 월드 수평을 고정 유지하므로 평지 표시 UI(수평선)는 회전하지 않음
-        const isCasual = gameState.controlScheme === 'casual';
-        const roll = isCasual ? 0 : Math.atan2(vRight.y, vUp.y); // 비행기의 정확한 롤(Roll)
-
-        // 기체가 롤링할 때 실제 지평선과 동일하게 유지하도록 캔버스 회전
+        // Include aircraft, chase-pivot lag, and local camera rotation so the
+        // ladder follows the rendered view rather than the aircraft attitude.
+        const viewQuaternion = camera.getWorldQuaternion(new THREE.Quaternion());
+        const vForward = new THREE.Vector3(0, 0, -1).applyQuaternion(viewQuaternion);
+        const vUp = new THREE.Vector3(0, 1, 0).applyQuaternion(viewQuaternion);
+        const vRight = new THREE.Vector3(1, 0, 0).applyQuaternion(viewQuaternion);
+        const truePitch = Math.asin(THREE.MathUtils.clamp(vForward.y, -1, 1));
+        const roll = Math.atan2(vRight.y, vUp.y);
         if (roll !== 0) hudCtx.rotate(roll);
 
         const pitchPxPerRad = 450;
@@ -290,14 +289,16 @@ export function renderHUD() {
     gameState.currentGunLeadPredictedPos = null;
 
     const isBeamMode = gameState.missileMode === 3;
-    const AIM_RANGE = isBeamMode ? 1800 : BALANCE.weapons.player_cannon.lockRangeM;
+    const AIM_RANGE = isBeamMode ? BEAM_RANGE : BALANCE.weapons.player_cannon.lockRangeM;
+    const aimEnemy = isBeamMode && gameState.isSmartGunEnabled
+        ? (getBeamAssistTarget() || currentLockedEnemy) : currentLockedEnemy;
 
-    if (currentLockedEnemy && currentLockedEnemy.alive) {
+    if (aimEnemy && aimEnemy.alive) {
         const pPos = playerMesh.position;
-        const ePos = currentLockedEnemy.mesh.position;
+        const ePos = aimEnemy.mesh.position;
         const targetDist = pPos.distanceTo(ePos);
 
-        // 유효 사거리 이내일 때만 UI 표시 (기총 1000m, 빔 1800m)
+        // Show aim assistance only within the weapon range; keep its screen radius unchanged.
         if (targetDist <= AIM_RANGE) {
             let predictedInterceptPos;
             if (isBeamMode) {

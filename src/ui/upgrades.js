@@ -1,3 +1,4 @@
+import { t } from './i18n.js';
 import { gameState } from '../core/state.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { progression, chooseUpgrade } from '../progression/runtime.js';
@@ -16,15 +17,15 @@ export function refreshProgressionUI() {
     document.getElementById('xp-fill').style.width = `${100 * progression.xp / xpToNextLevel(progression.level)}%`;
     const prompt = document.getElementById('upgrade-prompt');
     prompt.hidden = !gameState.isGameRunning || progression.pending === 0 || gameState.isGamePaused || gameState.bossDyingSequence;
-    prompt.textContent = `[X] 스킬 업그레이드 가능 · ${progression.pending}회`;
+    prompt.textContent = t(`[X] 스킬 업그레이드 가능 · ${progression.pending}회`, `[X] Upgrades available · ${progression.pending}`);
     const hangar = document.getElementById('hangar-upgrade');
-    hangar.textContent = `스킬 업그레이드 · ${progression.pending}회 [X]`;
+    hangar.textContent = t(`스킬 업그레이드 · ${progression.pending}회 [X]`, `Upgrades · ${progression.pending} [X]`);
     hangar.disabled = progression.pending === 0;
-    document.getElementById('hangar-build').textContent = `LV ${progression.level} · ` + Object.entries(STAT_NAMES).map(([key, name]) => `${name} ${progression.ranks[key]}/5`).join(' / ');
+    document.getElementById('hangar-build').textContent = `LV ${progression.level} · ` + Object.entries(STAT_NAMES).map(([key, name]) => `${t(name)} ${progression.ranks[key]}/5`).join(' / ');
 }
 function renderChoices() {
     offered = drawCards(progression);
-    document.getElementById('upgrade-remaining').textContent = `남은 선택 ${progression.pending}회 · 모두 선택하면 복귀합니다`;
+    document.getElementById('upgrade-remaining').textContent = t(`남은 선택 ${progression.pending}회 · 모두 선택하면 복귀합니다`, `${progression.pending} choices remaining · Complete all choices to resume`);
     const list = document.getElementById('upgrade-cards');
     list.replaceChildren();
     for (const card of offered) {
@@ -33,10 +34,10 @@ function renderChoices() {
         button.dataset.card = card.id;
         const label = document.createElement('strong');
         label.className = 'upgrade-title';
-        label.textContent = card.name;
+        label.textContent = t(card.name);
         const rank = document.createElement('span');
         rank.className = 'upgrade-rank';
-        rank.textContent = card.weapon ? `무기 획득 · ${progression.weapons.length + 1}번 슬롯` : card.id === 'repair' ? '즉시 적용' : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
+        rank.textContent = card.weapon ? t(`무기 획득 · ${progression.weapons.length + 1}번 슬롯`, `Unlock weapon · Slot ${progression.weapons.length + 1}`) : card.id === 'repair' ? t('즉시 적용') : `Lv.${cardRank(progression, card)} → Lv.${cardRank(progression, card) + 1} / ${card.maxRank}`;
         const description = document.createElement('p');
         const preview = createUpgradePreview(progression, card, playerFlight);
         description.className = 'upgrade-description';

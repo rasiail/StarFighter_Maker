@@ -1,11 +1,12 @@
 // Analysis only: uses the runtime energy and magazine rules without changing tuning.
-import { advanceBeamEnergy, spendBeamPulse, BEAM_PULSE_DAMAGE, BEAM_HOLD_DPS, BEAM_HOLD_DELAY } from '../combat/beam-energy.js';
+import { advanceBeamEnergy, spendBeamPulse, BEAM_PULSE_DAMAGE, BEAM_HOLD_DELAY, beamHoldDamage } from '../combat/beam-energy.js';
 import { consumeMagazine, tickMagazines } from '../combat/magazine.js';
 import { createPlayerFlight } from '../player/state.js';
 import { BALANCE } from '../data/generated/balance.js';
 
 export function benchmarkBeam(stats, { seconds = 120, dt = 0.01, mode = 'hold', accuracy = 1 } = {}) {
     const state = { energy: 100, cooldown: 0 };
+    const contact = { target: null, seconds: 0 }, target = {};
     let damage = 0, lateDamage = 0, pulses = 0, depletedAt = null;
     // One initial pulse accompanies the held trigger in the runtime.
     if (spendBeamPulse(state, stats.beamEfficiency, stats.beamReloadSeconds)) { damage = BEAM_PULSE_DAMAGE; pulses++; }
@@ -17,7 +18,8 @@ export function benchmarkBeam(stats, { seconds = 120, dt = 0.01, mode = 'hold', 
         heldTime += dt;
         const duration = advanceBeamEnergy(state, dt - warmup, mode === 'hold',
             stats.beamEfficiency, stats.beamReloadSeconds);
-        let stepDamage = duration * BEAM_HOLD_DPS;
+        let stepDamage = beamHoldDamage(contact, duration > 0 ? target : null, duration);
+        if (!state.primed) beamHoldDamage(contact, null, 0);
         // Held benchmark releases after overload, waits for full energy, then
         // presses again. Every new firing sequence pays the initial pulse cost.
         if ((mode === 'tap' || (!state.primed && state.energy >= 100 - 1e-9)) && state.cooldown < 1e-9) {

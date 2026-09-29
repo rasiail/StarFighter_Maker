@@ -4,7 +4,7 @@ import { STAGES } from '../config/stages.js';
 
 export const SAVE_KEY = 'starfighter.vertical-slice.save.v1';
 const DEFAULT_OPTIONS = Object.freeze({ retroFilterEnabled: true, isPointerLockEnabled: true,
-    controlScheme: 'standard', targetFollowEnabled: true, isSmartGunEnabled: true, bgmVolume: 0.6, sfxVolume: 0.8 });
+    language: 'ko', setupComplete: false, controlScheme: 'standard', targetFollowEnabled: true, isSmartGunEnabled: true, bgmVolume: 0.6, sfxVolume: 0.8 });
 const defaults = () => ({ version: 1, options: { ...DEFAULT_OPTIONS }, progress: { selectedStage: 1, clearedStages: [], bestScore: 0 } });
 const validStage = id => STAGES.some(stage => stage.id === id);
 export function sanitizeSave(raw) {
@@ -12,7 +12,9 @@ export function sanitizeSave(raw) {
     if (!raw || raw.version !== 1) return result;
     for (const [key, fallback] of Object.entries(DEFAULT_OPTIONS)) {
         const value = raw.options?.[key];
-        if (key === 'controlScheme') {
+        if (key === 'language') {
+            if (value === 'ko' || value === 'en') result.options[key] = value;
+        } else if (key === 'controlScheme') {
             if (value === 'standard' || value === 'casual') result.options[key] = value;
         } else if (typeof fallback === 'boolean') {
             if (typeof value === 'boolean') result.options[key] = value;

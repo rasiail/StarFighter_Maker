@@ -356,6 +356,7 @@ export function initControls() {
                 cameraConfig.freelookPitch = THREE.MathUtils.clamp(cameraConfig.freelookPitch, -Math.PI * 0.45, Math.PI * 0.45);
                 // 마우스를 움직이면 타이머를 리셋하여 복귀를 지연시킴
                 cameraConfig.padFreelook = false;
+                cameraConfig.padFreelookReturning = false;
                 cameraConfig.freelookIdleTimer = 1.2;
             }
         } else {

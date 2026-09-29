@@ -20,9 +20,9 @@ test('blocked missiles keep their ready cooldown and lock without consuming a sh
     assert.equal(e.missileCooldown, 0);
     assert.ok(e.missileLockTime >= 2);
     assert.equal(stepAirWeapons(e, 0.1, 1200, 1, true, () => 0, true).missile, true);
-    assert.equal(canLaunchMissile(0, 2), false);
+    assert.equal(canLaunchMissile(0, 4), false);
     assert.equal(canLaunchMissile(0.01, 0), false);
-    assert.equal(canLaunchMissile(0, 1), true);
+    assert.equal(canLaunchMissile(0, 3), true);
 });
 
 test('missile cannot exceed turn/speed limits, even for an antipodal target', () => {

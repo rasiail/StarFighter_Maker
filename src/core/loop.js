@@ -165,6 +165,7 @@ function animate() {
 
     let delta = Math.min(0.08, clock.getDelta());
     updateGamepad(delta);
+    if (!gameState.isGameRunning || gameState.isGamePaused) audio.stopBeamHold();
 
     if (gameState.isGameRunning && !gameState.isGamePaused) {
         if (gameState.bossSlowMoTimer > 0) {

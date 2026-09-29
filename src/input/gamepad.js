@@ -1,3 +1,4 @@
+import { t } from '../ui/i18n.js';
 import { createPadReader, padInput, clearPadInput, selectActivePad } from './gamepad-state.js';
 import { gameState } from '../core/state.js';
 import { playerFlight } from '../player/player.js';
@@ -14,6 +15,7 @@ function showPadStatus(message) {
     if (status && status.textContent !== message) status.textContent = message;
 }
 export function resetGamepad() {
+    if (cameraConfig) cameraConfig.padFreelookReturning = false;
     if (cameraConfig?.padFreelook) {
         cameraConfig.padFreelook = false;
         cameraConfig.freelookIdleTimer = 0;
@@ -22,13 +24,13 @@ export function resetGamepad() {
     reader.reset();
 }
 function menuRoot() {
-    return ['upgrade-modal', 'options-modal', 'hangar-modal', 'gameover-modal', 'stage-modal', 'start-modal']
+    return ['setup-modal', 'upgrade-modal', 'options-modal', 'hangar-modal', 'gameover-modal', 'stage-modal', 'start-modal']
         .map(id => document.getElementById(id)).find(el => el && !el.hidden && el.getClientRects().length);
 }
 function navigateMenu(input) {
     const root = menuRoot();
     if (!root) return;
-    const items = [...root.querySelectorAll('button, input, .stage-card')].filter(el => !el.disabled && el.getClientRects().length);
+    const items = [...root.querySelectorAll('button, input, select, .stage-card')].filter(el => !el.disabled && el.getClientRects().length);
     if (!items.length) return;
     let index = items.indexOf(document.activeElement);
     const direction = input.pressed[12] || input.pressed[14] ? -1 : input.pressed[13] || input.pressed[15] ? 1 : 0;
@@ -41,28 +43,34 @@ function navigateMenu(input) {
         items[index].tabIndex = 0;
         items[index].focus();
     }
-    if (input.pressed[0] || input.pressed[1]) items[index]?.click();
+    if (input.pressed[0] || input.pressed[1]) {
+        const item = items[index];
+        if (item?.tagName === 'SELECT') {
+            item.selectedIndex = (item.selectedIndex + 1) % item.options.length;
+            item.dispatchEvent(new Event('change', { bubbles: true }));
+        } else item?.click();
+    }
 }
 export function updateGamepad(delta, now = performance.now() / 1000) {
     if (document.hidden) { resetGamepad(); return; }
     if (typeof navigator.getGamepads !== 'function') {
-        showPadStatus('게임패드 API를 사용할 수 없습니다. HTTPS 또는 localhost에서 실행해 주세요.');
+        showPadStatus(t('게임패드 API를 사용할 수 없습니다. HTTPS 또는 localhost에서 실행해 주세요.'));
         resetGamepad(); return;
     }
     let pads;
     try { pads = Array.from(navigator.getGamepads?.() || []); }
     catch {
-        showPadStatus('브라우저가 게임패드 접근을 차단했습니다. 게임을 별도 탭에서 열어 주세요.');
+        showPadStatus(t('브라우저가 게임패드 접근을 차단했습니다. 게임을 별도 탭에서 열어 주세요.'));
         resetGamepad(); return;
     }
     const pad = selectActivePad(pads, device);
     if (!pad) {
-        showPadStatus('패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요.');
+        showPadStatus(t('패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요.'));
         device = null; resetGamepad(); return;
     }
     const buttons = pad.buttons.flatMap((button, index) => button.pressed || button.value > 0.5 ? [index + 1] : []);
     const stick = pad.axes.slice(0, 4).some(axis => Math.abs(axis) > 0.18);
-    showPadStatus(`연결됨 · ${pad.id} · ${pad.mapping === 'standard' ? '표준 버튼 배치' : '비표준 버튼 배치 (조작이 다를 수 있음)'} · ${buttons.length ? `버튼 ${buttons.join(', ')}` : stick ? '스틱 입력 중' : '입력 대기'}`);
+    showPadStatus(`${t('연결됨', 'Connected')} · ${pad.id} · ${pad.mapping === 'standard' ? t('표준 버튼 배치') : t('비표준 버튼 배치 (조작이 다를 수 있음)')} · ${buttons.length ? `${t('버튼', 'Buttons')} ${buttons.join(', ')}` : stick ? t('스틱 입력 중') : t('입력 대기')}`);
     const identity = `${pad.index}:${pad.id}`;
     if (identity !== device) { resetGamepad(); device = identity; }
     const context = `${gameState.phase}:${gameState.activeModal}:${gameState.isGameRunning}:${gameState.isGamePaused}`;
@@ -92,10 +100,12 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
     const stickLook = !padInput.targetCam && !!(input.axes[2] || input.axes[3]);
     if (cameraConfig?.padFreelook && !stickLook) {
         cameraConfig.padFreelook = false;
+        cameraConfig.padFreelookReturning = !padInput.targetCam;
         cameraConfig.freelookIdleTimer = 0;
     }
     if (stickLook) {
         cameraConfig.padFreelook = true;
+        cameraConfig.padFreelookReturning = false;
         cameraConfig.freelookYaw -= input.axes[2] * delta * 2;
         cameraConfig.freelookPitch = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, cameraConfig.freelookPitch - input.axes[3] * delta * 2));
         cameraConfig.freelookIdleTimer = 0;

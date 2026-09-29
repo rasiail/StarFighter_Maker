@@ -1,7 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aimOutsideDeadzone } from '../src/player/mouse-aim.js';
-import { cameraFollowOffset } from '../src/camera/follow.js';
+import { cameraFollowOffset, CAMERA_ROLL_LAG, stepCameraRollLag, CAMERA_PITCH_YAW_LAG, stepCameraRotationLag } from '../src/camera/follow.js';
+
+test('pitch and yaw lag cap at ten degrees in either direction and settle after release', () => {
+    assert.equal(CAMERA_PITCH_YAW_LAG, 10 * Math.PI / 180);
+    for (const sign of [-1, 1]) {
+        let lag = 0;
+        for (let frame = 0; frame < 60; frame++) lag = stepCameraRotationLag(lag, sign, 1 / 60);
+        assert.equal(lag, -sign * CAMERA_PITCH_YAW_LAG);
+        assert.equal(stepCameraRotationLag(lag, sign, 1), lag);
+        assert.ok(Math.abs(stepCameraRotationLag(lag, 0, 0.5)) < Math.abs(lag) * 0.1);
+    }
+});
+
+test('roll onset holds the camera back by fifteen degrees, then follows at the aircraft rate', () => {
+    const radians = degrees => degrees * Math.PI / 180;
+    let lag = stepCameraRollLag(0, radians(60), 0.1);
+    assert.ok(Math.abs(lag + radians(6)) < 1e-10);
+    lag = stepCameraRollLag(lag, radians(60), 0.2);
+    assert.equal(lag, -CAMERA_ROLL_LAG);
+    assert.equal(stepCameraRollLag(lag, radians(60), 1), lag);
+    assert.equal(stepCameraRollLag(0, radians(-60), 1), CAMERA_ROLL_LAG);
+});
+
+test('roll lag settles smoothly and consistently across frame rates after stopping', () => {
+    const single = stepCameraRollLag(-CAMERA_ROLL_LAG, 0, 0.5);
+    let split = -CAMERA_ROLL_LAG;
+    for (let i = 0; i < 60; i++) split = stepCameraRollLag(split, 0, 0.5 / 60);
+    assert.ok(Math.abs(split - single) < 1e-10);
+    assert.ok(Math.abs(single) < CAMERA_ROLL_LAG * 0.1);
+    assert.equal(stepCameraRollLag(single, 0, 2), 0);
+});
 
 test('initial and cruise rear camera use the same 9.375m distance', () => {
     assert.deepEqual(cameraFollowOffset(), cameraFollowOffset(0.5));

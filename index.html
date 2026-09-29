@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-    <script src="F104/f104_data.js"></script>
     <link rel="stylesheet" href="styles/game.css">
     <link rel="preload" href="Cha/Cha_icon01.png" as="image">
     <link rel="preload" href="Cha/Cha_icon02.png" as="image">
@@ -90,20 +89,20 @@
         <div id="upgrade-modal" class="run-modal" role="dialog" aria-modal="true" aria-labelledby="upgrade-title" hidden>
             <div class="run-panel">
                 <p class="run-eyebrow">FLIGHT SYSTEM UPGRADE</p>
-                <h2 id="upgrade-title">기체 강화</h2>
-                <p id="upgrade-remaining"></p><p class="run-note">패드: 방향키 이동 · × / ○ 선택</p>
+                <h2 id="upgrade-title"><span data-ko="기체 강화" data-en="Aircraft upgrades">기체 강화</span></h2>
+                <p id="upgrade-remaining"></p><p class="run-note"><span data-ko="패드: 방향키 이동 · × / ○ 선택" data-en="Gamepad: D-pad to navigate · × / ○ to select">패드: 방향키 이동 · × / ○ 선택</span></p>
                 <div id="upgrade-cards"></div>
-                <p class="run-note">선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다.</p>
+                <p class="run-note"><span data-ko="선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다." data-en="Upgrades apply immediately. Complete all remaining choices to resume.">선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다.</span></p>
             </div>
         </div>
         <div id="hangar-modal" class="run-modal" role="dialog" aria-modal="true" aria-labelledby="hangar-title" hidden>
             <div class="run-panel">
                 <p class="run-eyebrow">BOSS DESTROYED · MAINTENANCE BAY</p>
-                <h2 id="hangar-title">정비창</h2>
+                <h2 id="hangar-title"><span data-ko="정비창" data-en="Hangar">정비창</span></h2>
                 <p id="hangar-build"></p>
-                <p>기체 수리와 미사일 장전을 완료했습니다.<br>미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다.</p>
+                <p><span data-ko="기체 수리와 미사일 장전을 완료했습니다." data-en="Aircraft repaired and missiles reloaded.">기체 수리와 미사일 장전을 완료했습니다.</span><br><span data-ko="미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다." data-en="Unused upgrade choices carry over to the next sector.">미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다.</span></p>
                 <button id="hangar-upgrade" class="start-btn"></button>
-                <p class="run-note">패드: × 강화 · 방향키 이동 · ○ 선택/출격</p><button id="hangar-depart" class="start-btn">다음 전장으로 출격</button>
+                <p class="run-note"><span data-ko="패드: × 강화 · 방향키 이동 · ○ 선택/출격" data-en="Gamepad: × upgrades · D-pad to navigate · ○ select / deploy">패드: × 강화 · 방향키 이동 · ○ 선택/출격</span></p><button id="hangar-depart" class="start-btn"><span data-ko="다음 전장으로 출격" data-en="Deploy to next sector">다음 전장으로 출격</span></button>
             </div>
         </div>
         <div id="wave-status" hidden></div>
@@ -120,26 +119,40 @@
             </div>
         </div>
 
+        <div id="setup-modal" class="run-modal" role="dialog" aria-modal="true" aria-labelledby="setup-title" hidden>
+            <div class="run-panel setup-panel">
+                <p class="run-eyebrow">STARFIGHTER · WELCOME</p>
+                <h2 id="setup-title" data-ko="비행 준비" data-en="Prepare for flight">비행 준비</h2>
+                <p data-ko="언어와 조작 방식을 선택하세요. 설정에서 언제든 변경할 수 있습니다." data-en="Choose your language and controls. You can change them anytime in Settings.">언어와 조작 방식을 선택하세요. 설정에서 언제든 변경할 수 있습니다.</p>
+                <fieldset><legend>언어 / Language</legend><div class="setup-choices">
+                    <button type="button" data-language="ko" lang="ko">한국어</button>
+                    <button type="button" data-language="en" lang="en">English</button>
+                </div></fieldset>
+                <fieldset><legend data-ko="조작 타입" data-en="Control type">조작 타입</legend><div class="setup-choices">
+                    <button type="button" data-controls="standard"><strong data-ko="표준 비행" data-en="Standard flight">표준 비행</strong><span data-ko="W/S 피치 · A/D 롤 · 마우스 시점" data-en="W/S pitch · A/D roll · Mouse camera">W/S 피치 · A/D 롤 · 마우스 시점</span></button>
+                    <button type="button" data-controls="casual"><strong data-ko="캐주얼 비행" data-en="Casual flight">캐주얼 비행</strong><span data-ko="마우스 비행 · W/S 속도 · 자동 수평 복귀" data-en="Mouse steering · W/S speed · Auto leveling">마우스 비행 · W/S 속도 · 자동 수평 복귀</span></button>
+                </div></fieldset>
+                <button id="setup-confirm" class="start-btn" data-ko="설정 저장 후 시작" data-en="Save & continue">설정 저장 후 시작</button>
+            </div>
+        </div>
         <div id="start-modal">
             <div class="briefing-box">
                 <button class="options-icon-btn" id="btn-open-options-start" title="System Options">⚙️</button>
                 <h1 class="briefing-title">STARFIGHTER</h1>
                 <p class="briefing-subtitle">SWARM COMBAT · LEVEL UP · BUILD YOUR STARFIGHTER</p>
+                <p id="flight-help" class="run-note"></p>
                 <div class="control-grid">
-                    <div><span class="control-key">W / S</span> : PITCH DOWN / UP</div>
-                    <div><span class="control-key">A / D</span> : ROLL LEFT / RIGHT</div>
-                    <div><span class="control-key">Q / E</span> : YAW (RUDDER)</div>
                     <div><span class="control-key">SHIFT / ALT</span> : THROTTLE / AIRBRAKE</div>
                     <div><span class="control-key">SPACE / L-CLICK (HOLD)</span> : 20mm VULCAN CANNON</div>
                     <div><span class="control-key">F / L-CLICK (TAP)</span> : AAM-GUIDED MISSILE</div>
-                    <div><span class="control-key">1 / 2 / 3</span> : 획득 순서로 무기 선택 · 빔: 클릭/F 단발, 홀드 지속</div>
+                    <div><span class="control-key">1 / 2 / 3</span><span data-ko=": 획득 순서로 무기 선택 · 빔: 클릭/F 단발, 홀드 지속" data-en=": Select weapons in acquisition order · Beam: click/F to fire, hold for sustained fire"> : 획득 순서로 무기 선택 · 빔: 클릭/F 단발, 홀드 지속</span></div>
                     <div><span class="control-key">R-CLICK (HOLD)</span> : TARGET CAM (DOGFIGHT)</div>
                     <div><span class="control-key">C / R-CLICK TAP</span> : SWITCH TARGET LOCK</div>
                 </div>
-                <p style="font-size: 13px; color: #a6f2c7; line-height: 1.4; margin-bottom: 12px;">
+                <p style="font-size: 13px; color: #a6f2c7; line-height: 1.4; margin-bottom: 12px;"><span data-ko="적기를 전방 락온 콘 안에 포착하여 미사일을 유도 격추하거나 고속 기관포로 제압하십시오." data-en="Acquire enemies in the forward lock-on cone to fire guided missiles, or engage with your rapid-fire cannon.">
                     적기를 전방 락온 콘 안에 포착하여 미사일을 유도 격추하거나 고속 기관포로 제압하십시오.
-                </p>
-                <p class="run-note">PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포<br>L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화<br>왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션<br>메뉴: 방향키 이동 · ×/○ 선택</p>
+                </span></p>
+                <p class="run-note"><span data-ko="PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포" data-en="PS controller: R2 accelerate · △ brake · ○ tap for missiles / hold for cannon">PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포</span><br><span data-ko="L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화" data-en="L2 tap to change target / hold for target camera · □ switch weapon · × upgrades">L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화</span><br><span data-ko="왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션" data-en="Left stick: flight · Right stick: camera · L1/R1: yaw · Options: settings">왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션</span><br><span data-ko="메뉴: 방향키 이동 · ×/○ 선택" data-en="Menus: D-pad to navigate · ×/○ to select">메뉴: 방향키 이동 · ×/○ 선택</span></p>
                 <button class="start-btn" id="btn-sortie">SORTIE (SELECT MISSION STAGE)</button>
             </div>
         </div>
@@ -159,7 +172,7 @@
                             <span style="font-size: 10px; background: #855b14; color: #ffe394; padding: 2px 6px; border-radius: 3px; font-weight: bold;">DESERT</span>
                         </div>
                         <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">CANYON SCOUT</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;">황량한 사막 협곡 상공을 침범한 적 정찰 대규모 편대와 다섯 웨이브를 돌파하십시오.</p>
+                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="황량한 사막 협곡 상공을 침범한 적 정찰 대규모 편대와 다섯 웨이브를 돌파하십시오." data-en="Break through five waves of enemy reconnaissance squadrons above the desert canyons.">황량한 사막 협곡 상공을 침범한 적 정찰 대규모 편대와 다섯 웨이브를 돌파하십시오.</span></p>
                         <div style="font-size: 13px; color: #ffde59; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
                             <span class="stage-objective">5 WAVES + BOSS</span>
                         </div>
@@ -172,7 +185,7 @@
                             <span style="font-size: 10px; background: #0e4e75; color: #8fe1ff; padding: 2px 6px; border-radius: 3px; font-weight: bold;">OCEAN</span>
                         </div>
                         <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">OCEAN TRIDENT</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;">광활한 푸른 대해와 군도 상공에서 적 해상 기동 편대를 섬멸하십시오.</p>
+                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="광활한 푸른 대해와 군도 상공에서 적 해상 기동 편대를 섬멸하십시오." data-en="Destroy enemy naval forces across the open ocean and island chains.">광활한 푸른 대해와 군도 상공에서 적 해상 기동 편대를 섬멸하십시오.</span></p>
                         <div style="font-size: 13px; color: #ffde59; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
                             <span class="stage-objective">5 WAVES + BOSS</span>
                         </div>
@@ -185,7 +198,7 @@
                             <span style="font-size: 10px; background: #5e1c75; color: #f0aeff; padding: 2px 6px; border-radius: 3px; font-weight: bold;">CITY</span>
                         </div>
                         <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">METROPOLIS SHIELD</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;">거대 마천루와 빌딩 숲 상공에서 벌어지는 적 주력 에이스 편대와의 총력전.</p>
+                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="거대 마천루와 빌딩 숲 상공에서 벌어지는 적 주력 에이스 편대와의 총력전." data-en="Engage elite enemy squadrons in an all-out battle above the city skyline.">거대 마천루와 빌딩 숲 상공에서 벌어지는 적 주력 에이스 편대와의 총력전.</span></p>
                         <div style="font-size: 13px; color: #ff5566; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
                             <span class="stage-objective">5 WAVES + BOSS</span>
                         </div>
@@ -206,6 +219,10 @@
                 <h1 class="briefing-title" style="font-size: 22px; margin-bottom: 4px;">SYSTEM SETTINGS</h1>
                 <p class="briefing-subtitle" style="margin-bottom: 18px; font-size: 12px;">GRAPHICS FILTER & AUDIO CONTROL</p>
                 
+                <div class="option-row">
+                    <label for="opt-language">언어 / Language</label>
+                    <select id="opt-language"><option value="ko">한국어</option><option value="en">English</option></select>
+                </div>
                 <!-- 1. 레트로 픽셀 아트 3D 필터 -->
                 <div class="option-row" style="margin-bottom: 12px;">
                     <div>
@@ -244,7 +261,7 @@
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
                         <div style="font-weight: bold; color: #ffffff; font-size: 14px;">CONFINE MOUSE TO WINDOW</div>
-                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">창 밖 이탈 방지 + 전투 조준 커서 유지 (ESC/종료 시 해제)</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;"><span data-ko="창 밖 이탈 방지 + 전투 조준 커서 유지 (ESC/종료 시 해제)" data-en="Keep the cursor inside the game (released with ESC or on exit).">창 밖 이탈 방지 + 전투 조준 커서 유지 (ESC/종료 시 해제)</span></div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-pointer-lock" checked>
@@ -255,7 +272,7 @@
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
                         <div style="font-weight: bold; color: #ffffff; font-size: 14px;">CASUAL FLIGHT CONTROLS</div>
-                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">마우스: 피치 / 뱅크 턴 (데드존 없음)<br>W/S: 속도 · A/D: 롤 · Q/E: 요<br>마우스 목표 방향 유지 · 롤 해제 후 수평 복귀</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;"><span data-ko="마우스: 피치 / 뱅크 턴 (데드존 없음)" data-en="Mouse: pitch / bank turns (no dead zone)">마우스: 피치 / 뱅크 턴 (데드존 없음)</span><br><span data-ko="W/S: 속도 · A/D: 롤 · Q/E: 요" data-en="W/S: speed · A/D: roll · Q/E: yaw">W/S: 속도 · A/D: 롤 · Q/E: 요</span><br><span data-ko="마우스 목표 방향 유지 · 롤 해제 후 수평 복귀" data-en="Maintain mouse heading · Level out after releasing roll">마우스 목표 방향 유지 · 롤 해제 후 수평 복귀</span></div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-casual-controls">
@@ -265,8 +282,8 @@
 
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
-                        <label for="opt-target-follow" style="font-weight: bold; color: #ffffff; font-size: 14px;">타깃 자동 추적</label>
-                        <div class="option-hint">포커스 중 자동 추종 · WASD 입력 시 일시 중단</div>
+                        <label for="opt-target-follow" style="font-weight: bold; color: #ffffff; font-size: 14px;"><span data-ko="타깃 자동 추적" data-en="Auto target tracking">타깃 자동 추적</span></label>
+                        <div class="option-hint"><span data-ko="포커스 중 자동 추종 · WASD 입력 시 일시 중단" data-en="Automatically follow the focused target · WASD temporarily overrides">포커스 중 자동 추종 · WASD 입력 시 일시 중단</span></div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-target-follow" checked>
@@ -278,7 +295,7 @@
                 <div class="option-row" style="margin-bottom: 18px;">
                     <div>
                         <div style="font-weight: bold; color: #ffffff; font-size: 14px;">SMART GUN ASSIST</div>
-                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;">사선 발사 허용: 리드 서클 반경 내 스마트 에임 및 탄도 자동 보정</div>
+                        <div style="font-size: 11px; color: #8edebb; margin-top: 2px;"><span data-ko="사선 발사 허용: 리드 서클 반경 내 스마트 에임 및 탄도 자동 보정" data-en="Aim and trajectory assistance within the lead circle, including off-axis fire">사선 발사 허용: 리드 서클 반경 내 스마트 에임 및 탄도 자동 보정</span></div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="opt-smart-gun" checked>
@@ -290,10 +307,10 @@
                     <button class="start-btn" id="btn-close-options" style="padding: 10px 32px; font-size: 14px;">APPLY & RESUME [ESC]</button>
                 </div>
                 <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #38545b; text-align: center;">
-                    <p id="gamepad-status" style="font-size: 12px; color: #8edebb; overflow-wrap: anywhere;">패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요.</p>
-                    <p id="local-save-status" role="status" style="font-size: 12px; color: #8edebb;">자동 저장</p>
-                    <button class="start-btn" id="btn-reset-save" style="padding: 8px 20px; font-size: 12px; border-color: #f18b8b; color: #f18b8b;">세이브 초기화</button>
-                    <p style="font-size: 11px; color: #9badb3;">클리어 기록과 옵션을 이 브라우저에 저장합니다. 출격은 새로 시작합니다.</p>
+                    <p id="gamepad-status" style="font-size: 12px; color: #8edebb; overflow-wrap: anywhere;"><span data-ko="패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요." data-en="Waiting for controller · Click the game, then press and release a controller button.">패드 감지 대기 · 게임 화면을 클릭한 뒤 패드 버튼을 눌렀다 떼어 주세요.</span></p>
+                    <p id="local-save-status" role="status" style="font-size: 12px; color: #8edebb;"><span data-ko="자동 저장" data-en="Autosave">자동 저장</span></p>
+                    <button class="start-btn" id="btn-reset-save" style="padding: 8px 20px; font-size: 12px; border-color: #f18b8b; color: #f18b8b;"><span data-ko="세이브 초기화" data-en="Reset save">세이브 초기화</span></button>
+                    <p style="font-size: 11px; color: #9badb3;"><span data-ko="클리어 기록과 옵션을 이 브라우저에 저장합니다. 출격은 새로 시작합니다." data-en="Completion records and settings are saved in this browser. Sorties start fresh.">클리어 기록과 옵션을 이 브라우저에 저장합니다. 출격은 새로 시작합니다.</span></p>
                 </div>
             </div>
                 

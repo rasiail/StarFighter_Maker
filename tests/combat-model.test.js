@@ -23,29 +23,32 @@ test('멀티 관제 확장은 관제력 2에서 해금되고 4→6→8발을 발
   assert.equal(stats.multiLockCount,count);
   const flight=createPlayerFlight(null,stats);
   assert.equal(consumeMagazine(flight,'multi',20),count);
-  flight.multiBursts=3;
-  assert.equal(consumeMagazine(flight,'multi',20),3);
+  const partial=createPlayerFlight(null,stats);
+  partial.multiBursts=3;
+  assert.equal(consumeMagazine(partial,'multi',20),3);
  }
  assert.ok(!eligibleCards(build).some(c=>c.id==='multiSalvo'));
 });
 
 test('실제 타격 수와 과잉 피해를 계산하고 화력 1단계의 원킬 경계를 반영한다',()=>{
  const build=createProgression();
- const before=simulateCombat([{id:'stage_aircraft',health:100}],calculateStats(build),shotsOnly,()=>0);
+ const health=BALANCE.stages[0].aircraftHealth;
+ const before=simulateCombat([{id:'stage_aircraft',health}],calculateStats(build),shotsOnly,()=>0);
  build.ranks.power=1;
- const after=simulateCombat([{id:'stage_aircraft',health:100}],calculateStats(build),shotsOnly,()=>0);
+ const after=simulateCombat([{id:'stage_aircraft',health}],calculateStats(build),shotsOnly,()=>0);
  assert.equal(before.standardShots,2);
  assert.equal(after.standardShots,1);
- assert.equal(before.overkill,70);
+ assert.equal(before.overkill,50);
+ assert.ok(Math.abs(after.overkill-0.5)<1e-9);
  assert.ok(after.seconds<before.seconds);
 });
 
 test('21번째 표준 발사는 탄창 전체 재장전 이후에 가능하다',()=>{
- const targets=Array.from({length:21},()=>({id:'stage_aircraft',health:85}));
+ const targets=Array.from({length:21},()=>({id:'stage_aircraft',health:BALANCE.weapons.standard_missile.damage}));
  const result=simulateCombat(targets,calculateStats(createProgression()),shotsOnly,()=>0);
  assert.equal(result.standardShots,21);
  assert.equal(result.standardReloads,1);
- assert.ok(result.seconds>=15.7 && result.seconds<16.1);
+ assert.ok(result.seconds>=15 && result.seconds<15.3);
 });
 
 test('전함은 3타깃 예산을 소비하고 선체 격파가 함포를 함께 제거한다',()=>{

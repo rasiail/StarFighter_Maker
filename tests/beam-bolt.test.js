@@ -1,3 +1,4 @@
+import { BEAM_RANGE } from '../src/combat/beam-energy.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { beamBoltIntersection, BEAM_BOLT } from '../src/combat/beam-bolt.js';
@@ -13,7 +14,7 @@ test('a rifle bolt does not hit a distant enemy instantly, but sweeps across it 
 test('sweep rejects off-axis, behind and out-of-range enemies', () => {
     assert.equal(beamBoltIntersection(origin, forward, { x: 30, y: 0, z: -100 }, 15, 300), null);
     assert.equal(beamBoltIntersection(origin, forward, { x: 0, y: 0, z: 100 }, 15, 300), null);
-    assert.equal(beamBoltIntersection(origin, forward, { x: 0, y: 0, z: -1900 }, 15, BEAM_BOLT.range), null);
+    assert.equal(beamBoltIntersection(origin, forward, { x: 0, y: 0, z: -3100 }, 15, BEAM_BOLT.range), null);
     assert.equal(beamBoltIntersection(origin, forward, origin, 15, 300), 0);
 });
 test('nearest hit ordering is independent of enemy array order', () => {
@@ -39,7 +40,7 @@ test('runtime spawns a finite bolt, damages only the first enemy on arrival, and
     const objects = new Set();
     const enemy = z => ({ alive: true, health: 100, mesh: { position: new Vector(0, 0, z) } });
     const near = enemy(-300), far = enemy(-600);
-    const context = vm.createContext({
+    const context = vm.createContext({ BEAM_RANGE,
         THREE: { Vector3: Vector, Group: Mesh, Mesh,
             CylinderGeometry: class { rotateX() {} }, MeshBasicMaterial: class {} },
         scene: { add: mesh => objects.add(mesh), remove: mesh => objects.delete(mesh) },
@@ -68,6 +69,16 @@ test('runtime spawns a finite bolt, damages only the first enemy on arrival, and
     context.spawnBeamBolt(ship, 35);
     context.updateBeamBolts(2);
     assert.equal(objects.size, 0, 'missed bolt expires at range');
+    ship.position.z = 0;
+    const distant = enemy(-2900), outside = enemy(-3100);
+    context.enemies.push(outside, distant);
+    context.spawnBeamBolt(ship, 35);
+    context.updateBeamBolts(2);
+    assert.equal(distant.health, 65, 'bolt reaches enemies beyond the old 1800 m range');
+    context.enemies.splice(1, 1);
+    context.spawnBeamBolt(ship, 35);
+    context.updateBeamBolts(2);
+    assert.equal(outside.health, 100, 'bolt cannot damage beyond 3000 m');
     context.spawnBeamBolt(ship, 35);
     context.clearBeamBolts();
     assert.equal(objects.size, 0);

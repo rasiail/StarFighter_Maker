@@ -144,7 +144,7 @@ export function simulateRun(options = {}) {
         const inventory = createCombatInventory(calculateStats(build));
         for (let waveIndex = 0; waveIndex < stage.waves.length; waveIndex++) {
             const targetCount = Math.max(1, Math.round(stage.waves[waveIndex] * assumptions.enemyCountScale));
-            const targets = createWaveTargets(stage, targetCount, random);
+            const targets = createWaveTargets(stage, targetCount, random, stage.eliteRatios[waveIndex] || 0);
             const counts = targets.reduce((out, target) => { out[target.id] = (out[target.id] || 0) + 1; return out; }, {});
             for (const [id, count] of Object.entries(counts)) enemyCounts[id] = (enemyCounts[id] || 0) + count;
             const totalHealth = Object.entries(counts).reduce((sum, [id, count]) => sum + enemyHealth(id, stage) * count, 0);

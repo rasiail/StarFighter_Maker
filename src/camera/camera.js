@@ -7,7 +7,7 @@ import { activeDyingBosses } from '../enemies/lifecycle.js';
 import { keys, mouseFlight } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
-import { cameraFollowOffset } from './follow.js';
+import { cameraFollowOffset, CAMERA_FOLLOW_PITCH, stepCameraRollLag, stepCameraRotationLag } from './follow.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { createHitShake, addHitShake, stepHitShake } from './hit-shake.js';
 
@@ -16,6 +16,13 @@ let hitShake = createHitShake();
 let unsubscribeHit;
 
 export function updateCamera(delta) {
+    // Strip last frame's chase offsets before processing free-look and return
+    // controls, so they never mistake camera inertia for user look input.
+    if (gameState.cameraPivot && cameraConfig.chaseLagApplied) {
+        gameState.cameraPivot.rotation.x -= cameraConfig.pitchLag || 0;
+        gameState.cameraPivot.rotation.y -= cameraConfig.yawLag || 0;
+    }
+    cameraConfig.chaseLagApplied = false;
     cameraConfig.hitShake = stepHitShake(hitShake, delta);
     if (gameState.isPlayerDead || hitShake.strength === 0) cameraConfig.hitShake = null;
     const casualView = gameState.controlScheme === 'casual' && !gameState.isPlayerDead
@@ -81,7 +88,7 @@ export function updateCamera(delta) {
     camera.position.x = 0;
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, posLerp);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, posLerp);
-    camera.rotation.set(-0.13, 0, 0);
+    camera.rotation.set(CAMERA_FOLLOW_PITCH, 0, 0);
 
     let targetEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
 
@@ -140,7 +147,11 @@ export function updateCamera(delta) {
             new THREE.Matrix4().lookAt(new THREE.Vector3(), direction, new THREE.Vector3(0, 1, 0)))
             .multiply(camera.quaternion.clone().invert()) : playerMesh.quaternion;
         // Fixed view speed independent of aircraft performance, without a deadzone.
-        cameraConfig.casualWorldQuaternion.rotateTowards(desired, 1.8 * delta);
+        const viewSpeed = cameraConfig.padFreelookReturning ? 0.8 : 1.8;
+        cameraConfig.casualWorldQuaternion.rotateTowards(desired, viewSpeed * delta);
+        if (cameraConfig.padFreelookReturning && cameraConfig.casualWorldQuaternion.angleTo(desired) < 0.01) {
+            cameraConfig.padFreelookReturning = false;
+        }
         const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(cameraConfig.casualWorldQuaternion);
         cameraConfig.casualWorldQuaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(
             new THREE.Vector3(), forward, new THREE.Vector3(0, 1, 0)));
@@ -174,8 +185,9 @@ export function updateCamera(delta) {
             while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
             while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
 
-            // 신속하고 매끄럽게 정면 복귀
-            const returnLerpFactor = 1.0 - Math.exp(-22.0 * delta);
+            // Ease back more slowly after releasing the controller's look stick.
+            const returnSpeed = cameraConfig.padFreelookReturning ? 4.0 : 22.0;
+            const returnLerpFactor = 1.0 - Math.exp(-returnSpeed * delta);
             gameState.cameraPivot.rotation.y += diffYaw * returnLerpFactor;
             gameState.cameraPivot.rotation.x = THREE.MathUtils.lerp(gameState.cameraPivot.rotation.x, 0, returnLerpFactor);
             gameState.cameraPivot.rotation.z = 0;
@@ -183,7 +195,31 @@ export function updateCamera(delta) {
             // 정면에 충분히 가까워지면 즉각 0으로 완전 고정
             if (Math.abs(diffYaw) < 0.001) gameState.cameraPivot.rotation.y = 0;
             if (Math.abs(gameState.cameraPivot.rotation.x) < 0.001) gameState.cameraPivot.rotation.x = 0;
+            if (gameState.cameraPivot.rotation.y === 0 && gameState.cameraPivot.rotation.x === 0) {
+                cameraConfig.padFreelookReturning = false;
+            }
         }
+    }
+
+    // Apply rotation lag only to the normal aircraft-relative chase view. Casual
+    // flight keeps its existing world-level horizon; orbit/cinematic views keep
+    // their own orientation.
+    const chaseView = !casualView && !gameState.isPlayerDead
+        && !(keys.targetCam || padInput.targetCam)
+        && !cameraConfig.padFreelook && cameraConfig.freelookIdleTimer <= 0
+        && Math.abs(gameState.cameraPivot.rotation.y) < 0.01
+        && Math.abs(gameState.cameraPivot.rotation.x) < 0.01;
+    cameraConfig.rollLag = chaseView
+        ? stepCameraRollLag(cameraConfig.rollLag ?? 0, playerFlight.rollRate, delta) : 0;
+    cameraConfig.pitchLag = chaseView
+        ? stepCameraRotationLag(cameraConfig.pitchLag ?? 0, playerFlight.pitchRate, delta) : 0;
+    cameraConfig.yawLag = chaseView
+        ? stepCameraRotationLag(cameraConfig.yawLag ?? 0, playerFlight.yawRate, delta) : 0;
+    if (chaseView) {
+        gameState.cameraPivot.rotation.x += cameraConfig.pitchLag;
+        gameState.cameraPivot.rotation.y += cameraConfig.yawLag;
+        gameState.cameraPivot.rotation.z = cameraConfig.rollLag;
+        cameraConfig.chaseLagApplied = true;
     }
 }
 
@@ -199,6 +235,11 @@ export function initCamera() {
         targetFov: 65,
         isTargetCamActive: false,
         casualWorldQuaternion: null,
+        padFreelookReturning: false,
+        rollLag: 0,
+        pitchLag: 0,
+        yawLag: 0,
+        chaseLagApplied: false,
         hitShake: null,
         freelookYaw: 0,
         freelookPitch: 0,
@@ -207,6 +248,15 @@ export function initCamera() {
 }
 
 export function resetCamera() {
+    if (gameState.cameraPivot && cameraConfig?.chaseLagApplied) {
+        gameState.cameraPivot.rotation.x -= cameraConfig.pitchLag || 0;
+        gameState.cameraPivot.rotation.y -= cameraConfig.yawLag || 0;
+    }
+    if (cameraConfig) cameraConfig.pitchLag = cameraConfig.yawLag = 0;
+    if (cameraConfig) cameraConfig.chaseLagApplied = false;
+    if (cameraConfig) cameraConfig.rollLag = 0;
+    if (gameState.cameraPivot) gameState.cameraPivot.rotation.z = 0;
+    if (cameraConfig) cameraConfig.padFreelookReturning = false;
     if (cameraConfig) cameraConfig.padFreelook = false;
     if (cameraConfig) cameraConfig.bossShot = null;
     hitShake = createHitShake();
@@ -218,7 +268,7 @@ export function resetCamera() {
     }
     const cameraOffset = cameraFollowOffset();
     camera.position.set(0, cameraOffset.y, cameraOffset.z);
-    camera.rotation.set(-0.13, 0, 0);
+    camera.rotation.set(CAMERA_FOLLOW_PITCH, 0, 0);
     if (cameraConfig) {
         cameraConfig.freelookYaw = 0;
         cameraConfig.freelookPitch = 0;

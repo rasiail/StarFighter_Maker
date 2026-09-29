@@ -2,8 +2,9 @@ import { scene } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
 import { killEnemy } from '../enemies/lifecycle.js';
 import { triggerExplosion } from '../effects/particles.js';
+import { BEAM_RANGE } from './beam-energy.js';
 
-export const BEAM_BOLT = Object.freeze({ length: 18, diameter: 1.5, speed: 1800, range: 1800 });
+export const BEAM_BOLT = Object.freeze({ length: 18, diameter: 1.5, speed: 1800, range: BEAM_RANGE });
 export const beamBolts = [];
 let geometry, coreMaterial, glowMaterial;
 
@@ -41,7 +42,7 @@ export function spawnBeamBolt(source, damage, width = 3, aimDirection = null) {
     if (aimDirection) mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), direction);
     else mesh.quaternion.copy(source.quaternion);
     scene.add(mesh);
-    beamBolts.push({ mesh, tail, direction, damage, radius: diameter / 2, traveled: 0 });
+    beamBolts.push({ mesh, tail, direction, damage, radius: diameter / 2, traveled: 5 });
 }
 
 export function updateBeamBolts(delta) {

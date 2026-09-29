@@ -18,6 +18,7 @@ class SoundEngine {
         this.bgmPlaying = false;
         this.bgmTimer = null;
         this.flightAudioActive = false;
+        this.beamHoldVoice = null;
 
         // 타이틀 및 미션 선택 화면 전용 BGM (Sound/DancingSky.mp3)
         this.titleBgm = new Audio('Sound/DancingSky.mp3');
@@ -164,6 +165,7 @@ class SoundEngine {
     }
 
     stopFlightAudio() {
+        this.stopBeamHold();
         this.flightAudioActive = false;
         this.stopCombatBGM(); // 전투 BGM 정지
         this.stopProceduralBGM();
@@ -199,6 +201,63 @@ class SoundEngine {
         if (this.masterSfxGain && this.ctx) {
             this.masterSfxGain.gain.setTargetAtTime(this.sfxVolume, this.ctx.currentTime, 0.05);
         }
+    }
+
+    playBeamPulse() {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+        const oscillator = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(1500, now);
+        oscillator.frequency.exponentialRampToValueAtTime(180, now + 0.18);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.10, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+        oscillator.connect(gain);
+        gain.connect(this.masterSfxGain);
+        oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+        oscillator.start(now);
+        oscillator.stop(now + 0.23);
+    }
+
+    setBeamHold(multiplier = 1) {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+        if (!this.beamHoldVoice) {
+            const oscillator = this.ctx.createOscillator();
+            const overtone = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            oscillator.type = 'triangle';
+            overtone.type = 'sine';
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.065, now + 0.04);
+            oscillator.connect(gain);
+            overtone.connect(gain);
+            gain.connect(this.masterSfxGain);
+            oscillator.start(now);
+            overtone.start(now);
+            this.beamHoldVoice = { oscillator, overtone, gain };
+        }
+        const pitch = 160 + (Math.max(1, Math.min(3, multiplier)) - 1) * 90;
+        this.beamHoldVoice.oscillator.frequency.setTargetAtTime(pitch, now, 0.05);
+        this.beamHoldVoice.overtone.frequency.setTargetAtTime(pitch * 2.01, now, 0.05);
+    }
+
+    stopBeamHold() {
+        const voice = this.beamHoldVoice;
+        if (!voice) return;
+        this.beamHoldVoice = null;
+        const now = this.ctx.currentTime;
+        voice.gain.gain.cancelScheduledValues(now);
+        voice.gain.gain.setTargetAtTime(0.0001, now, 0.012);
+        voice.oscillator.onended = () => {
+            voice.oscillator.disconnect();
+            voice.overtone.disconnect();
+            voice.gain.disconnect();
+        };
+        voice.oscillator.stop(now + 0.06);
+        voice.overtone.stop(now + 0.06);
     }
 
     startProceduralBGM() {

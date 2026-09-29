@@ -40,9 +40,10 @@ test('후보는 중복되지 않으며 스탯 보정은 반복 계산해도 누�
     const cards = drawCards(build, () => 0);
     assert.equal(new Set(cards.map(c => c.id)).size, 3);
     const flight = createPlayerFlight({});
-    applyStats(flight, calculateStats(build));
-    applyStats(flight, calculateStats(build));
-    assert.equal(flight.damageMultiplier, 1.4);
+    const stats = calculateStats(build);
+    applyStats(flight, stats);
+    applyStats(flight, stats);
+    assert.equal(flight.damageMultiplier, stats.damageMultiplier);
     assert.equal(flight.maxPitchRate, 1.45 * 1.08);
 });
 test('슬롯 확장은 준비 탄수만 늘리고 진행 중 재장전과 체력 증가는 보존한다', () => {

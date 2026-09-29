@@ -17,6 +17,7 @@ const puppeteer = require('puppeteer');
         });
         await page.goto(process.env.GAME_URL || 'http://127.0.0.1:8000', { waitUntil: 'networkidle2' });
         await page.waitForFunction(() => window.player && document.querySelector('#btn-sortie').style.pointerEvents !== 'none');
+        if (await page.locator('#setup-modal').isVisible()) await page.locator('#setup-confirm').click();
         await page.evaluate(() => {
             document.querySelector('#btn-sortie').click();
             document.querySelector('#btn-start-selected-stage').click();

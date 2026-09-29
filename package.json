@@ -10,7 +10,7 @@
     "balance:review": "python tools/balance/build.py && node tools/balance/review.mjs",
     "start": "python tools/balance/build.py && node tools/serve.js",
     "check": "python tools/balance/build.py && node tools/check.js",
-    "test": "node --test",
+    "test": "node --test \"tests/*.test.js\"",
     "test:smoke": "node tools/smoke.cjs"
   }
 }

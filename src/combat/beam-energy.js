@@ -1,12 +1,33 @@
 import { BALANCE } from '../data/generated/balance.js';
 
 export const BEAM_CAPACITY = 100;
+export const BEAM_RANGE = 3000;
 export const BEAM_OVERLOAD_SECONDS = 2;
-export const BEAM_PULSE_DAMAGE = Math.round(BALANCE.weapons.standard_missile.damage * 1.2);
+export const BEAM_PULSE_DAMAGE = Math.round(BALANCE.weapons.standard_missile.damage * 1.2) * 1.5;
 export const BEAM_PULSE_COST = 6;
-export const BEAM_HOLD_DPS = 100;
+export const BEAM_HOLD_DPS = 150;
+export const BEAM_HOLD_RAMP_PER_SECOND = 0.5;
+export const BEAM_HOLD_MAX_MULTIPLIER = 3;
 export const BEAM_HOLD_DRAIN = 30;
 export const BEAM_HOLD_DELAY = 0.18;
+
+// Integrate the damage curve so a long frame and many short frames deal the same damage.
+export function beamHoldDamage(contact, target, duration) {
+    if (!target || contact.target !== target) {
+        contact.target = target;
+        contact.seconds = 0;
+    }
+    if (!target || duration <= 0) return 0;
+    const capTime = (BEAM_HOLD_MAX_MULTIPLIER - 1) / BEAM_HOLD_RAMP_PER_SECOND;
+    const integral = time => {
+        const ramp = Math.min(time, capTime);
+        return ramp + BEAM_HOLD_RAMP_PER_SECOND * ramp * ramp / 2
+            + Math.max(0, time - capTime) * BEAM_HOLD_MAX_MULTIPLIER;
+    };
+    const start = contact.seconds;
+    contact.seconds += duration;
+    return BEAM_HOLD_DPS * (integral(contact.seconds) - integral(start));
+}
 function reload(state, reloadSeconds, exhausted = false) {
     if (exhausted) state.energy = 0;
     state.overload = exhausted ? BEAM_OVERLOAD_SECONDS : 0;

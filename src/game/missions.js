@@ -1,3 +1,4 @@
+import { t } from '../ui/i18n.js';
 import { localSave } from '../core/local-save.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { gameState } from '../core/state.js';
@@ -120,11 +121,11 @@ export function updateMission(delta) {
     }
     updateMissionUI();
 }
-function refreshSavedStages() {
+export function refreshSavedStages() {
     const cleared = localSave.data.progress.clearedStages;
     document.querySelectorAll('.stage-card').forEach(card => {
         const stage = getStage(Number(card.dataset.stage));
-        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)}기 + BOSS${cleared.includes(stage.id) ? ' · CLEARED' : ''}`;
+        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)} ${t('기', 'targets')} + BOSS${cleared.includes(stage.id) ? ' · CLEARED' : ''}`;
     });
 }
 function enterHangar() {
@@ -141,7 +142,7 @@ function enterHangar() {
     replenishPlayerForSortie(playerFlight);
     playerVisual.rotation.set(0, 0, 0);
     document.getElementById('hangar-modal').hidden = false;
-    document.getElementById('hangar-depart').textContent = selectedStageId < STAGES.length ? `${getStage(selectedStageId + 1).title} 출격` : '런 완료';
+    document.getElementById('hangar-depart').textContent = selectedStageId < STAGES.length ? t(`${getStage(selectedStageId + 1).title} 출격`, `Deploy to ${getStage(selectedStageId + 1).title}`) : '런 완료';
     refreshProgressionUI();
     updateWeaponHUD();
     renderHUD();
@@ -162,7 +163,7 @@ export function gameOver(victory = false) {
     document.getElementById('gameover-modal').style.display = 'flex';
     document.getElementById('gameover-title').textContent = victory ? 'RUN COMPLETE' : 'SHOT DOWN / KIA';
     document.getElementById('gameover-title').style.color = victory ? '#79ffb2' : '#ff3344';
-    document.getElementById('gameover-sub').textContent = victory ? 'ALL SECTORS LIBERATED' : '새 런에서 다시 도전하세요';
+    document.getElementById('gameover-sub').textContent = victory ? 'ALL SECTORS LIBERATED' : t('새 런에서 다시 도전하세요');
     document.getElementById('final-score').textContent = playerFlight.score;
     document.getElementById('btn-next-stage').style.display = 'none';
     document.getElementById('btn-restart').textContent = 'NEW RUN';

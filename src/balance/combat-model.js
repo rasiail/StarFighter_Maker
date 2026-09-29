@@ -15,7 +15,7 @@ export function resizeCombatInventory(inventory, previous, next) {
     Object.assign(inventory, next);
 }
 
-export function createWaveTargets(stage, count, random) {
+export function createWaveTargets(stage, count, random, eliteRatio) {
     const targets = [];
     while (targets.length < count) {
         const kind = formationKind(count - targets.length, stage.environmentTheme === 'OCEAN', random());
@@ -24,7 +24,8 @@ export function createWaveTargets(stage, count, random) {
             targets.push({id:'ship_hull', health:BALANCE.enemies.ship_hull.health, ship});
             for(let i=0;i<2;i++) targets.push({id:'ship_turret', health:BALANCE.enemies.ship_turret.health, ship});
         } else {
-            const id = kind === 'tank' ? 'tank' : isEliteSpawn(random()) ? 'elite' : 'stage_aircraft';
+            const elite = eliteRatio == null ? isEliteSpawn(random()) : random() < eliteRatio;
+            const id = kind === 'tank' ? 'tank' : elite ? 'elite' : 'stage_aircraft';
             targets.push({id, health: id === 'stage_aircraft' ? stage.aircraftHealth : BALANCE.enemies[id].health});
         }
     }

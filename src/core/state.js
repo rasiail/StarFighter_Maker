@@ -2,6 +2,8 @@
 // 객체 자체를 교체하지 않아 모든 모듈이 같은 상태를 관찰하도록 유지합니다.
 export const gameState = {
     phase: 'menu',
+    language: 'ko',
+    setupComplete: false,
     activeModal: null,
     isGameRunning: false,
     isGamePaused: false,

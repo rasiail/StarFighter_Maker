@@ -1,3 +1,4 @@
+import { t } from '../src/ui/i18n.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -76,7 +77,7 @@ function runtime() {
     source = source.slice(0, start) + 'function beamAimDirection() { return null; }\nfunction castBeam(damage) { hits.push(damage); }\n' + source.slice(end);
     const hud = { style: {} };
     const hits = [];
-    const context = vm.createContext({ ...beam, playerFlight: createPlayerFlight(null), playerMesh: {}, hits,
+    const context = vm.createContext({ t, ...beam, audio: undefined, playerFlight: createPlayerFlight(null), playerMesh: {}, hits,
         spawnBeamBolt: (_source, damage) => hits.push(damage),
         gameState: { missileMode: 3, ownedWeapons: [1, 3] }, document: { getElementById: () => hud } });
     vm.runInContext(source, context);

@@ -1,3 +1,4 @@
+import { t } from './i18n.js';
 import { calculateStats } from '../progression/model.js';
 import { cardEffectValue } from '../progression/cards.js';
 import { BALANCE } from '../data/generated/balance.js';
@@ -40,42 +41,42 @@ export function createUpgradePreview(build, card, flight) {
     }
     const stat = (label, key, unit, scale = 1) => add(label, before[key] * scale, after[key] * scale, unit);
     const damage = () => {
-        for (const [key, label] of [['player_cannon', '기관포 피해'], ['standard_missile', '표준 미사일 피해'], ['multi_missile', '멀티 미사일 피해']]) {
+        for (const [key, label] of [['player_cannon', t('기관포 피해')], ['standard_missile', t('표준 미사일 피해')], ['multi_missile', t('멀티 미사일 피해')]]) {
             add(label, BALANCE.weapons[key].damage * before.damageMultiplier, BALANCE.weapons[key].damage * after.damageMultiplier);
         }
     };
     switch (card.id) {
-        case 'unlockMulti': case 'unlockBeam': add('보유 무기', build.weapons?.length ?? 1, (build.weapons?.length ?? 1) + 1, '종'); break;
-        case 'beamWidth': stat('빔 굵기', 'beamWidth', 'm'); break;
-        case 'beamEfficiency': stat('에너지 소모율', 'beamEfficiency', '%', 100); break;
-        case 'beamRecharge': stat('빔 재장전 시간', 'beamReloadSeconds', '초'); break;
+        case 'unlockMulti': case 'unlockBeam': add(t('보유 무기'), build.weapons?.length ?? 1, (build.weapons?.length ?? 1) + 1, t('종')); break;
+        case 'beamWidth': stat(t('빔 굵기'), 'beamWidth', 'm'); break;
+        case 'beamEfficiency': stat(t('에너지 소모율'), 'beamEfficiency', '%', 100); break;
+        case 'beamRecharge': stat(t('빔 재장전 시간'), 'beamReloadSeconds', t('초')); break;
         case 'mobility':
-            stat('피치 속도', 'maxPitchRate', '°/초', 180 / Math.PI);
-            stat('롤 속도', 'maxRollRate', '°/초', 180 / Math.PI);
-            stat('요 속도', 'maxYawRate', '°/초', 180 / Math.PI); break;
-        case 'stability': stat('회전 안정 응답', 'stabilityMultiplier', '%', 100); break;
+            stat(t('피치 속도'), 'maxPitchRate', t('°/초'), 180 / Math.PI);
+            stat(t('롤 속도'), 'maxRollRate', t('°/초'), 180 / Math.PI);
+            stat(t('요 속도'), 'maxYawRate', t('°/초'), 180 / Math.PI); break;
+        case 'stability': stat(t('회전 안정 응답'), 'stabilityMultiplier', '%', 100); break;
         case 'speed':
-            stat('순항 속도', 'cruiseSpeed', 'kts'); stat('최고 속도', 'maxSpeed', 'kts');
-            stat('가속', 'acceleration', 'kts/초'); stat('감속', 'deceleration', 'kts/초'); break;
+            stat(t('순항 속도'), 'cruiseSpeed', 'kts'); stat(t('최고 속도'), 'maxSpeed', 'kts');
+            stat(t('가속'), 'acceleration', t('kts/초')); stat(t('감속'), 'deceleration', t('kts/초')); break;
         case 'defense':
-            stat('최대 체력', 'maxHealth', 'HP');
-            add('현재 체력', health, Math.min(after.maxHealth, health + after.maxHealth - before.maxHealth), 'HP'); break;
+            stat(t('최대 체력'), 'maxHealth', 'HP');
+            add(t('현재 체력'), health, Math.min(after.maxHealth, health + after.maxHealth - before.maxHealth), 'HP'); break;
         case 'power': case 'warhead': damage(); break;
         case 'control':
-            for (const [key, label] of [['standard_missile', '표준 락온 거리'], ['multi_missile', '멀티 락온 거리']]) {
+            for (const [key, label] of [['standard_missile', t('표준 락온 거리')], ['multi_missile', t('멀티 락온 거리')]]) {
                 add(label, BALANCE.weapons[key].lockRangeM * before.lockRangeMultiplier, BALANCE.weapons[key].lockRangeM * after.lockRangeMultiplier, 'm');
             }
-            stat('유도 선회 성능', 'missileTurnMultiplier', '%', 100); break;
-        case 'standardRack': stat('표준 탄창 용량', 'stdMaxBursts', '발'); break;
-        case 'multiRack': stat('멀티 탄창 용량', 'multiMaxBursts', '발'); break;
+            stat(t('유도 선회 성능'), 'missileTurnMultiplier', '%', 100); break;
+        case 'standardRack': stat(t('표준 탄창 용량'), 'stdMaxBursts', t('발')); break;
+        case 'multiRack': stat(t('멀티 탄창 용량'), 'multiMaxBursts', t('발')); break;
         case 'reload':
-            stat('표준 재장전', 'stdReloadSeconds', '초'); stat('멀티 재장전', 'multiReloadSeconds', '초'); break;
-        case 'guidance': stat('유도 선회 성능', 'missileTurnMultiplier', '%', 100); break;
-        case 'multiSalvo': stat('동시 락온·발사', 'multiLockCount', '표적'); break;
-        case 'smartAim': stat('조준 보조 범위', 'smartAssistMultiplier', '%', 100); break;
+            stat(t('표준 재장전'), 'stdReloadSeconds', t('초')); stat(t('멀티 재장전'), 'multiReloadSeconds', t('초')); break;
+        case 'guidance': stat(t('유도 선회 성능'), 'missileTurnMultiplier', '%', 100); break;
+        case 'multiSalvo': stat(t('동시 락온·발사'), 'multiLockCount', t('표적')); break;
+        case 'smartAim': stat(t('조준 보조 범위'), 'smartAssistMultiplier', '%', 100); break;
         case 'repair':
-            add('현재 체력', health, Math.min(before.maxHealth, health + before.maxHealth * cardEffectValue('repair', 'health_restore')), 'HP');
-            add('점수', score, score + cardEffectValue('repair', 'score'), '점'); break;
+            add(t('현재 체력'), health, Math.min(before.maxHealth, health + before.maxHealth * cardEffectValue('repair', 'health_restore')), 'HP');
+            add(t('점수'), score, score + cardEffectValue('repair', 'score'), t('점')); break;
     }
-    return { description: card.description?.trim() || descriptions[card.id] || '기체 성능을 강화합니다.', changes };
+    return { description: t(card.description?.trim() || descriptions[card.id] || '기체 성능을 강화합니다.'), changes };
 }

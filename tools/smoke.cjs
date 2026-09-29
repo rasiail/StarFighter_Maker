@@ -12,6 +12,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     try {
         await page.goto(process.env.GAME_URL || 'http://127.0.0.1:8000', { waitUntil: 'load' });
         await page.waitForFunction(() => window.player && !document.querySelector('#btn-sortie').disabled);
+        if (await page.locator('#setup-modal').isVisible()) await page.locator('#setup-confirm').click();
         await page.evaluate(async () => {
             // Test-only module handles. Production code does not expose a debug API.
             window.testGame = {};

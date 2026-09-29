@@ -1,3 +1,5 @@
+import { refreshLanguage } from './setup.js';
+import { t } from './i18n.js';
 // ui/menus: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { audio } from '../audio/audio.js';
@@ -11,8 +13,8 @@ function refreshSaveStatus() {
     if (!status) return;
     const progress = localSave.data.progress;
     status.textContent = localSave.available
-        ? `자동 저장 · 클리어 ${progress.clearedStages.length}개 · 최고 점수 ${progress.bestScore}`
-        : '현재 브라우저에서 저장할 수 없습니다. 이번 플레이는 계속할 수 있습니다.';
+        ? t(`자동 저장 · 클리어 ${progress.clearedStages.length}개 · 최고 점수 ${progress.bestScore}`, `Autosave · ${progress.clearedStages.length} cleared · Best score ${progress.bestScore}`)
+        : t('현재 브라우저에서 저장할 수 없습니다. 이번 플레이는 계속할 수 있습니다.');
 }
 
 let btnOptStart;
@@ -27,7 +29,7 @@ let optSfxVal;
 let optPointerLock;
 
 export function toggleOptionsMenu() {
-    if (gameState.activeModal === 'cards' || gameState.phase === 'hangar') return;
+    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'hangar') return;
     const optModal = document.getElementById('options-modal');
     if (optModal.style.display === 'flex') {
         closeOptionsMenu();
@@ -36,7 +38,7 @@ export function toggleOptionsMenu() {
     }
 }
 export function openOptionsMenu() {
-    if (gameState.activeModal === 'cards' || gameState.phase === 'hangar') return;
+    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'hangar') return;
     gameState.activeModal = 'options';
     clearCombatInput();
     audio.init();
@@ -63,6 +65,11 @@ function closeOptionsMenu() {
 }
 
 export function initMenus() {
+    document.getElementById('opt-language').addEventListener('change', event => {
+        gameState.language = event.target.value;
+        refreshLanguage();
+        refreshSaveStatus();
+    });
     btnOptStart = document.getElementById('btn-open-options-start');
 
     if (btnOptStart) btnOptStart.addEventListener('click', openOptionsMenu);
@@ -134,6 +141,7 @@ export function initMenus() {
         optCasualControls.checked = (gameState.controlScheme === 'casual');
         optCasualControls.addEventListener('change', (e) => {
             gameState.controlScheme = e.target.checked ? 'casual' : 'standard';
+            refreshLanguage();
             clearCombatInput();
         });
     }
@@ -165,9 +173,9 @@ export function initMenus() {
     optionsModal.addEventListener('input', persistOptions);
     optionsModal.addEventListener('change', persistOptions);
     document.getElementById('btn-reset-save')?.addEventListener('click', () => {
-        if (!window.confirm('클리어 기록, 최고 점수, 옵션을 모두 초기화하고 타이틀로 돌아갑니다. 진행 중인 출격도 종료됩니다. 초기화할까요?')) return;
+        if (!window.confirm(t('클리어 기록, 최고 점수, 옵션을 모두 초기화하고 타이틀로 돌아갑니다. 진행 중인 출격도 종료됩니다. 초기화할까요?'))) return;
         if (localSave.reset()) window.location.reload();
-        else document.getElementById('local-save-status').textContent = '초기화하지 못했습니다. 브라우저의 저장 권한을 확인해 주세요.';
+        else document.getElementById('local-save-status').textContent = t('초기화하지 못했습니다. 브라우저의 저장 권한을 확인해 주세요.');
     });
     refreshSaveStatus();
 
