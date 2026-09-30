@@ -4,6 +4,7 @@ import { gameState } from '../core/state.js';
 import { playerFlight } from '../player/player.js';
 import { cameraConfig } from '../camera/camera.js';
 import { tryFireMissile, updateWeaponHUD, selectWeaponSlot } from '../combat/weapons.js';
+import { weaponModesBySlot } from '../combat/weapon-slots.js';
 import { cycleTarget } from '../combat/targeting.js';
 import { openUpgrades } from '../ui/upgrades.js';
 import { toggleOptionsMenu } from '../ui/menus.js';
@@ -86,7 +87,7 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
         return;
     }
     if (input.pressed[0]) { openUpgrades(); if (gameState.isGamePaused) { resetGamepad(); return; } }
-    if (input.pressed[2]) { const owned = gameState.ownedWeapons || [1]; selectWeaponSlot((owned.indexOf(gameState.missileMode) + 1) % owned.length); }
+    if (input.pressed[2]) { const owned = weaponModesBySlot(gameState.ownedWeapons); selectWeaponSlot((owned.indexOf(gameState.missileMode) + 1) % owned.length); }
     if (gameState.missileMode === 3 ? input.pressed[1] : input.tap[1]) tryFireMissile();
     if (input.tap[6]) cycleTarget();
     Object.assign(padInput, {

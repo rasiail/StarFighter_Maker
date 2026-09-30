@@ -34,6 +34,13 @@
       "eventId": "fjoh7fch7g5k5fqk0ddliego8k",
       "completedOn": "2026-09-30",
       "lastUpdatedOn": "2026-09-30"
+    },
+    {
+      "key": "acquisition-order-weapon-slots",
+      "calendarId": "primary",
+      "eventId": "t9jentioj69863bqs6c36ds8jc",
+      "completedOn": "2026-10-01",
+      "lastUpdatedOn": "2026-10-01"
     }
   ]
 }

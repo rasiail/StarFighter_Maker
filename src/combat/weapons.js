@@ -11,6 +11,7 @@ import { audio } from '../audio/audio.js';
 import { enemies } from '../enemies/fleet.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { consumeMagazine } from './magazine.js';
+import { weaponModeForSlot, weaponModesBySlot } from './weapon-slots.js';
 
 const weaponData = BALANCE.weapons;
 
@@ -23,7 +24,7 @@ let missileTemplate;
 
 export function updateWeaponHUD() {
     const slots = document.getElementById('weapon-slots');
-    if (slots) slots.innerHTML = (gameState.ownedWeapons || [1]).map((mode, i) => `<button data-slot="${i}" class="${mode === gameState.missileMode ? 'selected' : ''}">${i + 1} · ${['', 'STD', 'MULTI', 'BEAM', 'BOMB'][mode]}</button>`).join('');
+    if (slots) slots.innerHTML = weaponModesBySlot(gameState.ownedWeapons).map((mode, i) => `<button data-slot="${i}" class="${mode === gameState.missileMode ? 'selected' : ''}">${i + 1} · ${['', 'STD', 'MULTI', 'BEAM', 'BOMB'][mode]}</button>`).join('');
     const statEl = document.getElementById('missile-stat');
     if (!statEl) return;
     
@@ -266,7 +267,7 @@ export function tryFireMissile() {
 }
 
 export function selectWeaponSlot(index) {
-    const mode = (gameState.ownedWeapons || [1])[index];
+    const mode = weaponModeForSlot(gameState.ownedWeapons, index);
     if (!mode) return;
     clearBeam();
     gameState.missileMode = mode;
