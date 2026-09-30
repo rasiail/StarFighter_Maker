@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aimOutsideDeadzone } from '../src/player/mouse-aim.js';
-import { cameraFollowOffset, CAMERA_ROLL_LAG, stepCameraRollLag, CAMERA_PITCH_YAW_LAG, stepCameraRotationLag } from '../src/camera/follow.js';
+import { cameraFollowOffset, CAMERA_RETURN_RATE, cameraReturnLerp, CAMERA_ROLL_LAG, stepCameraRollLag, CAMERA_PITCH_YAW_LAG, stepCameraRotationLag } from '../src/camera/follow.js';
+
+test('target camera and normal camera share the same return rate', () => {
+    assert.equal(CAMERA_RETURN_RATE, 22);
+    const oneFrame = cameraReturnLerp(1 / 60);
+    let remaining = 1;
+    for (let frame = 0; frame < 60; frame++) remaining *= 1 - oneFrame;
+    assert.ok(Math.abs(remaining - Math.exp(-CAMERA_RETURN_RATE)) < 1e-12);
+});
 
 test('pitch and yaw lag cap at ten degrees in either direction and settle after release', () => {
     assert.equal(CAMERA_PITCH_YAW_LAG, 10 * Math.PI / 180);
@@ -38,14 +46,14 @@ test('initial and cruise rear camera use the same 9.375m distance', () => {
     for (const speed of [-0.1, 0, 0.5]) {
         const offset = cameraFollowOffset(speed);
         assert.equal(offset.z, 9.375);
-        assert.ok(Math.abs(offset.y - 1.8) < 1e-9);
+        assert.ok(Math.abs(offset.y - 2.2) < 1e-9);
     }
 });
 
 test('rear camera smoothly reaches 12.5m at 80% speed', () => {
     assert.equal(cameraFollowOffset(0.65).z, 10.9375);
     for (const speed of [0.8, 1, 1.2]) {
-        assert.deepEqual(cameraFollowOffset(speed), { y: 2.2, z: 12.5 });
+        assert.deepEqual(cameraFollowOffset(speed), { y: 2.6, z: 12.5 });
     }
 });
 

@@ -18,7 +18,7 @@ export function initPlayer() {
     playerVisual.name = "playerVisual";
     playerMesh.add(playerVisual);
 
-    playerMesh.position.set(0, 600, 1200);
+    playerMesh.position.set(0, 1860, 1200);
 
     scene.add(playerMesh);
 

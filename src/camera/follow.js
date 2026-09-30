@@ -6,6 +6,11 @@ export const CAMERA_FOLLOW_PITCH = 0;
 
 export const CAMERA_ROLL_LAG = 15 * Math.PI / 180;
 export const CAMERA_PITCH_YAW_LAG = 10 * Math.PI / 180;
+export const CAMERA_RETURN_RATE = 22;
+
+export function cameraReturnLerp(delta) {
+    return delta <= 0 ? 0 : 1 - Math.exp(-CAMERA_RETURN_RATE * delta);
+}
 
 // Counter the initial aircraft rotation up to fifteen degrees, then follow at the
 // same rate. Once rotation stops, smoothly settle back behind the aircraft.
@@ -29,5 +34,5 @@ export function cameraFollowOffset(speedRatio = 0.5, yaw = 0, pitch = 0) {
     const speedFactor = 0.75 + 0.25 * speedT;
     const rearAlignment = Math.max(0, Math.cos(yaw) * Math.cos(pitch));
     const factor = 1 + (speedFactor - 1) * rearAlignment;
-    return { y: 1.4 + 0.8 * (factor - 0.5) / 0.5, z: 12.5 * factor };
+    return { y: 1.8 + 0.8 * (factor - 0.5) / 0.5, z: 12.5 * factor };
 }

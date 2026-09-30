@@ -7,7 +7,7 @@ import { activeDyingBosses } from '../enemies/lifecycle.js';
 import { keys, mouseFlight } from '../input/state.js';
 import { padInput } from '../input/gamepad-state.js';
 import { acquireNextBestTarget } from '../combat/targeting.js';
-import { cameraFollowOffset, CAMERA_FOLLOW_PITCH, stepCameraRollLag, stepCameraRotationLag } from './follow.js';
+import { cameraFollowOffset, CAMERA_FOLLOW_PITCH, cameraReturnLerp, stepCameraRollLag, stepCameraRotationLag } from './follow.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { createHitShake, addHitShake, stepHitShake } from './hit-shake.js';
 
@@ -103,8 +103,16 @@ export function updateCamera(delta) {
         targetEnemy = acquireNextBestTarget();
     }
 
+    const targetCamTracking = !gameState.isPlayerDead && !!(keys.targetCam || padInput.targetCam) && !!targetEnemy;
+    if (!targetCamTracking && cameraConfig.isTargetCamActive) {
+        cameraConfig.isTargetCamActive = false;
+        cameraConfig.targetCamReturning = gameState.controlScheme === 'casual';
+    }
+
     // 1. 타깃 캠 모드 (우클릭 홀드 또는 T키 시 적기 방향으로 카메라 피봇 회전)
-    if (!gameState.isPlayerDead && (keys.targetCam || padInput.targetCam) && targetEnemy) {
+    if (targetCamTracking) {
+        cameraConfig.isTargetCamActive = true;
+        cameraConfig.targetCamReturning = false;
         cameraConfig.freelookIdleTimer = 0;
 
         // 적기의 월드 좌표를 플레이어 로컬 공간으로 변환
@@ -146,9 +154,17 @@ export function updateCamera(delta) {
         const desired = direction ? new THREE.Quaternion().setFromRotationMatrix(
             new THREE.Matrix4().lookAt(new THREE.Vector3(), direction, new THREE.Vector3(0, 1, 0)))
             .multiply(camera.quaternion.clone().invert()) : playerMesh.quaternion;
-        // Fixed view speed independent of aircraft performance, without a deadzone.
-        const viewSpeed = cameraConfig.padFreelookReturning ? 0.8 : 1.8;
-        cameraConfig.casualWorldQuaternion.rotateTowards(desired, viewSpeed * delta);
+        // Target focus releases at the same exponential return rate as the
+        // standard control camera. Normal casual aiming keeps its fixed speed.
+        if (cameraConfig.targetCamReturning) {
+            cameraConfig.casualWorldQuaternion.slerp(desired, cameraReturnLerp(delta));
+        } else {
+            const viewSpeed = cameraConfig.padFreelookReturning ? 0.8 : 1.8;
+            cameraConfig.casualWorldQuaternion.rotateTowards(desired, viewSpeed * delta);
+        }
+        if (cameraConfig.targetCamReturning && cameraConfig.casualWorldQuaternion.angleTo(desired) < 0.01) {
+            cameraConfig.targetCamReturning = false;
+        }
         if (cameraConfig.padFreelookReturning && cameraConfig.casualWorldQuaternion.angleTo(desired) < 0.01) {
             cameraConfig.padFreelookReturning = false;
         }
@@ -186,8 +202,9 @@ export function updateCamera(delta) {
             while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
 
             // Ease back more slowly after releasing the controller's look stick.
-            const returnSpeed = cameraConfig.padFreelookReturning ? 4.0 : 22.0;
-            const returnLerpFactor = 1.0 - Math.exp(-returnSpeed * delta);
+            const returnLerpFactor = cameraConfig.padFreelookReturning
+                ? 1.0 - Math.exp(-4.0 * delta)
+                : cameraReturnLerp(delta);
             gameState.cameraPivot.rotation.y += diffYaw * returnLerpFactor;
             gameState.cameraPivot.rotation.x = THREE.MathUtils.lerp(gameState.cameraPivot.rotation.x, 0, returnLerpFactor);
             gameState.cameraPivot.rotation.z = 0;
@@ -230,10 +247,11 @@ export function initCamera() {
     cameraConfig = {
         idealOffset: new THREE.Vector3(0, 4.2, 17.5),
         idealLook: new THREE.Vector3(0, 1.2, -30),
-        currentPos: new THREE.Vector3(0, 604, 1218),
-        currentLook: new THREE.Vector3(0, 600, 1100),
+        currentPos: new THREE.Vector3(0, 1864, 1218),
+        currentLook: new THREE.Vector3(0, 1860, 1100),
         targetFov: 65,
         isTargetCamActive: false,
+        targetCamReturning: false,
         casualWorldQuaternion: null,
         padFreelookReturning: false,
         rollLag: 0,
@@ -257,6 +275,8 @@ export function resetCamera() {
     if (cameraConfig) cameraConfig.rollLag = 0;
     if (gameState.cameraPivot) gameState.cameraPivot.rotation.z = 0;
     if (cameraConfig) cameraConfig.padFreelookReturning = false;
+    if (cameraConfig) cameraConfig.targetCamReturning = false;
+    if (cameraConfig) cameraConfig.isTargetCamActive = false;
     if (cameraConfig) cameraConfig.padFreelook = false;
     if (cameraConfig) cameraConfig.bossShot = null;
     hitShake = createHitShake();

@@ -19,7 +19,7 @@ export function stepManeuver(flight, { dt, distance, altitude, terrain, heavy, r
         && (flight.maneuverCooldown <= 0 || (evade && flight.evadeCooldown <= 0))) {
         let kind = evade ? 'BARREL' : ['HIGH_YOYO', 'SLICE', 'BARREL'][flight.maneuverIndex % 3];
         if (kind === 'SLICE' && altitude < terrain + 650) kind = 'HIGH_YOYO';
-        if (kind === 'HIGH_YOYO' && altitude > 1950) kind = altitude > terrain + 650 ? 'SLICE' : 'BARREL';
+        if (kind === 'HIGH_YOYO' && altitude > 2600) kind = altitude > terrain + 650 ? 'SLICE' : 'BARREL';
         flight.maneuver = kind;
         flight.maneuverAge = 0;
         flight.maneuverIndex++;

@@ -116,7 +116,7 @@ export function updateEnemies(delta) {
             const z = playerMesh.position.z + pFwd.z * spawnDist + (Math.random() - 0.5) * 600;
             const groundY = getSurfaceHeight(x, z);
             const targetY = playerMesh.position.y + (enemy.altitudeOffset || 0);
-            const reY = Math.max(groundY + 280, Math.min(2250, targetY));
+            const reY = Math.max(groundY + 280, Math.min(3000, targetY));
             enemy.mesh.position.set(x, reY, z);
             enemy.mesh.lookAt(playerMesh.position);
             enemy.mesh.rotateY(Math.PI);

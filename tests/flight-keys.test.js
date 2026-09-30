@@ -2,19 +2,33 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveFlightKeys, targetFollowActive } from '../src/input/flight-keys.js';
 
-test('casual keeps speed, roll and rudder bindings while focusing', () => {
-    for (const focusing of [false, true]) {
-        const held = { keyW: true, keyS: true, keyA: true, keyD: true,
-            casualThrottleUp: true, casualThrottleDown: true, yawLeft: true, yawRight: true };
-        const result = resolveFlightKeys(held, 'casual', focusing);
-        assert.equal(result.casualThrottleUp, true);
-        assert.equal(result.casualThrottleDown, true);
-        assert.equal(result.rollLeft, true);
-        assert.equal(result.rollRight, true);
-        assert.equal(result.yawLeft, true);
-        assert.equal(result.yawRight, true);
-        assert.ok(!result.pitchUp && !result.pitchDown);
+test('casual W/S change from throttle to pitch only while focusing', () => {
+    const held = { keyW: true, keyS: true, keyA: true, keyD: true,
+        casualThrottleUp: true, casualThrottleDown: true, yawLeft: true, yawRight: true };
+    const cruising = resolveFlightKeys(held, 'casual', false);
+    assert.equal(cruising.casualThrottleUp, true);
+    assert.equal(cruising.casualThrottleDown, true);
+    assert.ok(!cruising.pitchUp && !cruising.pitchDown);
+
+    const result = resolveFlightKeys(held, 'casual', true);
+    assert.equal(result.casualThrottleUp, false);
+    assert.equal(result.casualThrottleDown, false);
+    assert.equal(result.pitchUp, true);
+    assert.equal(result.pitchDown, true);
+    for (const key of ['rollLeft', 'rollRight', 'yawLeft', 'yawRight']) {
+        assert.equal(result[key], true);
     }
+
+    const wOnly = resolveFlightKeys({ keyW: true, casualThrottleUp: true }, 'casual', true);
+    assert.deepEqual(
+        { pitchDown: wOnly.pitchDown, pitchUp: !!wOnly.pitchUp, throttleUp: wOnly.casualThrottleUp },
+        { pitchDown: true, pitchUp: false, throttleUp: false }
+    );
+    const sOnly = resolveFlightKeys({ keyS: true, casualThrottleDown: true }, 'casual', true);
+    assert.deepEqual(
+        { pitchDown: !!sOnly.pitchDown, pitchUp: sOnly.pitchUp, throttleDown: sOnly.casualThrottleDown },
+        { pitchDown: false, pitchUp: true, throttleDown: false }
+    );
 });
 
 test('both schemes detect held keys even when opposing inputs cancel, and release clears the override', () => {

@@ -5,7 +5,15 @@ export function resolveFlightKeys(held, scheme, focusing) {
     if (scheme === 'casual') {
         keys.rollLeft = !!(held.keyA || held.rollLeft);
         keys.rollRight = !!(held.keyD || held.rollRight);
-
+        if (focusing) {
+            // Focus mode temporarily gives W/S the standard pitch bindings.
+            // Clear the keydown-owned casual throttle flags so one physical key
+            // cannot change pitch and speed during the same frame.
+            keys.pitchDown = !!(held.keyW || held.pitchDown);
+            keys.pitchUp = !!(held.keyS || held.pitchUp);
+            keys.casualThrottleUp = false;
+            keys.casualThrottleDown = false;
+        }
     }
     return keys;
 }

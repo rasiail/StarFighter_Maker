@@ -205,7 +205,7 @@ function launchSectorStage(stageIndex, { newRun = false } = {}) {
     };
     document.getElementById('mission-name').textContent = gameState.currentStageInfo.name;
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');
-    playerMesh.position.set(0, 1400, 1200);
+    playerMesh.position.set(0, 1860, 1200);
     playerMesh.quaternion.set(0, 0, 0, 1);
     replenishPlayerForSortie(playerFlight);
     playerVisual.rotation.set(0, 0, 0);

@@ -56,12 +56,12 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
     const egress = flight.egressTime > 0;
     flight.egressTime = Math.max(0, flight.egressTime - dt);
     let heading = Math.hypot(dx, dz) > 1 ? Math.atan2(-dx, -dz) : flight.heading;
-    const desiredAlt = clamp(target.y + (flight.altitudeOffset || 0), ground + 280, 2250);
+    const desiredAlt = clamp(target.y + (flight.altitudeOffset || 0), ground + 280, 3000);
     let pitch = clamp(Math.atan2(desiredAlt - position.y,
         Math.max(450, Math.hypot(dx, dz))), -0.38, 0.48);
     if (egress) {
         heading = flight.egressHeading;
-        if (flight.egressManeuver === 0 && position.y < 2200) {
+        if (flight.egressManeuver === 0 && position.y < 2930) {
             pitch = 0.28;
         } else if (flight.egressManeuver === 1 && position.y > ground + 360) {
             pitch = -0.22;
@@ -75,8 +75,8 @@ export function stepFlight(flight, position, target, speed, dt, surface, boss = 
         heading += maneuver.heading;
         pitch = clamp(pitch + maneuver.pitch, -0.65, 0.8);
     }
-    if (position.y > 1650) {
-        pitch = Math.min(pitch, -0.22); // 1650m 고도 상한선 엄수
+    if (position.y > 3000) {
+        pitch = Math.min(pitch, -0.22); // 3000m 고도 상한선 엄수
     }
     if (flight.recovering) {
         heading = flight.recoveryHeading;

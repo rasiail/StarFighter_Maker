@@ -136,7 +136,7 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, fish
     elite = !boss && !fish && (elite || bomber);
     if (elite) health = enemyData.elite.health * (bomber ? BOMBER.healthMultiplier : 1);
     const groundY = getSurfaceHeight(pos.x, pos.z);
-    pos.y = Math.max(groundY + 280, Math.min(1650, pos.y));
+    pos.y = Math.max(groundY + 280, Math.min(3000, pos.y));
 
     const enemyMesh = bomber ? createBomberMesh() : elite ? createEliteMesh() : createDroneMesh(boss || fish);
     enemyMesh.userData.isBoss = boss;
@@ -211,30 +211,30 @@ export function spawnFormation(count, options = {}) {
                 spawnGroundTank(new THREE.Vector3(px, 0, pz));
             }
         } else {
-            // 공중 병력 스폰: 에이스 컴뱃 스타일 고저차(Low/Mid/High) 분배 및 고도 상한 2250m 제한
+            // 공중 병력 스폰: 에이스 컴뱃 스타일 고저차(Low/Mid/High) 분배 및 고도 상한 3000m 제한
             const groundY = getSurfaceHeight(px, pz);
             let py;
             let altOffset;
             if (options.boss) {
-                py = Math.max(groundY + 450, 1750);
+                py = Math.max(groundY + 450, 2330);
                 altOffset = 0;
             } else {
                 const roll = Math.random();
                 if (roll < 0.3) {
-                    // Low 레이어 (약 30%): 하단 교전 고도 (920m ~ 1180m, 지형 여유 확보)
-                    py = Math.max(groundY + 320, 920 + Math.random() * 260);
-                    altOffset = -220 - Math.random() * 180;
+                    // Low 레이어 (약 30%): 하단 교전 고도 (1230m ~ 1570m, 지형 여유 확보)
+                    py = Math.max(groundY + 320, 1230 + Math.random() * 340);
+                    altOffset = -290 - Math.random() * 240;
                 } else if (roll < 0.7) {
-                    // Mid 레이어 (약 40%): 중고도 일반 순항 (1450m ~ 1750m)
-                    py = Math.max(groundY + 380, 1450 + Math.random() * 300);
-                    altOffset = (Math.random() - 0.5) * 200;
+                    // Mid 레이어 (약 40%): 중고도 일반 순항 (1930m ~ 2330m)
+                    py = Math.max(groundY + 380, 1930 + Math.random() * 400);
+                    altOffset = (Math.random() - 0.5) * 260;
                 } else {
-                    // High 레이어 (약 30%): 고고도 요격 (1850m ~ 2200m)
-                    py = Math.max(groundY + 480, 1850 + Math.random() * 350);
-                    altOffset = 220 + Math.random() * 200;
+                    // High 레이어 (약 30%): 고고도 요격 (2470m ~ 2930m)
+                    py = Math.max(groundY + 480, 2470 + Math.random() * 460);
+                    altOffset = 290 + Math.random() * 260;
                 }
             }
-            py = Math.max(groundY + 280, Math.min(2250, py));
+            py = Math.max(groundY + 280, Math.min(3000, py));
 
             const pos = new THREE.Vector3(px, py, pz);
             if (schoolReady) {
