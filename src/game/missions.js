@@ -3,7 +3,8 @@ import { localSave } from '../core/local-save.js';
 import { gameEvents, EVENTS } from '../core/events.js';
 import { gameState } from '../core/state.js';
 import { clearCombatSchedule } from '../core/scheduler.js';
-import { STAGES, getStage } from '../config/stages.js';
+import { getStage } from '../config/stages.js';
+import { getSector, getSectorStages, findSectorByStage, getSectorStageRoute } from '../config/sectors.js';
 import { createEncounter, recordEncounterKill, advanceEncounter, reinforcementCount } from './encounter.js';
 import { createPlayerFlight, replenishPlayerForSortie } from '../player/state.js';
 import { playerFlight, playerMesh, playerVisual } from '../player/player.js';
@@ -24,14 +25,14 @@ import { renderHUD } from '../ui/hud.js';
 import { BALANCE } from '../data/generated/balance.js';
 
 export let encounter = null;
-let selectedStageId = 1;
-let runStartStage = 1;
+let selectedSectorId = 1;
+let currentStageIndex = 0;
 let boss = null;
 let reinforcementTimer = 0;
 
 function hideScreens() {
-    for (const id of ['start-modal', 'stage-modal', 'gameover-modal', 'options-modal']) document.getElementById(id).style.display = 'none';
-    for (const id of ['hangar-modal', 'upgrade-modal']) document.getElementById(id).hidden = true;
+    for (const id of ['start-modal', 'sector-modal', 'gameover-modal', 'options-modal']) document.getElementById(id).style.display = 'none';
+    for (const id of ['stage-summary-modal', 'upgrade-modal']) document.getElementById(id).hidden = true;
     gameState.activeModal = null;
 }
 function clearBattle() {
@@ -108,10 +109,14 @@ export function updateMission(delta) {
             clearBattle();
             gameState.phase = 'boss';
             boss = spawnBoss(encounter.stage);
-        } else if (encounter.phase === 'hangar') enterHangar();
+        } else if (encounter.phase === 'complete') {
+            const route = getSectorStageRoute(selectedSectorId, currentStageIndex);
+            if (!route.isFinal) enterStageSummary();
+            else gameOver(true);
+        }
         
         // 웨이브/페이즈 클리어 시 선택 안 한 스킬 카드가 있으면 창을 자동으로 띄움
-        if (progression.pending > 0 && gameState.phase !== 'hangar') {
+        if (progression.pending > 0 && gameState.phase !== 'intermission' && gameState.isGameRunning) {
             openUpgrades();
         }
     }
@@ -121,17 +126,20 @@ export function updateMission(delta) {
     }
     updateMissionUI();
 }
-export function refreshSavedStages() {
-    const cleared = localSave.data.progress.clearedStages;
-    document.querySelectorAll('.stage-card').forEach(card => {
-        const stage = getStage(Number(card.dataset.stage));
-        card.querySelector('.stage-objective').textContent = `${stage.waves.length} WAVES · ${stage.waves.reduce((a, b) => a + b, 0)} ${t('기', 'targets')} + BOSS${cleared.includes(stage.id) ? ' · CLEARED' : ''}`;
+export function refreshSavedSectors() {
+    const cleared = localSave.data.progress.clearedSectors;
+    document.querySelectorAll('.sector-card').forEach(card => {
+        const sector = getSector(Number(card.dataset.sector));
+        const stages = getSectorStages(sector);
+        const waves = stages.reduce((total, stage) => total + stage.waves.length, 0);
+        card.querySelector('.sector-objective').textContent = `${stages.length} STAGES · ${waves} WAVES · ${stages.length} BOSSES${cleared.includes(sector.id) ? ' · CLEARED' : ''}`;
     });
 }
-function enterHangar() {
-    localSave.recordResult(selectedStageId, playerFlight.score, true);
-    refreshSavedStages();
-    gameState.phase = 'hangar';
+function enterStageSummary() {
+    const sector = getSector(selectedSectorId);
+    const route = getSectorStageRoute(sector, currentStageIndex);
+    const nextStage = getStage(route.nextStageId);
+    gameState.phase = 'intermission';
     gameState.isGameRunning = false;
     gameState.isGamePaused = true;
     clearCombatInput();
@@ -141,17 +149,19 @@ function enterHangar() {
     audio.playTitleBGM();
     replenishPlayerForSortie(playerFlight);
     playerVisual.rotation.set(0, 0, 0);
-    document.getElementById('hangar-modal').hidden = false;
-    document.getElementById('hangar-depart').textContent = selectedStageId < STAGES.length ? t(`${getStage(selectedStageId + 1).title} 출격`, `Deploy to ${getStage(selectedStageId + 1).title}`) : '런 완료';
+    document.getElementById('stage-summary-modal').hidden = false;
+    document.getElementById('stage-summary-title').textContent = t(`스테이지 ${currentStageIndex + 1} 클리어`, `Stage ${currentStageIndex + 1} clear`);
+    document.getElementById('stage-summary-progress').textContent = `${sector.name} · ${currentStageIndex + 1} / ${sector.stageIds.length}`;
+    document.getElementById('stage-summary-depart').textContent = t(`${nextStage.title} 출격`, `Deploy to ${nextStage.title}`);
     refreshProgressionUI();
     updateWeaponHUD();
     renderHUD();
-    document.getElementById('hangar-upgrade').focus();
+    document.getElementById('stage-summary-upgrade').focus();
 }
 export function gameOver(victory = false) {
     if (gameState.activeModal === 'cards') return;
-    localSave.recordResult(selectedStageId, playerFlight.score, victory);
-    refreshSavedStages();
+    localSave.recordResult(selectedSectorId, playerFlight.score, victory);
+    refreshSavedSectors();
     gameState.phase = victory ? 'complete' : 'defeat';
     gameState.isGameRunning = false;
     gameState.isGamePaused = false;
@@ -161,9 +171,9 @@ export function gameOver(victory = false) {
     audio.stopFlightAudio();
     hideScreens();
     document.getElementById('gameover-modal').style.display = 'flex';
-    document.getElementById('gameover-title').textContent = victory ? 'RUN COMPLETE' : 'SHOT DOWN / KIA';
+    document.getElementById('gameover-title').textContent = victory ? 'SECTOR CLEARED' : 'SHOT DOWN / KIA';
     document.getElementById('gameover-title').style.color = victory ? '#79ffb2' : '#ff3344';
-    document.getElementById('gameover-sub').textContent = victory ? 'ALL SECTORS LIBERATED' : t('새 런에서 다시 도전하세요');
+    document.getElementById('gameover-sub').textContent = victory ? t('작전구역 이탈 · 기지로 복귀', 'Sector complete · Returning to base') : t('새 런에서 다시 도전하세요');
     document.getElementById('final-score').textContent = playerFlight.score;
     document.getElementById('btn-next-stage').style.display = 'none';
     document.getElementById('btn-restart').textContent = 'NEW RUN';
@@ -171,23 +181,28 @@ export function gameOver(victory = false) {
     updateMissionUI();
 }
 
-// Normal progression preserves the build; menu/retry starts a fresh run.
-export function launchStage(stageId, { newRun = true } = {}) {
+// Sector progression preserves the build between stages; a new sector run resets it.
+function launchSectorStage(stageIndex, { newRun = false } = {}) {
     if (gameState.activeModal === 'cards') return;
+    const sector = getSector(selectedSectorId);
+    const stageId = sector.stageIds[stageIndex];
     const stage = getStage(stageId);
     hideScreens();
     clearCombatInput();
     clearBattle();
-    selectedStageId = stageId;
-    localSave.selectStage(stageId);
+    currentStageIndex = stageIndex;
     if (newRun) {
-        runStartStage = stageId;
         Object.assign(playerFlight, createPlayerFlight(new THREE.Vector3(0, 0, -1)));
         resetProgression();
     }
     encounter = createEncounter(stage);
     setupStageEnvironment(stageId);
-    gameState.currentStageInfo = { stage: stageId, name: `${stage.name} [${currentEnvironment.theme} | ${currentEnvironment.timeOfDay}]` };
+    gameState.currentStageInfo = {
+        sector: selectedSectorId,
+        stage: stageId,
+        stageIndex,
+        name: `${sector.name} · STAGE ${stageIndex + 1}/${sector.stageIds.length} · ${stage.name} [${currentEnvironment.theme} | ${currentEnvironment.timeOfDay}]`,
+    };
     document.getElementById('mission-name').textContent = gameState.currentStageInfo.name;
     document.getElementById('score-val').textContent = playerFlight.score.toString().padStart(4, '0');
     playerMesh.position.set(0, 1400, 1200);
@@ -216,10 +231,27 @@ export function launchStage(stageId, { newRun = true } = {}) {
     container.focus();
     requestGamePointerLock();
 }
-export function departHangar() {
-    if (gameState.phase !== 'hangar' || gameState.activeModal) return;
-    if (selectedStageId < STAGES.length) launchStage(selectedStageId + 1, { newRun: false });
-    else gameOver(true);
+
+export function launchSector(sectorId) {
+    if (gameState.activeModal === 'cards') return;
+    selectedSectorId = getSector(sectorId).id;
+    localSave.selectSector(selectedSectorId);
+    launchSectorStage(0, { newRun: true });
+}
+
+// Direct stage launch remains available for isolated browser fixtures and diagnostics.
+export function launchStage(stageId, { newRun = true } = {}) {
+    const sector = findSectorByStage(stageId);
+    if (!sector) throw new RangeError(`No sector contains stage: ${stageId}`);
+    selectedSectorId = sector.id;
+    localSave.selectSector(selectedSectorId);
+    launchSectorStage(sector.stageIds.indexOf(stageId), { newRun });
+}
+
+export function departStageSummary() {
+    if (gameState.phase !== 'intermission' || gameState.activeModal) return;
+    const route = getSectorStageRoute(selectedSectorId, currentStageIndex);
+    if (!route.isFinal) launchSectorStage(currentStageIndex + 1, { newRun: false });
 }
 export function initMissions() {
     gameEvents.on(EVENTS.PLAYER_DESTROYED, () => {
@@ -256,19 +288,19 @@ export function initMissions() {
             recordEncounterKill(encounter, true);
         }
     });
-    const cards = document.querySelectorAll('.stage-card');
-    selectedStageId = localSave.data.progress.selectedStage;
-    cards.forEach(card => card.classList.toggle('selected', Number(card.dataset.stage) === selectedStageId));
+    const cards = document.querySelectorAll('.sector-card');
+    selectedSectorId = localSave.data.progress.selectedSector;
+    cards.forEach(card => card.classList.toggle('selected', Number(card.dataset.sector) === selectedSectorId));
     cards.forEach(card => card.addEventListener('click', () => {
         cards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
-        selectedStageId = Number(card.dataset.stage);
-        localSave.selectStage(selectedStageId);
+        selectedSectorId = Number(card.dataset.sector);
+        localSave.selectSector(selectedSectorId);
     }));
-    refreshSavedStages();
-    document.getElementById('btn-start-selected-stage').addEventListener('click', () => launchStage(selectedStageId));
-    document.getElementById('hangar-depart').addEventListener('click', departHangar);
-    document.getElementById('btn-restart').addEventListener('click', () => launchStage(runStartStage));
+    refreshSavedSectors();
+    document.getElementById('btn-start-selected-sector').addEventListener('click', () => launchSector(selectedSectorId));
+    document.getElementById('stage-summary-depart').addEventListener('click', departStageSummary);
+    document.getElementById('btn-restart').addEventListener('click', () => launchSector(selectedSectorId));
     document.getElementById('btn-main-menu').addEventListener('click', () => {
         if (gameState.activeModal === 'cards') return;
         resetCamera();

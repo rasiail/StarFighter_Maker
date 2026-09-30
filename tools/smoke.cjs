@@ -22,7 +22,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.locator('label:has(#opt-pointer-lock)').click();
         await page.locator('#btn-close-options').click();
         await page.locator('#btn-sortie').click();
-        await page.locator('#btn-start-selected-stage').click();
+        await page.locator('#btn-start-selected-sector').click();
         await page.waitForFunction(() => window.player.position.z < 1200);
         assert.equal(await page.evaluate(() => testGame.enemies.filter(e => e.alive).length), 30);
         fs.mkdirSync('test-results', { recursive: true });
@@ -107,32 +107,34 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
                 t.killEnemy(t.enemies.find(e => e.isBoss));
                 t.updateMission(0.016);
             });
-            assert.equal(await page.locator('#hangar-modal').isVisible(), true);
             const build = await page.evaluate(() => ({ level: testGame.progression.level, pending: testGame.progression.pending, cards: { ...testGame.progression.cards }, ranks: { ...testGame.progression.ranks } }));
             assert.ok(build.pending > 0);
+            if (stage < 3) {
+                assert.equal(await page.locator('#stage-summary-modal').isVisible(), true);
+            }
             if (stage === 1) {
-                await page.screenshot({ path: 'test-results/hangar.png' });
+                await page.screenshot({ path: 'test-results/stage-summary.png' });
                 // Force maxed ranks to exercise the guaranteed fallback in the real UI.
                 await page.evaluate(() => {
                     const t = testGame;
                     for (const card of t.CARDS) (card.stat ? t.progression.ranks : t.progression.cards)[card.id] = card.maxRank;
                     t.applyStats(t.playerFlight, t.calculateStats(t.progression));
                 });
-                await page.locator('#hangar-upgrade').click();
+                await page.locator('#stage-summary-upgrade').click();
                 await page.keyboard.press('Escape');
                 assert.equal(await page.locator('#upgrade-modal').isVisible(), true);
                 for (let i = 0; i < build.pending; i++) await page.locator('#upgrade-cards button').first().click();
-                assert.equal(await page.locator('#hangar-modal').isVisible(), true);
+                assert.equal(await page.locator('#stage-summary-modal').isVisible(), true);
                 assert.equal(await page.evaluate(() => testGame.gameState.isGamePaused), true);
             }
-            const beforeDepart = await page.evaluate(() => JSON.stringify(testGame.progression));
-            await page.locator('#hangar-depart').click();
             if (stage < 3) {
+                const beforeDepart = await page.evaluate(() => JSON.stringify(testGame.progression));
+                await page.locator('#stage-summary-depart').click();
                 assert.equal(await page.evaluate(() => testGame.gameState.currentStageInfo.stage), stage + 1);
                 assert.equal(await page.evaluate(() => JSON.stringify(testGame.progression)), beforeDepart);
                 assert.equal(await page.evaluate(() => testGame.encounter.wave), 0);
-            } else assert.match(await page.locator('#gameover-title').textContent(), /RUN COMPLETE/);
-            console.log(`Stage ${stage}: ${stage + 2} waves, boss, hangar, build preservation/completion OK`);
+            } else assert.match(await page.locator('#gameover-title').textContent(), /SECTOR CLEARED/);
+            console.log(`Stage ${stage}: ${stage + 2} waves, boss, skill-card summary, build preservation/sector completion OK`);
         }
         await page.locator('#btn-restart').click();
         const reset = await page.evaluate(() => ({ level: testGame.progression.level, pending: testGame.progression.pending, maxHealth: testGame.playerFlight.maxHealth, std: testGame.playerFlight.stdMaxBursts, wave: testGame.encounter.wave }));

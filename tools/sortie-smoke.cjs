@@ -20,7 +20,7 @@ const puppeteer = require('puppeteer');
         if (await page.locator('#setup-modal').isVisible()) await page.locator('#setup-confirm').click();
         await page.evaluate(() => {
             document.querySelector('#btn-sortie').click();
-            document.querySelector('#btn-start-selected-stage').click();
+            document.querySelector('#btn-start-selected-sector').click();
         });
         for (const stageId of [1, 2, 3]) {
             const state = await page.evaluate(async stageId => {
@@ -30,7 +30,7 @@ const puppeteer = require('puppeteer');
                 const { camera, hudCanvas, hudCtx } = await import('/src/rendering/scene.js');
                 const { enemies } = await import('/src/enemies/fleet.js');
                 const { playerMesh } = await import('/src/player/player.js');
-                if (stageId !== 1) mission.launchStage(stageId);
+                if (mission.encounter.stage.id !== stageId) throw new Error(`Expected stage ${stageId}, got ${mission.encounter.stage.id}`);
                 const before = playerMesh.position.z;
                 for (let i = 0; i < 120; i++) stepSimulation(1 / 60);
                 return {
@@ -55,6 +55,7 @@ const puppeteer = require('puppeteer');
             }
             const transition = await page.evaluate(async () => {
                 const mission = await import('/src/game/missions.js');
+                const { gameState } = await import('/src/core/state.js');
                 const { enemies } = await import('/src/enemies/fleet.js');
                 const { killEnemy } = await import('/src/enemies/lifecycle.js');
                 const dismissCards = () => {
@@ -72,12 +73,25 @@ const puppeteer = require('puppeteer');
                 const bossReached = mission.encounter.phase === 'boss' && !!boss;
                 if (boss) killEnemy(boss);
                 mission.updateMission(1 / 60);
-                return { bossReached, phase: mission.encounter.phase, hangarVisible: !document.querySelector('#hangar-modal').hidden };
+                return {
+                    bossReached,
+                    encounterPhase: mission.encounter.phase,
+                    gamePhase: gameState.phase,
+                    summaryVisible: !document.querySelector('#stage-summary-modal').hidden,
+                    gameoverVisible: document.querySelector('#gameover-modal').style.display === 'flex',
+                };
             });
             assert.equal(transition.bossReached, true);
-            assert.equal(transition.phase, 'hangar');
-            assert.equal(transition.hangarVisible, true);
-            console.log(`Stage ${stageId}: sortie, camera, HUD, exhaust, all waves, boss and hangar OK`);
+            assert.equal(transition.encounterPhase, 'complete');
+            if (stageId < 3) {
+                assert.equal(transition.gamePhase, 'intermission');
+                assert.equal(transition.summaryVisible, true);
+                await page.locator('#stage-summary-depart').click();
+            } else {
+                assert.equal(transition.gamePhase, 'complete');
+                assert.equal(transition.gameoverVisible, true);
+            }
+            console.log(`Stage ${stageId}: sortie, camera, HUD, exhaust, all waves, boss and sector flow OK`);
         }
         assert.deepEqual(errors, []);
         console.log('Sortie browser regression passed without simulation/render errors.');

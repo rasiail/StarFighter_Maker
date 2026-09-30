@@ -2,12 +2,12 @@ import { gameState } from '../core/state.js';
 import { saveLocalOptions } from '../core/local-save.js';
 import { applyLanguage, t } from './i18n.js';
 import { refreshProgressionUI } from './upgrades.js';
-import { refreshSavedStages } from '../game/missions.js';
+import { refreshSavedSectors } from '../game/missions.js';
 
 export function refreshLanguage() {
     applyLanguage();
     refreshProgressionUI();
-    refreshSavedStages();
+    refreshSavedSectors();
     document.getElementById('opt-language').value = gameState.language;
     document.getElementById('flight-help').textContent = gameState.controlScheme === 'casual'
         ? t('마우스: 피치 / 뱅크 턴 · W/S: 속도 · A/D: 롤 · Q/E: 요', 'Mouse: pitch / bank turns · W/S: speed · A/D: roll · Q/E: yaw')

@@ -27,7 +27,7 @@
 
 #boss-status { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); z-index: 12; width: 340px; text-align: center; color: #ffb988; pointer-events: none; }
 #boss-hp-fill { height: 100%; background: #ff704d; width: 100%; }
-#hangar-modal .start-btn { display: block; width: min(360px,100%); margin: 16px auto; }
+#stage-summary-modal .start-btn { display: block; width: min(360px,100%); margin: 16px auto; }
 @media (max-width: 640px) { #upgrade-cards { grid-template-columns: 1fr; gap: 10px; } .upgrade-card { min-height: 0; padding: 14px; } .run-panel { padding: 18px; } .run-panel h2 { font-size: 24px; } #progression-hud { width: 180px; } }
 
 * {
@@ -132,7 +132,7 @@ canvas#hud-canvas {
     to { opacity: 1; }
 }
 
-#stage-modal, #gameover-modal, #options-modal {
+#sector-modal, #gameover-modal, #options-modal {
     position: absolute;
     top: 0;
     left: 0;
@@ -412,12 +412,12 @@ input:checked + .slider:before {
     touch-action: none;
 }
 
-.stage-card:hover {
+.sector-card:hover {
     border-color: #79ffb2 !important;
     transform: translateY(-3px);
     box-shadow: 0 0 15px rgba(77, 245, 138, 0.4);
 }
-.stage-card.selected {
+.sector-card.selected {
     border-color: #ffde59 !important;
     background: rgba(25, 75, 45, 0.9) !important;
     box-shadow: 0 0 20px rgba(255, 222, 89, 0.5) !important;
@@ -428,7 +428,7 @@ input:checked + .slider:before {
 }
 
 /* Make the current controller/keyboard menu selection visible. */
-button:focus, input:focus, .stage-card:focus {
+button:focus, input:focus, .sector-card:focus {
     outline: 3px solid #ffde59;
     outline-offset: 4px;
 }

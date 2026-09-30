@@ -299,7 +299,7 @@ export function loadFBXAsset() {
 function finalizeAssetLoading() {
     const btn = document.getElementById('btn-sortie');
     if (btn) {
-        btn.textContent = "SORTIE (SELECT MISSION STAGE)";
+        btn.textContent = "SORTIE (SELECT SECTOR)";
         btn.style.opacity = "1.0";
         btn.style.pointerEvents = "auto";
     }

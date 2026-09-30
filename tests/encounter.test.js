@@ -4,7 +4,7 @@ import { getStage } from '../src/config/stages.js';
 import { createEncounter, recordEncounterKill, advanceEncounter, reinforcementCount } from '../src/game/encounter.js';
 import { scheduleCombat, updateCombatSchedule, clearCombatSchedule } from '../src/core/scheduler.js';
 
-test('3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 정비창을 연다', () => {
+test('3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 스테이지를 완료한다', () => {
  for(const stageId of [1,2,3]) {
     const encounter = createEncounter(getStage(stageId));
     assert.equal(encounter.stage.waves.length, stageId + 2);
@@ -22,7 +22,7 @@ test('3·4·5웨이브 완료 후 보스가 등장하며 보스 처치만 정비
     assert.equal(advanceEncounter(encounter), false);
     recordEncounterKill(encounter, true);
     advanceEncounter(encounter);
-    assert.equal(encounter.phase, 'hangar');
+    assert.equal(encounter.phase, 'complete');
  }
 });
 test('증원은 남은 필요 격추수의 1.5배 필드 몹 수를 유지하며 maxActive를 초과하지 않는다', () => {

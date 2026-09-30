@@ -51,11 +51,11 @@ export function initPointerLock() {
             if (hadLock && gameState.isGameRunning && !gameState.isGamePaused) {
                 const optModal = document.getElementById('options-modal');
                 const gameoverModal = document.getElementById('gameover-modal');
-                const stageModal = document.getElementById('stage-modal');
+                const sectorModal = document.getElementById('sector-modal');
                 const startModal = document.getElementById('start-modal');
                 const isAnyModalOpen = (optModal && optModal.style.display === 'flex') ||
                                        (gameoverModal && gameoverModal.style.display === 'flex') ||
-                                       (stageModal && stageModal.style.display === 'flex') ||
+                                       (sectorModal && sectorModal.style.display === 'flex') ||
                                        (startModal && startModal.style.display !== 'none');
                 if (!isAnyModalOpen) {
                     openOptionsMenu();
@@ -70,11 +70,11 @@ export function initPointerLock() {
         const isOptOpen = (optModal && optModal.style.display === 'flex');
         const startModal = document.getElementById('start-modal');
         const isStartOpen = (startModal && startModal.style.display !== 'none');
-        const stageModal = document.getElementById('stage-modal');
-        const isStageOpen = (stageModal && stageModal.style.display === 'flex');
+        const sectorModal = document.getElementById('sector-modal');
+        const isSectorOpen = (sectorModal && sectorModal.style.display === 'flex');
 
         // 시작/스테이지 모달이나 옵션 메뉴가 열려있을 때는 포인터 락을 걸지 않음
-        if (gameState.isGameRunning && !gameState.isGamePaused && !isOptOpen && !isStartOpen && !isStageOpen) {
+        if (gameState.isGameRunning && !gameState.isGamePaused && !isOptOpen && !isStartOpen && !isSectorOpen) {
             requestGamePointerLock();
         }
     });

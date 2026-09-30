@@ -16,7 +16,7 @@ export function advanceEncounter(encounter) {
         encounter.wave++;
         encounter.kills = encounter.spawned = encounter.spawnedElites = 0;
         if (encounter.wave === encounter.stage.waves.length) encounter.phase = 'boss';
-    } else if (encounter.phase === 'boss') encounter.phase = 'hangar';
+    } else if (encounter.phase === 'boss') encounter.phase = 'complete';
     return true;
 }
 export function reinforcementCount(encounter, alive) {

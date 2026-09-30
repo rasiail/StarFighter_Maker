@@ -1,12 +1,12 @@
 import { gameState } from './state.js';
 import { audio } from '../audio/audio.js';
-import { STAGES } from '../config/stages.js';
+import { SECTORS, findSectorByStage } from '../config/sectors.js';
 
 export const SAVE_KEY = 'starfighter.vertical-slice.save.v1';
 const DEFAULT_OPTIONS = Object.freeze({ retroFilterEnabled: true, isPointerLockEnabled: true,
     language: 'ko', setupComplete: false, controlScheme: 'standard', targetFollowEnabled: true, isSmartGunEnabled: true, bgmVolume: 0.6, sfxVolume: 0.8 });
-const defaults = () => ({ version: 1, options: { ...DEFAULT_OPTIONS }, progress: { selectedStage: 1, clearedStages: [], bestScore: 0 } });
-const validStage = id => STAGES.some(stage => stage.id === id);
+const defaults = () => ({ version: 1, options: { ...DEFAULT_OPTIONS }, progress: { selectedSector: 1, clearedSectors: [], bestScore: 0 } });
+const validSector = id => SECTORS.some(sector => sector.id === id);
 export function sanitizeSave(raw) {
     const result = defaults();
     if (!raw || raw.version !== 1) return result;
@@ -20,8 +20,18 @@ export function sanitizeSave(raw) {
             if (typeof value === 'boolean') result.options[key] = value;
         } else if (Number.isFinite(value)) result.options[key] = Math.max(0, Math.min(1, value));
     }
-    if (validStage(raw.progress?.selectedStage)) result.progress.selectedStage = raw.progress.selectedStage;
-    if (Array.isArray(raw.progress?.clearedStages)) result.progress.clearedStages = [...new Set(raw.progress.clearedStages.filter(validStage))].sort((a, b) => a - b);
+    if (validSector(raw.progress?.selectedSector)) result.progress.selectedSector = raw.progress.selectedSector;
+    else {
+        const legacySector = findSectorByStage(raw.progress?.selectedStage);
+        if (legacySector) result.progress.selectedSector = legacySector.id;
+    }
+    if (Array.isArray(raw.progress?.clearedSectors)) {
+        result.progress.clearedSectors = [...new Set(raw.progress.clearedSectors.filter(validSector))].sort((a, b) => a - b);
+    } else if (Array.isArray(raw.progress?.clearedStages)) {
+        result.progress.clearedSectors = SECTORS
+            .filter(sector => sector.stageIds.every(stageId => raw.progress.clearedStages.includes(stageId)))
+            .map(sector => sector.id);
+    }
     if (Number.isSafeInteger(raw.progress?.bestScore) && raw.progress.bestScore >= 0) result.progress.bestScore = raw.progress.bestScore;
     return result;
 }
@@ -44,9 +54,9 @@ export function createSaveStore(storage) {
         get data() { return structuredClone(data); },
         get available() { return available; },
         saveOptions(options) { data = sanitizeSave({ ...data, options }); return write(); },
-        selectStage(stage) { if (validStage(stage)) data.progress.selectedStage = stage; return write(); },
-        recordResult(stage, score, cleared = false) {
-            if (cleared && validStage(stage) && !data.progress.clearedStages.includes(stage)) data.progress.clearedStages.push(stage);
+        selectSector(sector) { if (validSector(sector)) data.progress.selectedSector = sector; return write(); },
+        recordResult(sector, score, cleared = false) {
+            if (cleared && validSector(sector) && !data.progress.clearedSectors.includes(sector)) data.progress.clearedSectors.push(sector);
             if (Number.isSafeInteger(score) && score >= 0) data.progress.bestScore = Math.max(data.progress.bestScore, score);
             return write();
         },

@@ -18,10 +18,10 @@ export function refreshProgressionUI() {
     const prompt = document.getElementById('upgrade-prompt');
     prompt.hidden = !gameState.isGameRunning || progression.pending === 0 || gameState.isGamePaused || gameState.bossDyingSequence;
     prompt.textContent = t(`[X] 스킬 업그레이드 가능 · ${progression.pending}회`, `[X] Upgrades available · ${progression.pending}`);
-    const hangar = document.getElementById('hangar-upgrade');
-    hangar.textContent = t(`스킬 업그레이드 · ${progression.pending}회 [X]`, `Upgrades · ${progression.pending} [X]`);
-    hangar.disabled = progression.pending === 0;
-    document.getElementById('hangar-build').textContent = `LV ${progression.level} · ` + Object.entries(STAT_NAMES).map(([key, name]) => `${t(name)} ${progression.ranks[key]}/5`).join(' / ');
+    const summaryUpgrade = document.getElementById('stage-summary-upgrade');
+    summaryUpgrade.textContent = t(`스킬 업그레이드 · ${progression.pending}회 [X]`, `Upgrades · ${progression.pending} [X]`);
+    summaryUpgrade.disabled = progression.pending === 0;
+    document.getElementById('stage-summary-build').textContent = `LV ${progression.level} · ` + Object.entries(STAT_NAMES).map(([key, name]) => `${t(name)} ${progression.ranks[key]}/5`).join(' / ');
 }
 function renderChoices() {
     offered = drawCards(progression);
@@ -70,11 +70,11 @@ function renderChoices() {
             else {
                 document.getElementById('upgrade-modal').hidden = true;
                 gameState.activeModal = null;
-                gameState.isGamePaused = gameState.phase === 'hangar';
+                gameState.isGamePaused = gameState.phase === 'intermission';
                 clearCombatInput();
                 refreshProgressionUI();
                 if (gameState.isGameRunning) requestGamePointerLock();
-                else document.getElementById('hangar-depart').focus();
+                else document.getElementById('stage-summary-depart').focus();
             }
         });
         list.append(button);
@@ -83,8 +83,8 @@ function renderChoices() {
 }
 export function openUpgrades() {
     if (gameState.bossDyingSequence) return;
-    if (!progression.pending || gameState.activeModal || (gameState.isGamePaused && gameState.phase !== 'hangar')) return;
-    if (!gameState.isGameRunning && gameState.phase !== 'hangar') return;
+    if (!progression.pending || gameState.activeModal || (gameState.isGamePaused && gameState.phase !== 'intermission')) return;
+    if (!gameState.isGameRunning && gameState.phase !== 'intermission') return;
     gameState.activeModal = 'cards';
     gameState.isGamePaused = true;
     clearCombatInput();
@@ -96,7 +96,7 @@ export function openUpgrades() {
 export function initUpgrades() {
     gameEvents.on(EVENTS.PROGRESSION_CHANGED, refreshProgressionUI);
     document.getElementById('upgrade-prompt').addEventListener('click', event => { event.stopPropagation(); openUpgrades(); });
-    document.getElementById('hangar-upgrade').addEventListener('click', openUpgrades);
+    document.getElementById('stage-summary-upgrade').addEventListener('click', openUpgrades);
     // Trap keyboard focus inside the mandatory chooser; no background buttons are reachable.
     document.getElementById('upgrade-modal').addEventListener('keydown', event => {
         if (event.repeat && ['Enter', ' '].includes(event.key)) { event.preventDefault(); return; }

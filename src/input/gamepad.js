@@ -24,13 +24,13 @@ export function resetGamepad() {
     reader.reset();
 }
 function menuRoot() {
-    return ['setup-modal', 'upgrade-modal', 'options-modal', 'hangar-modal', 'gameover-modal', 'stage-modal', 'start-modal']
+    return ['setup-modal', 'upgrade-modal', 'options-modal', 'stage-summary-modal', 'gameover-modal', 'sector-modal', 'start-modal']
         .map(id => document.getElementById(id)).find(el => el && !el.hidden && el.getClientRects().length);
 }
 function navigateMenu(input) {
     const root = menuRoot();
     if (!root) return;
-    const items = [...root.querySelectorAll('button, input, select, .stage-card')].filter(el => !el.disabled && el.getClientRects().length);
+    const items = [...root.querySelectorAll('button, input, select, .sector-card')].filter(el => !el.disabled && el.getClientRects().length);
     if (!items.length) return;
     let index = items.indexOf(document.activeElement);
     const direction = input.pressed[12] || input.pressed[14] ? -1 : input.pressed[13] || input.pressed[15] ? 1 : 0;
@@ -80,8 +80,8 @@ export function updateGamepad(delta, now = performance.now() / 1000) {
     clearPadInput();
     if (input.pressed[9]) { toggleOptionsMenu(); resetGamepad(); return; }
     if (gameState.activeModal || !gameState.isGameRunning || gameState.isGamePaused) {
-        // Cross opens upgrades in the hangar; use Circle to activate its departure button.
-        if (gameState.phase === 'hangar' && !gameState.activeModal && input.pressed[0]) openUpgrades();
+        // Cross opens upgrades between stages; use Circle to activate the next-stage button.
+        if (gameState.phase === 'intermission' && !gameState.activeModal && input.pressed[0]) openUpgrades();
         else navigateMenu(input);
         return;
     }

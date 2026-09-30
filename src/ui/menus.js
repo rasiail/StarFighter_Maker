@@ -13,12 +13,12 @@ function refreshSaveStatus() {
     if (!status) return;
     const progress = localSave.data.progress;
     status.textContent = localSave.available
-        ? t(`자동 저장 · 클리어 ${progress.clearedStages.length}개 · 최고 점수 ${progress.bestScore}`, `Autosave · ${progress.clearedStages.length} cleared · Best score ${progress.bestScore}`)
+        ? t(`자동 저장 · 클리어 섹터 ${progress.clearedSectors.length}개 · 최고 점수 ${progress.bestScore}`, `Autosave · ${progress.clearedSectors.length} sectors cleared · Best score ${progress.bestScore}`)
         : t('현재 브라우저에서 저장할 수 없습니다. 이번 플레이는 계속할 수 있습니다.');
 }
 
 let btnOptStart;
-let btnOptStage;
+let btnOptSector;
 let btnCloseOpt;
 let btnCloseOptX;
 let optRetroFilter;
@@ -29,7 +29,7 @@ let optSfxVal;
 let optPointerLock;
 
 export function toggleOptionsMenu() {
-    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'hangar') return;
+    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'intermission') return;
     const optModal = document.getElementById('options-modal');
     if (optModal.style.display === 'flex') {
         closeOptionsMenu();
@@ -38,7 +38,7 @@ export function toggleOptionsMenu() {
     }
 }
 export function openOptionsMenu() {
-    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'hangar') return;
+    if (['cards', 'setup'].includes(gameState.activeModal) || gameState.phase === 'intermission') return;
     gameState.activeModal = 'options';
     clearCombatInput();
     audio.init();
@@ -74,9 +74,9 @@ export function initMenus() {
 
     if (btnOptStart) btnOptStart.addEventListener('click', openOptionsMenu);
 
-    btnOptStage = document.getElementById('btn-open-options-stage');
+    btnOptSector = document.getElementById('btn-open-options-sector');
 
-    if (btnOptStage) btnOptStage.addEventListener('click', openOptionsMenu);
+    if (btnOptSector) btnOptSector.addEventListener('click', openOptionsMenu);
 
     btnCloseOpt = document.getElementById('btn-close-options');
 
@@ -183,11 +183,11 @@ export function initMenus() {
         audio.init();
         audio.playTitleBGM();
         document.getElementById('start-modal').style.display = 'none';
-        document.getElementById('stage-modal').style.display = 'flex';
+        document.getElementById('sector-modal').style.display = 'flex';
     });
 
-    document.getElementById('btn-stage-back').addEventListener('click', () => {
-        document.getElementById('stage-modal').style.display = 'none';
+    document.getElementById('btn-sector-back').addEventListener('click', () => {
+        document.getElementById('sector-modal').style.display = 'none';
         document.getElementById('start-modal').style.display = 'flex';
     });
 }

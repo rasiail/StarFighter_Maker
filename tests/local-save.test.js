@@ -10,18 +10,18 @@ function storage() {
     return { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value), removeItem: key => items.delete(key) };
 }
 
-test('options and completed-stage records survive reopening; best score never decreases', () => {
+test('options and completed-sector records survive reopening; best score never decreases', () => {
     const backend = storage(), first = createSaveStore(backend);
     first.saveOptions({ ...first.data.options, controlScheme: 'casual', bgmVolume: 0.23, isPointerLockEnabled: false });
-    first.selectStage(2);
+    first.selectSector(1);
     first.recordResult(1, 12000, true);
     first.recordResult(1, 300, true);
-    first.recordResult(2, 200, false);
+    first.recordResult(1, 200, false);
     const next = createSaveStore(backend);
     assert.equal(next.data.options.controlScheme, 'casual');
     assert.equal(next.data.options.bgmVolume, 0.23);
     assert.equal(next.data.options.isPointerLockEnabled, false);
-    assert.deepEqual(next.data.progress, { selectedStage: 2, clearedStages: [1], bestScore: 12000 });
+    assert.deepEqual(next.data.progress, { selectedSector: 1, clearedSectors: [1], bestScore: 12000 });
     assert.equal('cards' in next.data, false, 'run upgrades do not become permanent');
 });
 
@@ -29,11 +29,11 @@ test('missing/corrupted saves, invalid fields and blocked storage cannot prevent
     const backend = storage(); backend.setItem(SAVE_KEY, '{broken');
     assert.equal(createSaveStore(backend).data.progress.bestScore, 0);
     const cleaned = sanitizeSave({ version: 1, options: { bgmVolume: 4, sfxVolume: 'bad', controlScheme: 'unknown', retroFilterEnabled: 'false' },
-        progress: { selectedStage: -1, bestScore: -1, clearedStages: [1, 1, 999] } });
+        progress: { selectedSector: -1, bestScore: -1, clearedSectors: [1, 1, 999] } });
     assert.equal(cleaned.options.bgmVolume, 1);
     assert.equal(cleaned.options.sfxVolume, 0.8);
     assert.equal(cleaned.options.retroFilterEnabled, true);
-    assert.deepEqual(cleaned.progress, { selectedStage: 1, bestScore: 0, clearedStages: [1] });
+    assert.deepEqual(cleaned.progress, { selectedSector: 1, bestScore: 0, clearedSectors: [1] });
     const blocked = createSaveStore({ getItem() { throw Error(); }, setItem() { throw Error(); }, removeItem() { throw Error(); } });
     assert.equal(blocked.available, false);
     assert.equal(blocked.recordResult(1, 100, true), false);
@@ -43,11 +43,18 @@ test('missing/corrupted saves, invalid fields and blocked storage cannot prevent
 
 test('reset removes only this game save and restores defaults on next load', () => {
     const backend = storage(); backend.setItem('other-app', 'keep');
-    const store = createSaveStore(backend); store.recordResult(2, 500, true);
+    const store = createSaveStore(backend); store.recordResult(1, 500, true);
     assert.equal(store.reset(), true);
     assert.equal(backend.getItem(SAVE_KEY), null);
     assert.equal(backend.getItem('other-app'), 'keep');
-    assert.deepEqual(createSaveStore(backend).data.progress, { selectedStage: 1, clearedStages: [], bestScore: 0 });
+    assert.deepEqual(createSaveStore(backend).data.progress, { selectedSector: 1, clearedSectors: [], bestScore: 0 });
+});
+
+test('legacy completed stages migrate only when the whole sector was cleared', () => {
+    const migrated = sanitizeSave({ version: 1, options: {}, progress: { selectedStage: 2, clearedStages: [1, 2, 3], bestScore: 700 } });
+    assert.deepEqual(migrated.progress, { selectedSector: 1, clearedSectors: [1], bestScore: 700 });
+    const partial = sanitizeSave({ version: 1, options: {}, progress: { selectedStage: 2, clearedStages: [1, 2], bestScore: 300 } });
+    assert.deepEqual(partial.progress, { selectedSector: 1, clearedSectors: [], bestScore: 300 });
 });
 
 test('options reset requires confirmation; cancel and storage failure never reload', () => {

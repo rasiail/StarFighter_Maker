@@ -95,14 +95,15 @@
                 <p class="run-note"><span data-ko="선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다." data-en="Upgrades apply immediately. Complete all remaining choices to resume.">선택 즉시 적용됩니다. 남은 선택을 모두 완료해야 복귀할 수 있습니다.</span></p>
             </div>
         </div>
-        <div id="hangar-modal" class="run-modal" role="dialog" aria-modal="true" aria-labelledby="hangar-title" hidden>
+        <div id="stage-summary-modal" class="run-modal" role="dialog" aria-modal="true" aria-labelledby="stage-summary-title" hidden>
             <div class="run-panel">
-                <p class="run-eyebrow">BOSS DESTROYED · MAINTENANCE BAY</p>
-                <h2 id="hangar-title"><span data-ko="정비창" data-en="Hangar">정비창</span></h2>
-                <p id="hangar-build"></p>
-                <p><span data-ko="기체 수리와 미사일 장전을 완료했습니다." data-en="Aircraft repaired and missiles reloaded.">기체 수리와 미사일 장전을 완료했습니다.</span><br><span data-ko="미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다." data-en="Unused upgrade choices carry over to the next sector.">미사용 강화 선택권은 다음 전장으로 가져갈 수 있습니다.</span></p>
-                <button id="hangar-upgrade" class="start-btn"></button>
-                <p class="run-note"><span data-ko="패드: × 강화 · 방향키 이동 · ○ 선택/출격" data-en="Gamepad: × upgrades · D-pad to navigate · ○ select / deploy">패드: × 강화 · 방향키 이동 · ○ 선택/출격</span></p><button id="hangar-depart" class="start-btn"><span data-ko="다음 전장으로 출격" data-en="Deploy to next sector">다음 전장으로 출격</span></button>
+                <p class="run-eyebrow">STAGE CLEAR · SKILL CARD STATUS</p>
+                <h2 id="stage-summary-title">스테이지 클리어</h2>
+                <p id="stage-summary-progress" class="run-note"></p>
+                <p id="stage-summary-build"></p>
+                <p><span data-ko="현재 빌드와 미사용 강화 선택권을 확인한 뒤 다음 스테이지로 출격하세요." data-en="Review the current build and unused upgrade choices before deploying to the next stage.">현재 빌드와 미사용 강화 선택권을 확인한 뒤 다음 스테이지로 출격하세요.</span></p>
+                <button id="stage-summary-upgrade" class="start-btn"></button>
+                <p class="run-note"><span data-ko="패드: × 강화 · 방향키 이동 · ○ 선택/출격" data-en="Gamepad: × upgrades · D-pad to navigate · ○ select / deploy">패드: × 강화 · 방향키 이동 · ○ 선택/출격</span></p><button id="stage-summary-depart" class="start-btn"><span data-ko="다음 스테이지로 출격" data-en="Deploy to next stage">다음 스테이지로 출격</span></button>
             </div>
         </div>
         <div id="wave-status" hidden></div>
@@ -153,61 +154,34 @@
                     적기를 전방 락온 콘 안에 포착하여 미사일을 유도 격추하거나 고속 기관포로 제압하십시오.
                 </span></p>
                 <p class="run-note"><span data-ko="PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포" data-en="PS controller: R2 accelerate · △ brake · ○ tap for missiles / hold for cannon">PS 패드: R2 가속 · △ 감속 · ○ 탭 미사일/홀드 기관포</span><br><span data-ko="L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화" data-en="L2 tap to change target / hold for target camera · □ switch weapon · × upgrades">L2 탭 타깃 변경/홀드 타깃 캠 · □ 무장 변경 · × 강화</span><br><span data-ko="왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션" data-en="Left stick: flight · Right stick: camera · L1/R1: yaw · Options: settings">왼쪽 스틱 비행 · 오른쪽 스틱 시점 · L1/R1 요 · Options 옵션</span><br><span data-ko="메뉴: 방향키 이동 · ×/○ 선택" data-en="Menus: D-pad to navigate · ×/○ to select">메뉴: 방향키 이동 · ×/○ 선택</span></p>
-                <button class="start-btn" id="btn-sortie">SORTIE (SELECT MISSION STAGE)</button>
+                <button class="start-btn" id="btn-sortie">SORTIE (SELECT SECTOR)</button>
             </div>
         </div>
 
-        <!-- 스테이지 선택 모달 -->
-        <div id="stage-modal" style="display: none;">
+        <!-- 섹터 선택 모달 -->
+        <div id="sector-modal" style="display: none;">
             <div class="briefing-box" style="max-width: 860px;">
-                <button class="options-icon-btn" id="btn-open-options-stage" title="System Options">⚙️</button>
-                <h1 class="briefing-title">SELECT MISSION STAGE</h1>
-                <p class="briefing-subtitle">CHOOSE TACTICAL THEATER & TARGET OBJECTIVE</p>
+                <button class="options-icon-btn" id="btn-open-options-sector" title="System Options">⚙️</button>
+                <h1 class="briefing-title">SELECT SECTOR</h1>
+                <p class="briefing-subtitle">ONE SECTOR · THREE STAGES · ONE COMPLETE SORTIE</p>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0;">
-                    <!-- Stage 1 -->
-                    <div class="stage-card" data-stage="1" style="background: rgba(10, 45, 25, 0.7); border: 1.5px solid #4df58a; border-radius: 6px; padding: 16px; cursor: pointer; transition: all 0.2s ease; text-align: left;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0;">
+                    <div class="sector-card" data-sector="1" tabindex="0" role="button" style="background: rgba(10, 45, 25, 0.7); border: 1.5px solid #4df58a; border-radius: 6px; padding: 20px; cursor: pointer; transition: all 0.2s ease; text-align: left;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-family: 'Orbitron', sans-serif; font-weight: bold; color: #4df58a; font-size: 15px;">STAGE 01</span>
-                            <span style="font-size: 10px; background: #855b14; color: #ffe394; padding: 2px 6px; border-radius: 3px; font-weight: bold;">DESERT</span>
+                            <span style="font-family: 'Orbitron', sans-serif; font-weight: bold; color: #4df58a; font-size: 15px;">SECTOR 01</span>
+                            <span style="font-size: 10px; background: #855b14; color: #ffe394; padding: 2px 6px; border-radius: 3px; font-weight: bold;">FRONTLINE</span>
                         </div>
-                        <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">CANYON SCOUT</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="황량한 사막 협곡 상공을 침범한 적 정찰 대규모 편대와 다섯 웨이브를 돌파하십시오." data-en="Break through five waves of enemy reconnaissance squadrons above the desert canyons.">황량한 사막 협곡 상공을 침범한 적 정찰 대규모 편대와 다섯 웨이브를 돌파하십시오.</span></p>
+                        <div style="font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">FRONTIER BREAKTHROUGH</div>
+                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.5; margin-bottom: 12px;"><span data-ko="사막 접근로, 해상 회랑, 수도 방공권을 차례로 돌파하십시오. 스테이지 사이에는 현재 스킬 카드와 빌드를 점검할 수 있습니다." data-en="Break through the desert approach, ocean corridor, and capital air-defense zone. Review your skill cards and build between stages.">사막 접근로, 해상 회랑, 수도 방공권을 차례로 돌파하십시오. 스테이지 사이에는 현재 스킬 카드와 빌드를 점검할 수 있습니다.</span></p>
                         <div style="font-size: 13px; color: #ffde59; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
-                            <span class="stage-objective">5 WAVES + BOSS</span>
-                        </div>
-                    </div>
-
-                    <!-- Stage 2 -->
-                    <div class="stage-card" data-stage="2" style="background: rgba(10, 45, 25, 0.7); border: 1.5px solid #4df58a; border-radius: 6px; padding: 16px; cursor: pointer; transition: all 0.2s ease; text-align: left;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-family: 'Orbitron', sans-serif; font-weight: bold; color: #4df58a; font-size: 15px;">STAGE 02</span>
-                            <span style="font-size: 10px; background: #0e4e75; color: #8fe1ff; padding: 2px 6px; border-radius: 3px; font-weight: bold;">OCEAN</span>
-                        </div>
-                        <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">OCEAN TRIDENT</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="광활한 푸른 대해와 군도 상공에서 적 해상 기동 편대를 섬멸하십시오." data-en="Destroy enemy naval forces across the open ocean and island chains.">광활한 푸른 대해와 군도 상공에서 적 해상 기동 편대를 섬멸하십시오.</span></p>
-                        <div style="font-size: 13px; color: #ffde59; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
-                            <span class="stage-objective">5 WAVES + BOSS</span>
-                        </div>
-                    </div>
-
-                    <!-- Stage 3 -->
-                    <div class="stage-card" data-stage="3" style="background: rgba(10, 45, 25, 0.7); border: 1.5px solid #4df58a; border-radius: 6px; padding: 16px; cursor: pointer; transition: all 0.2s ease; text-align: left;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-family: 'Orbitron', sans-serif; font-weight: bold; color: #ff5566; font-size: 15px;">STAGE 03</span>
-                            <span style="font-size: 10px; background: #5e1c75; color: #f0aeff; padding: 2px 6px; border-radius: 3px; font-weight: bold;">CITY</span>
-                        </div>
-                        <div style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 6px;">METROPOLIS SHIELD</div>
-                        <p style="font-size: 12px; color: #a0d8b5; line-height: 1.4; margin-bottom: 12px;"><span data-ko="거대 마천루와 빌딩 숲 상공에서 벌어지는 적 주력 에이스 편대와의 총력전." data-en="Engage elite enemy squadrons in an all-out battle above the city skyline.">거대 마천루와 빌딩 숲 상공에서 벌어지는 적 주력 에이스 편대와의 총력전.</span></p>
-                        <div style="font-size: 13px; color: #ff5566; font-weight: bold; border-top: 1px dashed rgba(77,245,138,0.3); padding-top: 8px;">
-                            <span class="stage-objective">5 WAVES + BOSS</span>
+                            <span class="sector-objective">3 STAGES · 12 WAVES · 3 BOSSES</span>
                         </div>
                     </div>
                 </div>
 
                 <div style="display: flex; justify-content: center; gap: 15px;">
-                    <button class="start-btn" id="btn-stage-back" style="background: rgba(30, 40, 35, 0.8); border-color: #66776b; color: #a0baa5; width: 180px;">BACK</button>
-                    <button class="start-btn" id="btn-start-selected-stage" style="width: 260px;">ENGAGE MISSION</button>
+                    <button class="start-btn" id="btn-sector-back" style="background: rgba(30, 40, 35, 0.8); border-color: #66776b; color: #a0baa5; width: 180px;">BACK</button>
+                    <button class="start-btn" id="btn-start-selected-sector" style="width: 260px;">ENGAGE SECTOR</button>
                 </div>
             </div>
         </div>
