@@ -12,6 +12,7 @@ test('서로 다른 기체가 스탯과 재장전 타이머를 공유하지 않�
     assert.equal(second.maxHealth, 100);
     assert.deepEqual(second.stdReloadTimers, []);
     assert.equal(PLAYER_BASE_STATS.maxHealth, 100);
+    assert.equal(PLAYER_BASE_STATS.maxRollRate, 2.0);
 });
 
 test('추가 스탯을 반영한 생성/재출격이 기본값으로 강제 복귀하지 않는다', () => {

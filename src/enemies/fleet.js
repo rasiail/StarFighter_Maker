@@ -198,7 +198,10 @@ export function spawnFormation(count, options = {}) {
 
         // 보스가 아니고 약 25% 확률로 지상(또는 해상) 병력 스폰
         const schoolReady = !options.boss && !schoolSpawned && count - i - elitesRemaining >= FISH_SCHOOL.size;
-        let kind = options.boss || schoolReady || elitesRemaining >= count - i ? 'aircraft' : formationKind(count - i, currentEnvironment?.theme === 'OCEAN', Math.random());
+        const allowGround = options.allowGround !== false;
+        let kind = options.boss || schoolReady || elitesRemaining >= count - i
+            ? 'aircraft'
+            : formationKind(count - i, currentEnvironment?.theme === 'OCEAN', Math.random(), allowGround);
         if (kind === 'ship' && count - i - elitesRemaining < 3) kind = 'aircraft';
         if (kind !== 'aircraft') {
             const isOcean = (currentEnvironment && currentEnvironment.theme === 'OCEAN');

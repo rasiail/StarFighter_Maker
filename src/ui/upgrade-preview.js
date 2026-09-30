@@ -19,6 +19,10 @@ const descriptions = {
     repair: '최대 체력에 비례해 즉시 수리하고 점수를 얻습니다. 체력 상한은 넘지 않습니다.',
     multiSalvo: '멀티 미사일로 한 번에 락온하고 발사할 수 있는 표적 수를 늘립니다.',
     smartAim: '기관포와 빔의 조준 보조가 작동하는 화면상의 범위를 넓힙니다.',
+    unlockBomb: '적에게 직격 및 광범위 폭발 피해를 주는 범위 폭탄을 장착합니다.',
+    bombRadius: '폭탄의 폭발 피해 반경을 넓혀 더 많은 적을 한 번에 타격합니다.',
+    bombDamage: '폭탄의 직격 피해와 폭발 범위 피해를 모두 강화합니다.',
+    bombRack: '폭탄의 동시 장전 탄수를 늘려 더 자주 투하할 수 있게 합니다.',
 };
 const number = value => Number(value.toFixed(2)).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
 
@@ -46,7 +50,10 @@ export function createUpgradePreview(build, card, flight) {
         }
     };
     switch (card.id) {
-        case 'unlockMulti': case 'unlockBeam': add(t('보유 무기'), build.weapons?.length ?? 1, (build.weapons?.length ?? 1) + 1, t('종')); break;
+        case 'unlockMulti': case 'unlockBeam': case 'unlockBomb': add(t('보유 무기'), build.weapons?.length ?? 1, (build.weapons?.length ?? 1) + 1, t('종')); break;
+        case 'bombRadius': stat(t('폭발 반경'), 'bombRadiusMultiplier', '%', 100); break;
+        case 'bombDamage': stat(t('폭탄 화력 배율'), 'bombDamageMultiplier', '%', 100); break;
+        case 'bombRack': stat(t('폭탄 탄창 용량'), 'bombMaxBursts', t('발')); break;
         case 'beamWidth': stat(t('빔 굵기'), 'beamWidth', 'm'); break;
         case 'beamEfficiency': stat(t('에너지 소모율'), 'beamEfficiency', '%', 100); break;
         case 'beamRecharge': stat(t('빔 재장전 시간'), 'beamReloadSeconds', t('초')); break;

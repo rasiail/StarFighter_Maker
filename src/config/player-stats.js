@@ -11,7 +11,7 @@ export const PLAYER_BASE_STATS = Object.freeze({
     acceleration: 170,
     deceleration: 190,
     maxPitchRate: 1.45,
-    maxRollRate: 2.85,
+    maxRollRate: 2.0,
     maxYawRate: 0.55,
     maxHealth: 100,
     damageMultiplier: 1,
@@ -24,4 +24,6 @@ export const PLAYER_BASE_STATS = Object.freeze({
     multiMaxBursts: multiMissile.readySlots,
     stdReloadSeconds: standardMissile.reloadSec,
     multiReloadSeconds: multiMissile.reloadSec,
+    bombMaxBursts: 4,
+    bombReloadSeconds: 20,
 });

@@ -129,7 +129,7 @@ export function initControls() {
             keys.targetCam = true;
             keys.targetCamKey = true;
         }
-        const slot = /^(?:Digit|Numpad)([1-3])$/.exec(code);
+        const slot = /^(?:Digit|Numpad)([1-4])$/.exec(code);
         if (slot && !e.repeat) selectWeaponSlot(Number(slot[1]) - 1);
         // ESC 키: 옵션 메뉴 열기/닫기 및 게임 일시정지 (포인터 락 해제)
         if (code === 'Escape') {

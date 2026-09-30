@@ -20,6 +20,20 @@
       "eventId": "kfmgjefbbs0ijkij5qu4cpc7tg",
       "completedOn": "2026-09-30",
       "lastUpdatedOn": "2026-09-30"
+    },
+    {
+      "key": "bomb-formation-roll-balance",
+      "calendarId": "primary",
+      "eventId": "enndaostl48d9rm21ps1p3oj68",
+      "completedOn": "2026-09-30",
+      "lastUpdatedOn": "2026-09-30"
+    },
+    {
+      "key": "ground-target-no-respawn",
+      "calendarId": "primary",
+      "eventId": "fjoh7fch7g5k5fqk0ddliego8k",
+      "completedOn": "2026-09-30",
+      "lastUpdatedOn": "2026-09-30"
     }
   ]
 }

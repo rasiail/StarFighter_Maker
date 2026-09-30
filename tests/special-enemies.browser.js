@@ -7,6 +7,7 @@ import { clearProjectiles, missiles } from '../src/combat/weapons.js';
 import { updateEnemies, initEnemyAI } from '../src/enemies/ai.js';
 import { scene, camera, renderer } from '../src/rendering/scene.js';
 import { mechaFishModelTemplate } from '../src/assets/aircraft.js';
+import { FISH_SCHOOL } from '../src/enemies/special-types.js';
 const output=parent.document.getElementById('result');
 const check=(condition,message)=>{ if(!condition) throw new Error(message); };
 const deadline=Date.now()+30000;
@@ -25,7 +26,7 @@ const ready=setInterval(()=>{
   const initialCount=enemies.length; spawnFormation(8,{health:60,eliteCount:2});
   check(enemies.length===initialCount+8,'formation target budget');
   check(enemies.some(e=>e.isBomber),'elite wave should include a bomber');
-  check(enemies.filter(e=>e.isFishSchool).every(e=>e.mesh.scale.x===4.5&&!e.isBoss),'fish size and ordinary role');
+  check(enemies.filter(e=>e.isFishSchool).every(e=>e.mesh.scale.x===FISH_SCHOOL.scale&&!e.isBoss),'fish size and ordinary role');
   const school=enemies.find(e=>e.isFishSchool).school;
   for(let i=0;i<120;i++) updateEnemies(1/60);
   check(school.members.every(e=>e.mesh.position.distanceTo(school.members[0].mesh.position)<500),'school spread');

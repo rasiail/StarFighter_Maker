@@ -8,10 +8,14 @@ import { gameEvents, EVENTS } from '../core/events.js';
 import { scene } from '../rendering/scene.js';
 import { advanceHomingMissile } from './homing.js';
 import { updateBeamBolts } from './beam-bolt.js';
+import { detonateBomb, updateDitherExplosions } from './bomb.js';
 
 
 export function updateProjectiles(delta) {
     updateBeamBolts(delta);
+    if (typeof updateDitherExplosions === 'function') {
+        updateDitherExplosions(delta);
+    }
     // 1. Bullets
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
@@ -86,26 +90,34 @@ export function updateProjectiles(delta) {
                 const hitDist = m.mesh.position.distanceTo(m.target.mesh.position);
                 const mslHitRadius = m.target.hitRadius ? (m.target.hitRadius * 1.1) : (m.target.isGround ? 26.0 : 22.0);
                 if (hitDist < mslHitRadius) {
-                    m.target.health -= m.damage;
-                    triggerExplosion(m.mesh.position, 34, 1.8);
-                    m.life = -1;
-                    if (m.target.health <= 0) {
-                        killEnemy(m.target);
+                    if (m.isBomb && typeof detonateBomb === 'function') {
+                        detonateBomb(m.mesh.position, m.target, m.damage, m.splashDamage, m.splashRadius);
+                    } else {
+                        m.target.health -= m.damage;
+                        triggerExplosion(m.mesh.position, 34, 1.8);
+                        if (m.target.health <= 0) {
+                            killEnemy(m.target);
+                        }
                     }
+                    m.life = -1;
                 }
-            } else if (!m.target) {
-                // 락온 없이 발사된 무유도 미사일도 직진 경로상의 적과 충돌 판정
+            } else if (!m.target || !m.target.alive) {
+                // 락온 없이 발사되었거나 타깃이 유실된 미사일도 직진 경로상의 적과 충돌 판정
                 for (let j = 0; j < enemies.length; j++) {
                     const enemy = enemies[j];
                     if (!enemy.alive) continue;
                     const mslHitRadius = enemy.hitRadius ? (enemy.hitRadius * 1.1) : (enemy.isGround ? 26.0 : 22.0);
                     if (m.mesh.position.distanceTo(enemy.mesh.position) < mslHitRadius) {
-                        enemy.health -= m.damage;
-                        triggerExplosion(m.mesh.position, 34, 1.8);
-                        m.life = -1;
-                        if (enemy.health <= 0) {
-                            killEnemy(enemy);
+                        if (m.isBomb && typeof detonateBomb === 'function') {
+                            detonateBomb(m.mesh.position, enemy, m.damage, m.splashDamage, m.splashRadius);
+                        } else {
+                            enemy.health -= m.damage;
+                            triggerExplosion(m.mesh.position, 34, 1.8);
+                            if (enemy.health <= 0) {
+                                killEnemy(enemy);
+                            }
                         }
+                        m.life = -1;
                         break;
                     }
                 }

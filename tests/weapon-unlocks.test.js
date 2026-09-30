@@ -25,15 +25,16 @@ test('reload upgrade preserves completed progress and does not refill the magazi
     assert.equal(flight.beamOverload, 1);
 });
 test('weapons unlock once, preserve acquisition order and gate their upgrades', () => {
-    for (const order of [['unlockBeam', 'unlockMulti'], ['unlockMulti', 'unlockBeam']]) {
+    for (const order of [['unlockBeam', 'unlockMulti', 'unlockBomb'], ['unlockMulti', 'unlockBomb', 'unlockBeam']]) {
         const b = createProgression(); b.ranks.control = 5;
         assert.deepEqual(b.weapons, [1]);
-        assert.ok(!eligibleCards(b).some(c => ['multiRack', 'multiSalvo', 'beamWidth', 'beamEfficiency', 'beamRecharge'].includes(c.id)));
+        assert.ok(!eligibleCards(b).some(c => ['multiRack', 'multiSalvo', 'beamWidth', 'beamEfficiency', 'beamRecharge', 'bombRadius', 'bombDamage', 'bombRack'].includes(c.id)));
         for (const id of order) choose(b, id);
-        assert.deepEqual(b.weapons, [1, ...order.map(id => id === 'unlockBeam' ? 3 : 2)]);
+        assert.deepEqual(b.weapons, [1, ...order.map(id => id === 'unlockBeam' ? 3 : (id === 'unlockMulti' ? 2 : 4))]);
         assert.ok(!eligibleCards(b).some(c => c.weapon));
         assert.ok(eligibleCards(b).some(c => c.id === 'beamWidth'));
         assert.ok(eligibleCards(b).some(c => c.id === 'multiSalvo'));
+        assert.ok(eligibleCards(b).some(c => c.id === 'bombRadius'));
         assert.deepEqual(createProgression().weapons, [1]);
     }
 });
@@ -58,14 +59,14 @@ test('beam upgrades improve width, drain and recharge without refilling energy',
     assert.ok(after.beamReloadSeconds < before.beamReloadSeconds);
 });
 
-test('weapon unlocks have ten percent higher weight while beam upgrades keep normal weight', () => {
+test('weapon unlocks have higher weight and guarantee on first unlock', () => {
     let seed = 104;
     const random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; };
     for (const beamOwned of [false, true]) {
         const build = createProgression();
         if (beamOwned) choose(build, 'unlockBeam');
         for (const card of eligibleCards(build)) {
-            if (card.weapon) assert.equal(card.weight, 110);
+            if (card.weapon) assert.equal(card.weight, 200);
             else if (card.id.startsWith('beam')) assert.equal(card.weight, 100);
         }
         const ids = beamOwned ? ['unlockMulti', 'beamWidth', 'beamEfficiency', 'beamRecharge'] : ['unlockMulti', 'unlockBeam'];
@@ -76,10 +77,11 @@ test('weapon unlocks have ten percent higher weight while beam upgrades keep nor
             assert.equal(new Set(offered.map(c => c.id)).size, offered.length);
             for (const card of offered) if (card.id in counts) counts[card.id]++;
             if (beamOwned) assert.ok(!offered.some(c => c.id === 'unlockBeam'));
+            else assert.ok(offered.some(c => c.weapon));
         }
         // Check the overall offer distribution and uniqueness with both ownership states.
         for (const [id, count] of Object.entries(counts)) {
-            assert.ok(count / trials > 0.18 && count / trials < 0.35, `${id}: ${count}/${trials}`);
+            assert.ok(count / trials > 0.15 && count / trials < 0.50, `${id}: ${count}/${trials}`);
         }
     }
 });

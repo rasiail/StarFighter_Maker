@@ -111,5 +111,20 @@ export const english = {
     "표적": "targets",
     "조준 보조 범위": "Aim-assist area",
     "점수": "Score",
-    "점": "pts"
+    "점": "pts",
+    "범위 폭탄 획득": "Unlock heavy bomb",
+    "폭발 반경 확장": "Bomb blast radius",
+    "고폭 탄두 강화": "High-explosive warhead",
+    "폭탄 탄창 확장": "Bomb rack expansion",
+    "착탄 시 직격 피해와 함께 대규모 범위 폭발을 일으키는 중폭탄을 장착합니다.": "Equip heavy bombs that deal direct hit and large area explosion damage on impact.",
+    "폭탄의 폭발 피해 반경을 단계마다 15% 넓힙니다.": "Increase bomb explosion radius by 15% per rank.",
+    "폭탄의 직격 피해와 폭발 범위 피해를 단계마다 15% 증가시킵니다.": "Increase bomb direct hit and splash damage by 15% per rank.",
+    "폭탄 장전 탄수를 1발 늘립니다.": "Increase bomb capacity by 1.",
+    "적에게 직격 및 광범위 폭발 피해를 주는 범위 폭탄을 장착합니다.": "Equip heavy bombs that deal direct hit and wide-area explosion damage.",
+    "폭탄의 폭발 피해 반경을 넓혀 더 많은 적을 한 번에 타격합니다.": "Expand bomb blast radius to strike more enemies at once.",
+    "폭탄의 직격 피해와 폭발 범위 피해를 모두 강화합니다.": "Boost both direct hit and blast area damage of bombs.",
+    "폭탄의 동시 장전 탄수를 늘려 더 자주 투하할 수 있게 합니다.": "Increase bomb magazine capacity to drop bombs more frequently.",
+    "폭발 반경": "Blast radius",
+    "폭탄 화력 배율": "Bomb firepower multiplier",
+    "폭탄 탄창 용량": "Bomb capacity"
 };

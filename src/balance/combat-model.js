@@ -3,15 +3,21 @@ import { PLAYER_BASE_STATS } from '../config/player-stats.js';
 import { createPlayerFlight } from '../player/state.js';
 import { consumeMagazine, tickMagazines } from '../combat/magazine.js';
 import { formationKind, isEliteSpawn } from '../enemies/formation.js';
+import { BOMB_WEAPON } from '../combat/bomb.js';
 
-export function createCombatInventory(stats) { return createPlayerFlight(null, stats); }
+export function createCombatInventory(stats, build) {
+    const inv = createPlayerFlight(null, stats);
+    inv.weapons = build?.weapons ? [...build.weapons] : [1];
+    return inv;
+}
 
-export function resizeCombatInventory(inventory, previous, next) {
-    for (const mode of ['std', 'multi']) {
+export function resizeCombatInventory(inventory, previous, next, build) {
+    for (const mode of ['std', 'multi', 'bomb']) {
         const timers = inventory[`${mode}ReloadTimers`];
-        if (timers.length) timers[0] *= next[`${mode}ReloadSeconds`] / previous[`${mode}ReloadSeconds`];
-        else inventory[`${mode}Bursts`] += next[`${mode}MaxBursts`] - previous[`${mode}MaxBursts`];
+        if (timers && timers.length) timers[0] *= next[`${mode}ReloadSeconds`] / previous[`${mode}ReloadSeconds`];
+        else if (inventory[`${mode}Bursts`] !== undefined) inventory[`${mode}Bursts`] += (next[`${mode}MaxBursts`] ?? 4) - (previous[`${mode}MaxBursts`] ?? 4);
     }
+    if (build?.weapons) inventory.weapons = [...build.weapons];
     Object.assign(inventory, next);
 }
 
@@ -29,6 +35,10 @@ export function createWaveTargets(stage, count, random, eliteRatio) {
             targets.push({id, health: id === 'stage_aircraft' ? stage.aircraftHealth : BALANCE.enemies[id].health});
         }
     }
+    // Runtime waves place the first four ordinary aircraft in one fish school.
+    // Preserve that relationship so area damage never jumps to unrelated units.
+    const school = targets.filter(target => target.id === 'stage_aircraft').slice(0, 4);
+    if (school.length === 4) for (const target of school) target.splashGroup = 'fish-school';
     return targets;
 }
 
@@ -56,18 +66,22 @@ export function simulateCombat(input, stats, assumptions, random, inventory = cr
     const kill = target => {
         if(target.health <= 0) return;
         target.health=0;
+        target.pending=0;
         remaining--;
         if(target.id === 'ship_hull') {
             for(const other of enemies) if(other.id==='ship_turret' && other.ship===target.ship && other.health>0) {
-                other.health=0; remaining--; result.collateralKills++;
+                other.health=0; other.pending=0; remaining--; result.collateralKills++;
             }
         }
     };
     const hit = (target,damage) => {
         if(target.health<=0) { result.overkill+=damage; return; }
         result.overkill+=Math.max(0,damage-target.health);
-        if(damage>=target.health) kill(target);
-        else target.health-=damage;
+        if(damage>=target.health - 1e-9) kill(target);
+        else {
+            target.health-=damage;
+            if(target.health<=1e-9) kill(target);
+        }
     };
     for(let iterations=0;remaining>0;iterations++) {
         if(iterations>=200000) throw new Error('Combat event limit exceeded; check assumptions');
@@ -79,7 +93,20 @@ export function simulateCombat(input, stats, assumptions, random, inventory = cr
         for(let i=impacts.length-1;i>=0;i--) if(impacts[i].at<=now+1e-8) {
             const p=impacts.splice(i,1)[0];
             p.target.pending=Math.max(0,p.target.pending-p.damage);
-            if(p.hit) hit(p.target,p.damage);
+            if(p.target.pending<=1e-9 || !impacts.some(imp => imp.target === p.target)) p.target.pending=0;
+            if(p.hit) {
+                hit(p.target,p.damage);
+                if (p.isBomb && p.splashDamage > 0) {
+                    const splashTargets = enemies.filter(enemy => {
+                        if (enemy === p.target || enemy.health <= 0) return false;
+                        if (p.target.ship !== undefined) return enemy.ship === p.target.ship;
+                        return p.target.splashGroup && enemy.splashGroup === p.target.splashGroup;
+                    });
+                    for (const splashTarget of splashTargets) {
+                        hit(splashTarget, p.splashDamage * 0.75);
+                    }
+                }
+            }
         }
         const active=enemies.filter(e=>e.health>0).slice(0,maxActive);
         const targets=active.filter(e=>e.health>e.pending);
@@ -88,31 +115,79 @@ export function simulateCombat(input, stats, assumptions, random, inventory = cr
             nextCannon=now+cannonInterval;
         }
         if(nextMissile<=now+1e-8) {
-            const available=['std','multi'].filter(mode => inventory[`${mode}Bursts`]>0 && !inventory[`${mode}ReloadTimers`].length && inventory[`${mode}ShotCooldown`]<=1e-8 && (mode==='std'?assumptions.standardMissileShare:assumptions.multiMissileShare)>0);
-            let chosen=available[0];
-            if(switching && available.includes(lastMode)) chosen=lastMode;
-            else if(available.length===2) chosen=random()<assumptions.multiMissileShare/(assumptions.multiMissileShare+assumptions.standardMissileShare)?'multi':'std';
-            const aim=active.filter(e=>e.health>e.pending);
-            if(chosen && aim.length) {
-                const weapon=BALANCE.weapons[chosen==='std'?'standard_missile':'multi_missile'];
-                // Fire only after the switch delay; a reload can finish during this interval.
-                if(chosen!==lastMode) { lastMode=chosen; switching=true; result.switches++; nextMissile=now+Math.max(0.01,assumptions.weaponSwitchSeconds); continue; }
-                switching=false;
-                inventory[`${chosen}ShotCooldown`]=0;
-                const count=consumeMagazine(inventory,chosen,aim.length);
-                inventory[`${chosen}ShotCooldown`]=weapon.fireIntervalSec;
-                if(count && inventory[`${chosen}ReloadTimers`].length) {
-                    result[chosen==='std'?'standardReloads':'multiReloads']++;
-                    if(chosen==='multi') inventory.multiReloadTimers[0]*=assumptions.multiReloadScale;
+            const owned = inventory.weapons || [1];
+            const candidateModes = ['std'];
+            if (owned.includes(2)) candidateModes.push('multi');
+            if (owned.includes(4)) candidateModes.push('bomb');
+            const hasMulti = candidateModes.includes('multi');
+
+            const getShare = mode => {
+                if (mode === 'std') return hasMulti ? assumptions.standardMissileShare : 1.0;
+                if (mode === 'multi') return assumptions.multiMissileShare;
+                if (mode === 'bomb') return assumptions.bombMissileShare ?? 0.35;
+                return 0;
+            };
+
+            const available = candidateModes.filter(mode =>
+                inventory[`${mode}Bursts`] > 0 &&
+                !inventory[`${mode}ReloadTimers`]?.length &&
+                inventory[`${mode}ShotCooldown`] <= 1e-8 &&
+                getShare(mode) > 0
+            );
+            let chosen = available[0];
+            if (switching && available.includes(lastMode)) chosen = lastMode;
+            else if (available.length > 1) {
+                const totalShare = available.reduce((s, m) => s + getShare(m), 0);
+                let roll = random() * totalShare;
+                for (const m of available) {
+                    roll -= getShare(m);
+                    if (roll <= 0) { chosen = m; break; }
                 }
-                for(let i=0;i<count;i++) {
-                    const damage=weapon.damage*stats.damageMultiplier;
-                    aim[i].pending+=damage;
-                    impacts.push({target:aim[i],damage,at:now+Math.max(0.01,assumptions.missileFlightSeconds),hit:random()<accuracy.missile});
+            }
+            const aim = active.filter(e => e.health > e.pending);
+            if (chosen && aim.length) {
+                const weapon = chosen === 'bomb' ? BOMB_WEAPON : BALANCE.weapons[chosen === 'std' ? 'standard_missile' : 'multi_missile'];
+                if (chosen !== lastMode) {
+                    lastMode = chosen;
+                    switching = true;
+                    result.switches++;
+                    nextMissile = now + Math.max(0.01, assumptions.weaponSwitchSeconds);
+                    continue;
                 }
-                result[chosen==='std'?'standardShots':'multiShots']+=count;
-                nextMissile=now+weapon.fireIntervalSec;
-            } else nextMissile=now+0.1;
+                switching = false;
+                inventory[`${chosen}ShotCooldown`] = 0;
+                const maxVolley = chosen === 'multi' ? Math.min(stats.multiLockCount, aim.length) : 1;
+                const count = consumeMagazine(inventory, chosen, maxVolley);
+                inventory[`${chosen}ShotCooldown`] = weapon.fireIntervalSec;
+                if (count && inventory[`${chosen}ReloadTimers`].length) {
+                    if (chosen === 'std') result.standardReloads++;
+                    else if (chosen === 'multi') {
+                        result.multiReloads++;
+                        inventory.multiReloadTimers[0] *= assumptions.multiReloadScale;
+                    } else if (chosen === 'bomb') {
+                        result.bombReloads = (result.bombReloads || 0) + 1;
+                    }
+                }
+                for (let i = 0; i < count; i++) {
+                    const dmgMult = stats.damageMultiplier * (chosen === 'bomb' ? (stats.bombDamageMultiplier || 1) : 1);
+                    const damage = (chosen === 'bomb' ? weapon.directDamage : weapon.damage) * dmgMult;
+                    aim[i].pending += damage;
+                    const willHit = random() < accuracy.missile;
+                    const splashDamage = chosen === 'bomb' ? weapon.splashDamage * dmgMult : 0;
+                    impacts.push({
+                        target: aim[i],
+                        damage,
+                        at: now + Math.max(0.01, assumptions.missileFlightSeconds),
+                        hit: willHit,
+                        isBomb: chosen === 'bomb',
+                        splashDamage,
+                    });
+                }
+                if (chosen === 'std') result.standardShots += count;
+                else if (chosen === 'multi') result.multiShots += count;
+                else if (chosen === 'bomb') result.bombShots = (result.bombShots || 0) + count;
+                nextMissile = now + weapon.fireIntervalSec;
+            } else nextMissile = now + 0.1;
         }
     }
     inventory.lastMode=lastMode;

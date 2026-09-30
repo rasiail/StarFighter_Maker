@@ -3,6 +3,7 @@ import { calculateStats, createProgression, grantExperience } from '../progressi
 import { drawCards, selectCard } from '../progression/cards.js';
 import { enemyExperience } from '../progression/rewards.js';
 import { simulateCombat, createCombatInventory, resizeCombatInventory, createWaveTargets } from './combat-model.js';
+import { BOMB_WEAPON } from '../combat/bomb.js';
 
 export const STRATEGIES = Object.freeze(['balanced', 'offense', 'survival', 'random']);
 export const DEFAULT_ASSUMPTIONS = Object.freeze({
@@ -13,6 +14,9 @@ export const DEFAULT_ASSUMPTIONS = Object.freeze({
     cannonUptime: 0.28,
     standardMissileShare: 0.35,
     multiMissileShare: 0.65,
+    bombMissileShare: 0.35,
+    bombSplashTargets: 0,
+    bombSplashFalloff: 0.75,
     engagementSecondsPerTarget: 1.15,
     waveTransitionSeconds: 5,
     hangarSeconds: 25,
@@ -30,9 +34,27 @@ export const DEFAULT_ASSUMPTIONS = Object.freeze({
 });
 
 const strategyScores = {
-    balanced: { power: 9, multiSalvo: 9, reload: 8, defense: 8, mobility: 7, control: 7, speed: 6, stability: 6, warhead: 6, guidance: 6, standardRack: 5, multiRack: 5, repair: 0 },
-    offense: { power: 14, warhead: 13, multiSalvo: 13, reload: 12, multiRack: 10, standardRack: 9, control: 8, guidance: 8, mobility: 4, speed: 3, defense: 2, stability: 2, repair: 0 },
-    survival: { defense: 14, stability: 12, mobility: 11, speed: 9, control: 5, guidance: 4, power: 3, reload: 3, standardRack: 2, multiRack: 2, warhead: 1, repair: 0 },
+    balanced: {
+        power: 9, multiSalvo: 9, reload: 8, defense: 8, mobility: 7, control: 7, speed: 6, stability: 6, warhead: 6, guidance: 6, standardRack: 5, multiRack: 5,
+        unlockMulti: 10, unlockBeam: 10, unlockBomb: 10,
+        bombDamage: 8, bombRadius: 7, bombRack: 6,
+        beamWidth: 8, beamEfficiency: 7, beamRecharge: 7,
+        repair: 0
+    },
+    offense: {
+        power: 14, warhead: 13, multiSalvo: 13, reload: 12, multiRack: 10, standardRack: 9, control: 8, guidance: 8, mobility: 4, speed: 3, defense: 2, stability: 2,
+        unlockMulti: 15, unlockBomb: 14, unlockBeam: 13,
+        bombDamage: 12, bombRack: 10, bombRadius: 9,
+        beamWidth: 10, beamEfficiency: 8, beamRecharge: 8,
+        repair: 0
+    },
+    survival: {
+        defense: 14, stability: 12, mobility: 11, speed: 9, control: 5, guidance: 4, power: 3, reload: 3, standardRack: 2, multiRack: 2, warhead: 1,
+        unlockBomb: 6, unlockBeam: 5, unlockMulti: 5,
+        bombRadius: 5, bombDamage: 4, bombRack: 4,
+        beamRecharge: 5, beamEfficiency: 4, beamWidth: 3,
+        repair: 0
+    },
 };
 
 export function createSeededRandom(seed = 1) {
@@ -81,7 +103,7 @@ function sampleEnemyCounts(stage, count, random) {
     return counts;
 }
 
-export function weaponPerformance(stats, assumptions = DEFAULT_ASSUMPTIONS) {
+export function weaponPerformance(stats, assumptions = DEFAULT_ASSUMPTIONS, build = null) {
     const cannon = BALANCE.weapons.player_cannon;
     const standard = BALANCE.weapons.standard_missile;
     const multi = BALANCE.weapons.multi_missile;
@@ -92,11 +114,29 @@ export function weaponPerformance(stats, assumptions = DEFAULT_ASSUMPTIONS) {
     const cannonDps = cannon.damage * stats.damageMultiplier / cannon.fireIntervalSec * assumptions.cannonAccuracy * assumptions.cannonUptime;
     const standardDps = missileDps(standard, stats.stdMaxBursts, stats.stdReloadSeconds, assumptions.standardMissileShare);
     const multiDps = missileDps(multi, stats.multiMaxBursts, stats.multiReloadSeconds * (assumptions.multiReloadScale ?? 1), assumptions.multiMissileShare, Math.min(stats.multiLockCount, stats.multiMaxBursts, assumptions.availableTargets ?? Infinity));
+
+    const owned = build?.weapons;
+    const activeMultiDps = (!owned || owned.includes(2)) ? multiDps : 0;
+    const activeStdDps = (!owned || owned.includes(2)) ? standardDps : missileDps(standard, stats.stdMaxBursts, stats.stdReloadSeconds, 1.0);
+    const bombDamage = (BOMB_WEAPON.directDamage
+        + BOMB_WEAPON.splashDamage * assumptions.bombSplashTargets * assumptions.bombSplashFalloff)
+        * (stats.bombDamageMultiplier || 1);
+    const bombDps = owned?.includes(4)
+        ? missileDps({ ...BOMB_WEAPON, damage: bombDamage }, stats.bombMaxBursts,
+            stats.bombReloadSeconds, assumptions.bombMissileShare)
+        : 0;
+
     return {
         cannon: { burstDamage: cannon.damage * stats.damageMultiplier, sustainedDps: cannonDps },
         standardMissile: { burstDamage: standard.damage * stats.damageMultiplier, magazineDamage: standard.damage * stats.damageMultiplier * stats.stdMaxBursts, sustainedDps: standardDps },
         multiMissile: { burstDamage: multi.damage * stats.damageMultiplier * Math.min(stats.multiLockCount, stats.multiMaxBursts, assumptions.availableTargets ?? Infinity), magazineDamage: multi.damage * stats.damageMultiplier * stats.multiMaxBursts, sustainedDps: multiDps },
-        totalDps: cannonDps + standardDps + multiDps,
+        bomb: {
+            burstDamage: BOMB_WEAPON.directDamage * (stats.bombDamageMultiplier || 1) * stats.damageMultiplier,
+            areaBurstDamage: bombDamage * stats.damageMultiplier,
+            magazineDamage: bombDamage * stats.damageMultiplier * stats.bombMaxBursts,
+            sustainedDps: bombDps,
+        },
+        totalDps: cannonDps + activeStdDps + activeMultiDps + bombDps,
     };
 }
 
@@ -133,22 +173,22 @@ export function simulateRun(options = {}) {
     const build = createProgression();
     const selectedCards = {};
     const enemyCounts = {};
-    const timeline = [{ point: 'START', stage: 0, wave: 0, elapsedSeconds: 0, level: 1, selections: 0, cumulativeTargets: 0, dps: weaponPerformance(calculateStats(build), assumptions).totalDps }];
+    const timeline = [{ point: 'START', stage: 0, wave: 0, elapsedSeconds: 0, level: 1, selections: 0, cumulativeTargets: 0, dps: weaponPerformance(calculateStats(build), assumptions, build).totalDps }];
     let elapsedSeconds = 0;
     let cumulativeTargets = 0;
     let totalXp = 0;
-    const combatTotals = { cannonShots: 0, standardShots: 0, multiShots: 0, standardReloads: 0, multiReloads: 0, switches: 0, overkill: 0, collateralKills: 0, combatSeconds: 0, travelSeconds: 0 };
+    const combatTotals = { cannonShots: 0, standardShots: 0, multiShots: 0, bombShots: 0, standardReloads: 0, multiReloads: 0, bombReloads: 0, switches: 0, overkill: 0, collateralKills: 0, combatSeconds: 0, travelSeconds: 0 };
     const recordCombat = result => { for (const key of Object.keys(combatTotals)) combatTotals[key] += result[key] || 0; };
 
     for (const stage of BALANCE.stages) {
-        const inventory = createCombatInventory(calculateStats(build));
+        const inventory = createCombatInventory(calculateStats(build), build);
         for (let waveIndex = 0; waveIndex < stage.waves.length; waveIndex++) {
             const targetCount = Math.max(1, Math.round(stage.waves[waveIndex] * assumptions.enemyCountScale));
             const targets = createWaveTargets(stage, targetCount, random, stage.eliteRatios[waveIndex] || 0);
             const counts = targets.reduce((out, target) => { out[target.id] = (out[target.id] || 0) + 1; return out; }, {});
             for (const [id, count] of Object.entries(counts)) enemyCounts[id] = (enemyCounts[id] || 0) + count;
             const totalHealth = Object.entries(counts).reduce((sum, [id, count]) => sum + enemyHealth(id, stage) * count, 0);
-            const performance = weaponPerformance(calculateStats(build), assumptions);
+            const performance = weaponPerformance(calculateStats(build), assumptions, build);
             if (assumptions.combatModel === 'events') {
                 const battle = simulateCombat(targets, calculateStats(build), assumptions, combatRandom, inventory, stage.maxActive);
                 elapsedSeconds += battle.seconds + assumptions.waveTransitionSeconds;
@@ -159,15 +199,15 @@ export function simulateRun(options = {}) {
             grantExperience(build, xp / assumptions.xpRequirementScale);
             const previousStats = calculateStats(build);
             spendChoices(build, strategy, random, selectedCards);
-            resizeCombatInventory(inventory, previousStats, calculateStats(build));
+            resizeCombatInventory(inventory, previousStats, calculateStats(build), build);
             cumulativeTargets += targetCount;
             timeline.push({
                 point: `S${stage.stageId}-W${waveIndex + 1}`, stage: stage.stageId, wave: waveIndex + 1,
                 elapsedSeconds, level: build.level, selections: Object.values(selectedCards).reduce((a, b) => a + b, 0),
-                cumulativeTargets, dps: weaponPerformance(calculateStats(build), assumptions).totalDps,
+                cumulativeTargets, dps: weaponPerformance(calculateStats(build), assumptions, build).totalDps,
             });
         }
-        const bossPerformance = weaponPerformance(calculateStats(build), { ...assumptions, availableTargets: 1 });
+        const bossPerformance = weaponPerformance(calculateStats(build), { ...assumptions, availableTargets: 1 }, build);
         if (assumptions.combatModel === 'events') {
             const battle = simulateCombat([{ id: 'boss', health: stage.bossHealth }], calculateStats(build), assumptions, combatRandom, inventory, 1);
             elapsedSeconds += battle.seconds;
@@ -175,18 +215,20 @@ export function simulateRun(options = {}) {
         } else elapsedSeconds += stage.bossHealth / Math.max(1, bossPerformance.totalDps) + assumptions.engagementSecondsPerTarget;
         totalXp += enemyExperience('boss', stage);
         grantExperience(build, enemyExperience('boss', stage) / assumptions.xpRequirementScale);
+        const previousStats = calculateStats(build);
         spendChoices(build, strategy, random, selectedCards);
+        resizeCombatInventory(inventory, previousStats, calculateStats(build), build);
         enemyCounts.boss = (enemyCounts.boss || 0) + 1;
         cumulativeTargets++;
         timeline.push({
             point: `S${stage.stageId}-BOSS`, stage: stage.stageId, wave: stage.waves.length + 1, elapsedSeconds, level: build.level,
             selections: Object.values(selectedCards).reduce((a, b) => a + b, 0), cumulativeTargets,
-            dps: weaponPerformance(calculateStats(build), assumptions).totalDps,
+            dps: weaponPerformance(calculateStats(build), assumptions, build).totalDps,
         });
         elapsedSeconds += assumptions.hangarSeconds;
     }
     const finalStats = calculateStats(build);
-    return { strategy, assumptions, elapsedSeconds, totalXp, finalLevel: build.level, selections: Object.values(selectedCards).reduce((a, b) => a + b, 0), selectedCards, enemyCounts, timeline, finalStats, combatTotals, finalWeapons: weaponPerformance(finalStats, assumptions) };
+    return { strategy, assumptions, elapsedSeconds, totalXp, finalLevel: build.level, selections: Object.values(selectedCards).reduce((a, b) => a + b, 0), selectedCards, enemyCounts, timeline, finalStats, combatTotals, finalWeapons: weaponPerformance(finalStats, assumptions, build) };
 }
 
 function averageObject(items) {
@@ -230,6 +272,7 @@ export function simulateMany(options = {}) {
             cannon: averageObject(results.map(result => result.finalWeapons.cannon)),
             standardMissile: averageObject(results.map(result => result.finalWeapons.standardMissile)),
             multiMissile: averageObject(results.map(result => result.finalWeapons.multiMissile)),
+            bomb: averageObject(results.map(result => result.finalWeapons.bomb)),
             totalDps: results.reduce((sum, result) => sum + result.finalWeapons.totalDps, 0) / runs,
         },
     };

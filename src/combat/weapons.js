@@ -2,6 +2,7 @@ import { pulseBeam, clearBeam } from './beam.js';
 import { clearBeamBolts } from './beam-bolt.js';
 export { updateBeam } from './beam.js';
 import { updateTargeting } from './targeting.js';
+import { BOMB_WEAPON, fireBomb, clearDitherExplosions } from './bomb.js';
 // combat/weapons: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { playerFlight, playerMesh } from '../player/player.js';
@@ -22,10 +23,22 @@ let missileTemplate;
 
 export function updateWeaponHUD() {
     const slots = document.getElementById('weapon-slots');
-    if (slots) slots.innerHTML = (gameState.ownedWeapons || [1]).map((mode, i) => `<button data-slot="${i}" class="${mode === gameState.missileMode ? 'selected' : ''}">${i + 1} · ${['', 'STD', 'MULTI', 'BEAM'][mode]}</button>`).join('');
+    if (slots) slots.innerHTML = (gameState.ownedWeapons || [1]).map((mode, i) => `<button data-slot="${i}" class="${mode === gameState.missileMode ? 'selected' : ''}">${i + 1} · ${['', 'STD', 'MULTI', 'BEAM', 'BOMB'][mode]}</button>`).join('');
     const statEl = document.getElementById('missile-stat');
     if (!statEl) return;
     
+    if (gameState.missileMode === 4) {
+        const count = `${playerFlight.bombBursts ?? 0}/${playerFlight.bombMaxBursts ?? 4}`;
+        if (playerFlight.bombReloadTimers && playerFlight.bombReloadTimers.length > 0) {
+            const minT = Math.min(...playerFlight.bombReloadTimers);
+            statEl.innerHTML = `<span>BOMB RELOAD (${minT.toFixed(1)}s)</span><span style="color:#ffcc00">${count}</span>`;
+            statEl.style.color = '#ff8822';
+        } else {
+            statEl.innerHTML = `<span>BOMB READY</span><span style="color:#4df58a">${count}</span>`;
+            statEl.style.color = '#ff8822';
+        }
+        return;
+    }
     if (gameState.missileMode === 3) {
         const overload = playerFlight.beamOverload ?? 0;
         const reload = playerFlight.beamReloadRemaining ?? 0;
@@ -147,6 +160,7 @@ function createMissileMesh() {
 export function clearProjectiles() {
     clearBeam();
     clearBeamBolts();
+    if (typeof clearDitherExplosions === 'function') clearDitherExplosions();
     bullets.forEach(b => scene.remove(b));
     missiles.forEach(m => scene.remove(m.mesh));
     bullets.length = missiles.length = 0;
@@ -201,9 +215,18 @@ export function tryFireMissile() {
     // 현재 타겟이 살아있고 락온이 완료된 상태인지 확인
     const currentEnemy = enemies[gameState.lockedEnemyIndex];
     const lockedTarget = (currentEnemy && currentEnemy.alive && currentEnemy.isLocked) ? currentEnemy
-        : gameState.missileMode === 1 ? enemies.find(enemy => enemy.alive && enemy.isLocked) || null : null;
+        : (gameState.missileMode === 1 || gameState.missileMode === 4) ? enemies.find(enemy => enemy.alive && enemy.isLocked) || null : null;
 
-    if (gameState.missileMode === 2) {
+    if (gameState.missileMode === 4) {
+        // 범위 폭탄은 탄창에서 한 발씩 소모하여 발사합니다.
+        if (playerFlight.bombShotCooldown > 0) return;
+
+        if (consumeMagazine(playerFlight, 'bomb', 1) > 0) {
+            fireBomb(lockedTarget, true, playerMesh);
+            playerFlight.bombShotCooldown = BOMB_WEAPON.fireIntervalSec;
+            updateWeaponHUD();
+        }
+    } else if (gameState.missileMode === 2) {
         // 동시 발사는 멀티 관제 확장으로 4 → 6 → 8발까지 증가합니다.
         if (playerFlight.multiShotCooldown > 0) return;
 

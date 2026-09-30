@@ -64,7 +64,11 @@ function fillWave() {
         }
     }
 
-    spawnFormation(count, { health: encounter.stage.enemyHealth, eliteCount: eliteToSpawn });
+    // Ground and naval targets belong to the wave's initial placement. Once the
+    // wave is under way, replacements are aircraft so destroyed fixed targets
+    // do not respawn through the reinforcement budget.
+    const allowGround = encounter.spawned === 0;
+    spawnFormation(count, { health: encounter.stage.enemyHealth, eliteCount: eliteToSpawn, allowGround });
     encounter.spawned += count;
     encounter.spawnedElites += eliteToSpawn;
 }

@@ -53,6 +53,10 @@ export function calculateStats(build) {
         multiMaxBursts: b.multiMaxBursts + (c.multiRack || 0) * cardEffectValue('multiRack', 'multi_ready_slots'),
         stdReloadSeconds: b.stdReloadSeconds * (1 - (c.reload || 0) * cardEffectValue('reload', 'missile_reload_multiplier')),
         multiReloadSeconds: b.multiReloadSeconds * (1 - (c.reload || 0) * cardEffectValue('reload', 'missile_reload_multiplier')),
+        bombRadiusMultiplier: 1 + (c.bombRadius || 0) * 0.15,
+        bombDamageMultiplier: 1 + (c.bombDamage || 0) * 0.15,
+        bombMaxBursts: (b.bombMaxBursts ?? 4) + (c.bombRack || 0) * 1,
+        bombReloadSeconds: (b.bombReloadSeconds ?? 20) * (1 - (c.reload || 0) * cardEffectValue('reload', 'missile_reload_multiplier')),
     };
 }
 
@@ -62,10 +66,14 @@ export function applyStats(flight, stats) {
         flight.beamReloadRemaining *= stats.beamReloadSeconds / (flight.beamReloadSeconds ?? 5);
     }
     const healthGain = Math.max(0, stats.maxHealth - flight.maxHealth);
-    for (const mode of ['std', 'multi']) {
+    for (const mode of ['std', 'multi', 'bomb']) {
         const max = `${mode}MaxBursts`, ready = `${mode}Bursts`, time = `${mode}ReloadSeconds`, timers = `${mode}ReloadTimers`;
-        flight[ready] = flight[timers].length ? 0 : Math.min(stats[max], flight[ready] + Math.max(0, stats[max] - flight[max]));
-        flight[timers] = flight[timers].map(t => t * stats[time] / flight[time]);
+        if (flight[max] !== undefined && stats[max] !== undefined) {
+            flight[ready] = flight[timers]?.length ? 0 : Math.min(stats[max], (flight[ready] ?? stats[max]) + Math.max(0, stats[max] - flight[max]));
+            if (flight[timers]) {
+                flight[timers] = flight[timers].map(t => t * stats[time] / (flight[time] || stats[time]));
+            }
+        }
     }
     Object.assign(flight, stats);
     flight.defaultCruiseSpeed = stats.cruiseSpeed;

@@ -2,9 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FISH_SCHOOL, schoolOffset, RADIAL_DIRECTIONS, BOMBER, stepBomberWeapons } from '../src/enemies/special-types.js';
 import { advanceHomingMissile } from '../src/combat/homing.js';
+import { formationKind } from '../src/enemies/formation.js';
 test('four fish occupy distinct slots and retain relative formation after leader loss', () => {
-    assert.equal(FISH_SCHOOL.size, 4); assert.equal(FISH_SCHOOL.scale / 9, 0.5);
+    assert.equal(FISH_SCHOOL.size, 4);
+    assert.equal(FISH_SCHOOL.scale, 3.25);
+    assert.equal(FISH_SCHOOL.spacing, 60);
     assert.equal(new Set([0,1,2,3].map(i => JSON.stringify(schoolOffset(i)))).size, 4);
+    assert.ok(Math.max(...[0,1,2,3].map(i => Math.hypot(schoolOffset(i).x, schoolOffset(i).z))) <= 150);
     for (let leader = 0; leader < 4; leader++) {
         assert.deepEqual(schoolOffset(leader, leader), {x:0,y:0,z:0});
         for (let slot = leader; slot < 4; slot++) {
@@ -37,4 +41,10 @@ test('radial missiles travel outward before beginning homing', () => {
     assert.deepEqual(m.direction,{x:1,y:0,z:0}); assert.equal(m.position.x,50);
     advanceHomingMissile(m,target,0.5);
     assert.ok(m.direction.z<0); assert.equal(m.homingDelay,0);
+});
+test('reinforcement formations can exclude fixed ground and naval targets', () => {
+    assert.equal(formationKind(10, false, 0, false), 'aircraft');
+    assert.equal(formationKind(10, true, 0, false), 'aircraft');
+    assert.equal(formationKind(10, false, 0, true), 'tank');
+    assert.equal(formationKind(10, true, 0, true), 'ship');
 });

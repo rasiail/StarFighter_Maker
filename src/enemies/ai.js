@@ -72,31 +72,19 @@ export function updateEnemies(delta) {
                 enemy.fireCooldown = 0.9 + Math.random() * 0.8;
             }
 
-            // 탱크 리징
-            if (dist > 6500) {
-                const pFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(playerMesh.quaternion);
-                const spawnDist = 1800 + Math.random() * 800;
-                const reX = playerMesh.position.x + pFwd.x * spawnDist + (Math.random() - 0.5) * 800;
-                const reZ = playerMesh.position.z + pFwd.z * spawnDist + (Math.random() - 0.5) * 800;
-                const reY = getSurfaceHeight(reX, reZ);
-                enemy.mesh.position.set(reX, reY + 1.5, reZ);
-            }
             return; // 지상/해상 적은 공중 기동 스킵
         }
 
-        // Surviving school members follow the first living member; leader loss
-        // rebases offsets without pulling the formation back to its old slot.
+        // Surviving school members use a rigid leader-relative formation. When
+        // the leader is lost, offsets are rebased around the first survivor.
         const leader = enemy.school?.members.find(member => member.alive);
         if (leader && leader !== enemy) {
             const offset = schoolOffset(enemy.schoolSlot, leader.schoolSlot);
             const destination = new THREE.Vector3(offset.x, offset.y, offset.z)
                 .applyQuaternion(leader.mesh.quaternion).add(leader.mesh.position);
             const before = enemy.mesh.position.clone();
-            if (before.distanceTo(destination) > 1500) enemy.mesh.position.copy(destination);
-            else enemy.mesh.position.lerp(destination, 1 - Math.exp(-4 * delta));
-            enemy.mesh.position.y = Math.max(enemy.mesh.position.y,
-                getSurfaceHeight(enemy.mesh.position.x, enemy.mesh.position.z) + 100);
-            enemy.mesh.quaternion.slerp(leader.mesh.quaternion, 1 - Math.exp(-5 * delta));
+            enemy.mesh.position.copy(destination);
+            enemy.mesh.quaternion.copy(leader.mesh.quaternion);
             enemy.velocity.copy(enemy.mesh.position).sub(before).divideScalar(Math.max(delta, 0.0001));
             enemy.state = leader.state;
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(enemy.mesh.quaternion);

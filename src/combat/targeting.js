@@ -4,6 +4,7 @@ import { enemies } from '../enemies/fleet.js';
 import { playerFlight, playerMesh } from '../player/player.js';
 import { camera } from '../rendering/scene.js';
 import { BALANCE } from '../data/generated/balance.js';
+import { BOMB_WEAPON } from './bomb.js';
 
 
 export function evaluateTargetCandidates(options = {}) {
@@ -141,9 +142,12 @@ export function updateTargeting() {
         enemy.distToPlayer = Math.round(dist);
         enemy.dotForward = dot;
 
-        // 미사일 종류에 따른 사거리(락온 거리) 분리: 표준 2000m, 멀티 3000m
-        const weapon = gameState.missileMode === 1 ? BALANCE.weapons.standard_missile : BALANCE.weapons.multi_missile;
-        const maxLockRange = weapon.lockRangeM * playerFlight.lockRangeMultiplier;
+        // 미사일 종류에 따른 사거리(락온 거리) 분리: 표준 2000m, 멀티 3000m, 범위 폭탄 2500m
+        const bombLockRange = (typeof BOMB_WEAPON !== 'undefined' && BOMB_WEAPON?.lockRangeM) ? BOMB_WEAPON.lockRangeM : 2500;
+        const weaponLockRange = gameState.missileMode === 4
+            ? bombLockRange
+            : (gameState.missileMode === 1 ? BALANCE.weapons.standard_missile.lockRangeM : BALANCE.weapons.multi_missile.lockRangeM);
+        const maxLockRange = weaponLockRange * playerFlight.lockRangeMultiplier;
         // 전투기 기수 전방 약 36도 이내(dot > 0.80) & 유효 사거리 이내
         enemy.inCone = gameState.missileMode !== 3 && (dot > 0.80 && dist <= maxLockRange);
 
@@ -151,13 +155,13 @@ export function updateTargeting() {
         enemy.isMultiLock = false;
     });
 
-    // 2단계: 무기 모드(1번 표준 vs 2번 멀티)에 따른 락온 대상 확정
+    // 2단계: 무기 모드(1번 표준/4번 폭탄 vs 2번 멀티)에 따른 락온 대상 확정
     let currentLockedEnemy = enemies[gameState.lockedEnemyIndex] && enemies[gameState.lockedEnemyIndex].alive ? enemies[gameState.lockedEnemyIndex] : null;
     if (!currentLockedEnemy) {
         currentLockedEnemy = acquireNextBestTarget();
     }
 
-    if (gameState.missileMode === 1) {
+    if (gameState.missileMode === 1 || gameState.missileMode === 4) {
         // 지정 타깃 우선, 불가능하면 기수 중심에 가장 가까운 유효 적 1기를 락온.
         const candidate = currentLockedEnemy?.inCone ? currentLockedEnemy : enemies
             .filter(enemy => enemy.alive && enemy.inCone)

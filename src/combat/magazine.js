@@ -23,11 +23,12 @@ export function consumeMagazine(flight, mode, requested) {
 
 export function tickMagazines(flight, delta) {
     let changed = false;
-    for (const mode of ['std', 'multi']) {
+    for (const mode of ['std', 'multi', 'bomb']) {
+        if (flight[`${mode}ShotCooldown`] === undefined) continue;
         flight[`${mode}ShotCooldown`] = Math.max(0, flight[`${mode}ShotCooldown`] - delta);
         
         const timers = flight[`${mode}ReloadTimers`];
-        if (!timers.length) {
+        if (!timers || !timers.length) {
             // Decay debt over time if not reloading
             if (flight[`${mode}ReloadDebt`] > 0) {
                 flight[`${mode}ReloadDebt`] = Math.max(0, flight[`${mode}ReloadDebt`] - delta);
