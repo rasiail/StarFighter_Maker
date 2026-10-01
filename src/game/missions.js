@@ -22,7 +22,8 @@ import { clearDyingBosses, activeDyingBosses } from '../enemies/lifecycle.js';
 import { cameraConfig, resetCamera } from '../camera/camera.js';
 import { updateTargeting } from '../combat/targeting.js';
 import { renderHUD } from '../ui/hud.js';
-import { BALANCE } from '../data/generated/balance.js';
+import { resetPlayerContacts } from '../combat/collisions.js';
+import { REINFORCEMENT_INTERVAL } from '../config/encounter-pacing.js';
 
 export let encounter = null;
 let selectedSectorId = 1;
@@ -36,6 +37,7 @@ function hideScreens() {
     gameState.activeModal = null;
 }
 function clearBattle() {
+    resetPlayerContacts();
     clearCombatSchedule();
     clearProjectiles();
     clearParticles();
@@ -126,7 +128,7 @@ export function updateMission(delta) {
     }
     if (encounter.phase === 'waves') {
         reinforcementTimer -= delta;
-        if (reinforcementTimer <= 0) { fillWave(); reinforcementTimer = BALANCE.spawnRules.reinforcement_interval.value; }
+        if (reinforcementTimer <= 0) { fillWave(); reinforcementTimer = REINFORCEMENT_INTERVAL; }
     }
     updateMissionUI();
 }

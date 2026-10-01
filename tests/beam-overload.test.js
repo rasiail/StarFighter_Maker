@@ -21,10 +21,10 @@ test('depletion requires overload then a full reload; no gradual recharge', () =
     assert.equal(state.energy, 0);
     assert.equal(beam.spendBeamPulse(state), false);
     beam.advanceBeamEnergy(state, 0.1, true);
-    assert.equal(state.energy, 100);
+    assert.equal(state.energy, beam.BEAM_CAPACITY);
     assert.equal(state.primed, false);
     assert.equal(beam.spendBeamPulse(state), true);
-    assert.equal(state.energy, 94);
+    assert.equal(state.energy, beam.BEAM_CAPACITY - 6);
 });
 
 test('idle energy stays spent and a sub-shot remainder reloads without getting stuck', () => {
@@ -36,7 +36,7 @@ test('idle energy stays spent and a sub-shot remainder reloads without getting s
     assert.equal(state.reload, 5);
     assert.equal(state.overload, 0);
     beam.advanceBeamEnergy(state, 5, false);
-    assert.equal(state.energy, 100);
+    assert.equal(state.energy, beam.BEAM_CAPACITY);
     state.energy = 6;
     assert.equal(beam.spendBeamPulse(state), true);
     assert.equal(state.overload, 2);
@@ -87,10 +87,10 @@ function runtime() {
 test('runtime charges once, preserves overload on clear/switch, and requires a new press', () => {
     const { context: c, hud } = runtime();
     c.pulseBeam();
-    assert.equal(c.playerFlight.beamEnergy, 94);
+    assert.equal(c.playerFlight.beamEnergy, beam.BEAM_CAPACITY - 6);
     c.updateBeam(0.18, true);
     assert.equal(c.hits.length, 1);
-    c.updateBeam(3.2, true);
+    c.updateBeam(5, true);
     assert.ok(c.playerFlight.beamOverload > 0);
     assert.match(hud.textContent, /OVERLOAD/);
     const remaining = c.playerFlight.beamOverload;
@@ -101,9 +101,9 @@ test('runtime charges once, preserves overload on clear/switch, and requires a n
     const shots = c.hits.length;
     c.updateBeam(1, true);
     assert.equal(c.hits.length, shots);
-    assert.equal(c.playerFlight.beamEnergy, 100);
+    assert.equal(c.playerFlight.beamEnergy, beam.BEAM_CAPACITY);
     c.pulseBeam();
-    assert.equal(c.playerFlight.beamEnergy, 94);
+    assert.equal(c.playerFlight.beamEnergy, beam.BEAM_CAPACITY - 6);
     replenishPlayerForSortie(c.playerFlight);
     assert.equal(c.playerFlight.beamOverload, 0);
     assert.equal(c.playerFlight.beamCooldown, 0);
@@ -134,7 +134,7 @@ test('controller press pays once immediately and release does not add a second p
     c.updateGamepad(0.01, 0);
     pad.buttons[1].pressed = true;
     c.updateGamepad(0.01, 1);
-    assert.equal(c.playerFlight.beamEnergy, 94);
+    assert.equal(c.playerFlight.beamEnergy, beam.BEAM_CAPACITY - 6);
     assert.equal(c.padInput.beamHeld, true);
     c.updateGamepad(0.01, 1.1);
     assert.equal(c.hits.length, 1);

@@ -17,17 +17,19 @@ test('표준 미사일은 유휴 중 재장전 부채를 회복하고 소진 후
     assert.equal(flight.stdBursts,20);
 });
 
-test('멀티는 최대 4발, 총 8발 소진 후 30초에 전체 충전된다', () => {
+test('멀티는 최대 4발, 총 16발 소진 후 30초에 전체 충전된다', () => {
     const flight = createPlayerFlight({});
-    for(let i=0;i<2;i++) assert.equal(consumeMagazine(flight,'multi',10),4);
+    for(let i=0;i<4;i++) assert.equal(consumeMagazine(flight,'multi',10),4);
     assert.equal(flight.multiBursts,0);
     assert.deepEqual(flight.multiReloadTimers,[30]);
     assert.equal(consumeMagazine(flight,'std',1),1);
     tickMagazines(flight,29);
     assert.equal(flight.multiBursts,0);
     tickMagazines(flight,1);
-    assert.equal(flight.multiBursts,8);
+    assert.equal(flight.multiBursts,16);
     assert.equal(consumeMagazine(flight,'multi',3),3);
+    assert.equal(consumeMagazine(flight,'multi',4),4);
+    assert.equal(consumeMagazine(flight,'multi',4),4);
     assert.equal(consumeMagazine(flight,'multi',4),4);
     assert.equal(consumeMagazine(flight,'multi',4),1);
     assert.deepEqual(flight.multiReloadTimers,[30]);

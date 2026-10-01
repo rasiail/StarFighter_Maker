@@ -6,6 +6,7 @@ import { updatePlayerFlight } from '../player/flight.js';
 import { updateEnemies } from '../enemies/ai.js';
 import { updateSinkingShips, updateDyingBosses } from '../enemies/lifecycle.js';
 import { updateProjectiles } from '../combat/projectiles.js';
+import { capturePlayerContacts, updatePlayerContacts } from '../combat/collisions.js';
 import { updateCamera, cameraConfig } from '../camera/camera.js';
 import { renderWithHitShake } from '../camera/hit-shake.js';
 import { renderHUD } from '../ui/hud.js';
@@ -142,10 +143,12 @@ export function stepSimulation(delta) {
         return;
     }
 
+    capturePlayerContacts();
     updatePlayerFlight(delta);
     updateVirtualCursorPos();
     if (!gameState.isGameRunning) return;
     updateEnemies(delta);
+    updatePlayerContacts(delta);
     updateSinkingShips(delta);
     updateDyingBosses(delta);
     updateTargeting();

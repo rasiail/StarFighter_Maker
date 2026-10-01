@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateStats, createProgression } from '../src/progression/model.js';
 import { benchmarkBeam, benchmarkMissile } from '../src/balance/weapon-audit.js';
-import { BEAM_PULSE_DAMAGE, BEAM_PULSE_COST, BEAM_HOLD_DPS, BEAM_HOLD_DELAY, BEAM_HOLD_DRAIN, BEAM_OVERLOAD_SECONDS, BEAM_HOLD_MAX_MULTIPLIER, beamHoldDamage } from '../src/combat/beam-energy.js';
+import { BEAM_CAPACITY, BEAM_PULSE_DAMAGE, BEAM_PULSE_COST, BEAM_HOLD_DPS, BEAM_HOLD_DELAY, BEAM_HOLD_DRAIN, BEAM_OVERLOAD_SECONDS, BEAM_HOLD_MAX_MULTIPLIER, beamHoldDamage } from '../src/combat/beam-energy.js';
 
 test('hold benchmark includes ramp damage and resets it on each overload/reload cycle', () => {
     const stats = calculateStats(createProgression());
-    const duration = (100 - BEAM_PULSE_COST) / BEAM_HOLD_DRAIN;
+    const duration = (BEAM_CAPACITY - BEAM_PULSE_COST) / BEAM_HOLD_DRAIN;
     const damage = BEAM_PULSE_DAMAGE + beamHoldDamage({ target: null, seconds: 0 }, {}, duration);
     const cycle = BEAM_HOLD_DELAY + duration + BEAM_OVERLOAD_SECONDS + stats.beamReloadSeconds;
     assert.ok(Math.abs(benchmarkBeam(stats, { seconds: 1200 }).lateDps - damage / cycle) < 1);

@@ -1,6 +1,6 @@
 import { BALANCE } from '../data/generated/balance.js';
 
-export const BEAM_CAPACITY = 100;
+export const BEAM_CAPACITY = 150;
 export const BEAM_RANGE = 3000;
 export const BEAM_OVERLOAD_SECONDS = 2;
 export const BEAM_PULSE_DAMAGE = Math.round(BALANCE.weapons.standard_missile.damage * 1.2) * 1.5;
@@ -34,17 +34,20 @@ function reload(state, reloadSeconds, exhausted = false) {
     state.reload = reloadSeconds;
     state.primed = false;
 }
-export function spendBeamPulse(state, efficiency = 1, reloadSeconds = 5) {
+export function spendBeamPulse(state, efficiency = 1, reloadSeconds = 5, rechargePerSecond = 0) {
     const cost = BEAM_PULSE_COST * efficiency;
     if (state.overload > 1e-9 || state.reload > 1e-9 || state.cooldown > 1e-9) return false;
-    if (state.energy + 1e-9 < cost) { reload(state, reloadSeconds, state.energy <= 1e-9); return false; }
+    if (state.energy + 1e-9 < cost) {
+        if (state.energy <= 1e-9 || rechargePerSecond <= 0) reload(state, reloadSeconds, state.energy <= 1e-9);
+        return false;
+    }
     state.energy = Math.max(0, state.energy - cost);
     state.cooldown = BEAM_HOLD_DELAY;
     state.primed = true;
     if (state.energy <= 1e-9) reload(state, reloadSeconds, true);
     return true;
 }
-export function advanceBeamEnergy(state, delta, held, efficiency = 1, reloadSeconds = 5) {
+export function advanceBeamEnergy(state, delta, held, efficiency = 1, reloadSeconds = 5, rechargePerSecond = 0) {
     state.cooldown = Math.max(0, state.cooldown - delta);
     const advanceReload = time => {
         const blocked = Math.min(time, state.overload || 0);
@@ -55,17 +58,23 @@ export function advanceBeamEnergy(state, delta, held, efficiency = 1, reloadSeco
         }
     };
     if (state.reload > 0 || state.overload > 0) { advanceReload(delta); return 0; }
+    if (state.energy <= 1e-9) {
+        reload(state, reloadSeconds, true);
+        advanceReload(delta);
+        return 0;
+    }
     if (!held || !state.primed) {
         // A released trigger with less than one shot left reloads automatically.
-        if (!state.primed && state.energy + 1e-9 < BEAM_PULSE_COST * efficiency) {
+        if (!state.primed && rechargePerSecond <= 0 && state.energy + 1e-9 < BEAM_PULSE_COST * efficiency) {
             reload(state, reloadSeconds, state.energy <= 1e-9);
             advanceReload(delta);
         }
+        if (!(state.reload > 0 || state.overload > 0)) state.energy = Math.min(BEAM_CAPACITY, state.energy + rechargePerSecond * delta);
         return 0;
     }
-    const drain = BEAM_HOLD_DRAIN * efficiency;
+    const drain = Math.max(0, BEAM_HOLD_DRAIN * efficiency - rechargePerSecond);
     const duration = Math.min(delta, state.energy / drain);
-    state.energy = Math.max(0, state.energy - drain * duration);
+    state.energy = Math.min(BEAM_CAPACITY, Math.max(0, state.energy - drain * duration));
     if (state.energy <= 1e-9) {
         reload(state, reloadSeconds, true);
         advanceReload(delta - duration);

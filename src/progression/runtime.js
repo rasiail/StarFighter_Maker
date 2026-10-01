@@ -3,6 +3,7 @@ import { gameState } from '../core/state.js';
 import { playerFlight } from '../player/player.js';
 import { updateWeaponHUD } from '../combat/weapons.js';
 import { createProgression, grantExperience, calculateStats, applyStats } from './model.js';
+import { BEAM_CAPACITY } from '../combat/beam-energy.js';
 import { selectCard } from './cards.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { enemyExperience } from './rewards.js';
@@ -11,7 +12,7 @@ export const progression = createProgression();
 export function resetProgression() {
     Object.assign(progression, createProgression());
     gameState.ownedWeapons = progression.weapons;
-    playerFlight.beamEnergy = 100;
+    playerFlight.beamEnergy = BEAM_CAPACITY;
     playerFlight.beamCooldown = playerFlight.beamOverload = playerFlight.beamReloadRemaining = 0;
     // New run is reset by missions before calculating its baseline stats.
     applyStats(playerFlight, calculateStats(progression));

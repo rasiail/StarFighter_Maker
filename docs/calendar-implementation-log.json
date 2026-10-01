@@ -41,6 +41,20 @@
       "eventId": "t9jentioj69863bqs6c36ds8jc",
       "completedOn": "2026-10-01",
       "lastUpdatedOn": "2026-10-01"
+    },
+    {
+      "key": "combat-density-live-beam-recharge",
+      "calendarId": "primary",
+      "eventId": "p179rfip3njp48drccq1eqvbms",
+      "completedOn": "2026-10-01",
+      "lastUpdatedOn": "2026-10-01"
+    },
+    {
+      "key": "enemy-size-player-contact-damage",
+      "calendarId": "primary",
+      "eventId": "9be57buob3ut084nh41oqq0ed8",
+      "completedOn": "2026-10-01",
+      "lastUpdatedOn": "2026-10-01"
     }
   ]
 }

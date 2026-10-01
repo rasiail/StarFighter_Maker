@@ -8,7 +8,7 @@ test('대표 섹터는 세 스테이지를 순서대로 묶고 각 스테이지�
     assert.deepEqual([...sector.stageIds], [1, 2, 3]);
     const stages = getSectorStages(sector);
     assert.equal(stages.length, 3);
-    assert.deepEqual(stages.map(stage => stage.waves.length), [3, 4, 5]);
+    assert.deepEqual(stages.map(stage => stage.waves.length), [2, 3, 4]);
     assert.ok(stages.every(stage => stage.bossName && stage.bossHealth > 0));
     assert.equal(findSectorByStage(2), sector);
 });

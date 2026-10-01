@@ -1,4 +1,5 @@
 // Pure encounter state; mesh spawning and UI live in missions.js.
+import { waveActiveLimit } from '../config/encounter-pacing.js';
 export function createEncounter(stage) {
     return { stage, wave: 0, kills: 0, spawned: 0, spawnedElites: 0, phase: 'waves', transition: false };
 }
@@ -23,7 +24,7 @@ export function reinforcementCount(encounter, alive) {
     if (encounter.phase !== 'waves' || encounter.transition) return 0;
     const remainingKills = Math.max(0, encounter.stage.waves[encounter.wave] - encounter.kills);
     if (remainingKills === 0) return 0;
-    const targetActive = Math.min(encounter.stage.maxActive, Math.ceil(remainingKills * 1.5));
+    const targetActive = Math.min(waveActiveLimit(encounter.stage, encounter.wave), Math.ceil(remainingKills * 1.5));
     return Math.max(0, targetActive - alive);
 }
 

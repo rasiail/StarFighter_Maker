@@ -4,13 +4,13 @@ import { scene } from '../rendering/scene.js';
 import { enemies } from '../enemies/fleet.js';
 import { killEnemy } from '../enemies/lifecycle.js';
 import { spawnBeamBolt } from './beam-bolt.js';
-import { spendBeamPulse, advanceBeamEnergy, BEAM_PULSE_DAMAGE, BEAM_HOLD_DELAY, BEAM_RANGE, beamHoldDamage, BEAM_HOLD_RAMP_PER_SECOND, BEAM_HOLD_MAX_MULTIPLIER } from './beam-energy.js';
+import { spendBeamPulse, advanceBeamEnergy, BEAM_CAPACITY, BEAM_PULSE_DAMAGE, BEAM_HOLD_DELAY, BEAM_RANGE, beamHoldDamage, BEAM_HOLD_RAMP_PER_SECOND, BEAM_HOLD_MAX_MULTIPLIER } from './beam-energy.js';
 import { audio } from '../audio/audio.js';
 import { getBeamAssistTarget } from './beam-assist.js';
 let mesh;
 let heldTime = 0;
 const contact = { target: null, seconds: 0 };
-const energy = { energy: 100, cooldown: 0 };
+const energy = { energy: BEAM_CAPACITY, cooldown: 0 };
 export function clearBeam() {
     beamHoldDamage(contact, null, 0);
     audio?.stopBeamHold();
@@ -19,7 +19,7 @@ export function clearBeam() {
     energy.primed = false;
 }
 function loadEnergy() {
-    energy.energy = playerFlight.beamEnergy ?? 100;
+    energy.energy = playerFlight.beamEnergy ?? BEAM_CAPACITY;
     energy.cooldown = playerFlight.beamCooldown ?? 0;
     energy.overload = playerFlight.beamOverload ?? 0;
     energy.reload = playerFlight.beamReloadRemaining ?? 0;
@@ -79,7 +79,7 @@ export function pulseBeam() {
     audio?.stopBeamHold();
     loadEnergy();
     energy.primed = false;
-    const fired = spendBeamPulse(energy, playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5);
+    const fired = spendBeamPulse(energy, playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5, playerFlight.beamRechargePerSecond ?? 0);
     saveEnergy();
     if (!fired) return;
     audio?.playBeamPulse();
@@ -95,16 +95,16 @@ export function updateBeam(delta, held) {
     const warmup = held ? Math.min(delta, Math.max(0, BEAM_HOLD_DELAY - heldTime)) : delta;
     heldTime = held ? heldTime + delta : 0;
     advanceBeamEnergy(energy, warmup, false,
-        playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5);
+        playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5, playerFlight.beamRechargePerSecond ?? 0);
     const duration = advanceBeamEnergy(energy, delta - warmup, held,
-        playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5);
+        playerFlight.beamEfficiency ?? 1, playerFlight.beamReloadSeconds ?? 5, playerFlight.beamRechargePerSecond ?? 0);
     saveEnergy();
     if (gameState.missileMode === 3) {
         const hud = document.getElementById('missile-stat');
         if (hud) {
             hud.textContent = energy.overload > 0 ? `BEAM OVERLOAD · ${energy.overload.toFixed(1)}s`
                 : energy.reload > 0 ? `BEAM RELOAD · ${energy.reload.toFixed(1)}s`
-                : `BEAM · ${Math.round(energy.energy)} / 100`;
+                : `BEAM · ${Math.round(energy.energy)} / ${BEAM_CAPACITY}`;
             hud.style.color = energy.overload > 0 ? '#ff6b6b' : energy.reload > 0 ? '#ffcc00' : '#78eaff';
         }
     }

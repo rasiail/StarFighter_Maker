@@ -35,6 +35,7 @@ export function calculateStats(build) {
         beamBoltWidth: 3 * (1 + (c.beamWidth || 0) * 0.3),
         beamEfficiency: 1 - (c.beamEfficiency || 0) * 0.15,
         beamReloadSeconds: 5 * (1 - (c.beamRecharge || 0) * 0.15),
+        beamRechargePerSecond: c.beamLiveRecharge ? 1 : 0,
         maxPitchRate: b.maxPitchRate * (1 + r.mobility * mobility),
         maxRollRate: b.maxRollRate * (1 + r.mobility * cardEffectValue('mobility', 'max_roll_rate_multiplier')),
         maxYawRate: b.maxYawRate * (1 + r.mobility * cardEffectValue('mobility', 'max_yaw_rate_multiplier')),

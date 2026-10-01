@@ -1,3 +1,4 @@
+import { BEAM_CAPACITY } from './beam-energy.js';
 import { pulseBeam, clearBeam } from './beam.js';
 import { clearBeamBolts } from './beam-bolt.js';
 export { updateBeam } from './beam.js';
@@ -46,7 +47,7 @@ export function updateWeaponHUD() {
         statEl.style.color = overload > 0 ? '#ff6b6b' : reload > 0 ? '#ffcc00' : '#78eaff';
         statEl.textContent = overload > 0 ? `BEAM OVERLOAD · ${overload.toFixed(1)}s`
             : reload > 0 ? `BEAM RELOAD · ${reload.toFixed(1)}s`
-            : `BEAM · ${Math.round(playerFlight.beamEnergy ?? 100)} / 100`;
+            : `BEAM · ${Math.round(playerFlight.beamEnergy ?? BEAM_CAPACITY)} / ${BEAM_CAPACITY}`;
         return;
     }
     if (gameState.missileMode === 1) {
@@ -71,18 +72,29 @@ export function updateWeaponHUD() {
         }
     }
 }
-export function fireCannon(isPlayer = true, sourceMesh = playerMesh) {
+export function fireCannon(isPlayer = true, sourceMesh = playerMesh, options = {}) {
     // Enforce weapon exclusivity even for delayed mouse callbacks or stale input.
     if (isPlayer && gameState.missileMode === 3) return;
     const bullet = new THREE.Mesh(bulletGeom, bulletMat);
-    // Spawn from nose cannon position
-    const noseZ = isPlayer ? -4.8 : -8.5;
-    const spawnPos = new THREE.Vector3(0, -0.2, noseZ).applyMatrix4(sourceMesh.matrixWorld);
+    // Spawn from nose cannon position or custom offset
+    let spawnPos;
+    if (options.offset) {
+        spawnPos = options.offset.clone().applyMatrix4(sourceMesh.matrixWorld);
+    } else {
+        const noseZ = isPlayer ? -4.8 : -8.5;
+        spawnPos = new THREE.Vector3(0, -0.2, noseZ).applyMatrix4(sourceMesh.matrixWorld);
+    }
     bullet.position.copy(spawnPos);
     bullet.quaternion.copy(sourceMesh.quaternion);
 
     // Forward speed vector
-    let forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
+    let forward;
+    if (options.direction) {
+        forward = options.direction.clone().normalize();
+        bullet.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), forward);
+    } else {
+        forward = new THREE.Vector3(0, 0, -1).applyQuaternion(sourceMesh.quaternion);
+    }
     const config = isPlayer ? weaponData.player_cannon : weaponData.enemy_cannon;
     const muzzleSpeed = config.projectileSpeedMps;
 

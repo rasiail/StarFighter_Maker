@@ -57,6 +57,7 @@ export function createUpgradePreview(build, card, flight) {
         case 'beamWidth': stat(t('빔 굵기'), 'beamWidth', 'm'); break;
         case 'beamEfficiency': stat(t('에너지 소모율'), 'beamEfficiency', '%', 100); break;
         case 'beamRecharge': stat(t('빔 재장전 시간'), 'beamReloadSeconds', t('초')); break;
+        case 'beamLiveRecharge': stat(t('빔 실시간 충전'), 'beamRechargePerSecond', '/s'); break;
         case 'mobility':
             stat(t('피치 속도'), 'maxPitchRate', t('°/초'), 180 / Math.PI);
             stat(t('롤 속도'), 'maxRollRate', t('°/초'), 180 / Math.PI);

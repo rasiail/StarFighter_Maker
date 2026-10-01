@@ -1,6 +1,8 @@
+import { b52ModelTemplate, populateB52, pendingBomberModels } from '../assets/aircraft.js';
+
 let template;
-// Broad swept wings, four engine pods and cardinal missile launchers.
-export function createBomberMesh() {
+// Broad swept wings, four engine pods and cardinal missile launchers (procedural fallback)
+function createProceduralBomberMesh() {
     if (!template) {
         template = new THREE.Group();
         const armor = new THREE.MeshStandardMaterial({ color: 0x394352, metalness: 0.75, roughness: 0.5 });
@@ -35,3 +37,19 @@ export function createBomberMesh() {
     group.add(warning); group.userData.salvoLight = warning;
     return group;
 }
+
+export function createBomberMesh() {
+    const group = new THREE.Group();
+    group.colliderRadius = 3.5;
+    if (b52ModelTemplate) {
+        populateB52(group);
+    } else {
+        const fallback = createProceduralBomberMesh();
+        group.add(fallback);
+        group.baseGlow = fallback.baseGlow;
+        group.userData.salvoLight = fallback.userData.salvoLight;
+        pendingBomberModels.add(group);
+    }
+    return group;
+}
+

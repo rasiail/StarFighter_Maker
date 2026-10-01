@@ -1,4 +1,5 @@
 import { BALANCE } from '../data/generated/balance.js';
+import { waveActiveLimit } from '../config/encounter-pacing.js';
 import { calculateStats, createProgression, grantExperience } from '../progression/model.js';
 import { drawCards, selectCard } from '../progression/cards.js';
 import { enemyExperience } from '../progression/rewards.js';
@@ -190,7 +191,7 @@ export function simulateRun(options = {}) {
             const totalHealth = Object.entries(counts).reduce((sum, [id, count]) => sum + enemyHealth(id, stage) * count, 0);
             const performance = weaponPerformance(calculateStats(build), assumptions, build);
             if (assumptions.combatModel === 'events') {
-                const battle = simulateCombat(targets, calculateStats(build), assumptions, combatRandom, inventory, stage.maxActive);
+                const battle = simulateCombat(targets, calculateStats(build), assumptions, combatRandom, inventory, waveActiveLimit(stage, waveIndex));
                 elapsedSeconds += battle.seconds + assumptions.waveTransitionSeconds;
                 recordCombat(battle);
             } else elapsedSeconds += totalHealth / Math.max(1, performance.totalDps) + targetCount * assumptions.engagementSecondsPerTarget + assumptions.waveTransitionSeconds;

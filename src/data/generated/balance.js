@@ -4,243 +4,243 @@ export const BALANCE = deepFreeze({
   "levels": [
     {
       "currentLevel": 1,
-      "xpToNext": 60
+      "xpToNext": 45
     },
     {
       "currentLevel": 2,
-      "xpToNext": 150
+      "xpToNext": 113
     },
     {
       "currentLevel": 3,
-      "xpToNext": 300
+      "xpToNext": 225
     },
     {
       "currentLevel": 4,
-      "xpToNext": 500
+      "xpToNext": 375
     },
     {
       "currentLevel": 5,
-      "xpToNext": 750
+      "xpToNext": 563
     },
     {
       "currentLevel": 6,
-      "xpToNext": 863
+      "xpToNext": 647
     },
     {
       "currentLevel": 7,
-      "xpToNext": 975
+      "xpToNext": 731
     },
     {
       "currentLevel": 8,
-      "xpToNext": 1088
+      "xpToNext": 816
     },
     {
       "currentLevel": 9,
-      "xpToNext": 1200
+      "xpToNext": 900
     },
     {
       "currentLevel": 10,
-      "xpToNext": 1313
+      "xpToNext": 985
     },
     {
       "currentLevel": 11,
-      "xpToNext": 1425
+      "xpToNext": 1069
     },
     {
       "currentLevel": 12,
-      "xpToNext": 1538
+      "xpToNext": 1154
     },
     {
       "currentLevel": 13,
-      "xpToNext": 1650
+      "xpToNext": 1238
     },
     {
       "currentLevel": 14,
-      "xpToNext": 1763
+      "xpToNext": 1322
     },
     {
       "currentLevel": 15,
-      "xpToNext": 1875
+      "xpToNext": 1406
     },
     {
       "currentLevel": 16,
-      "xpToNext": 1988
+      "xpToNext": 1491
     },
     {
       "currentLevel": 17,
-      "xpToNext": 2100
+      "xpToNext": 1575
     },
     {
       "currentLevel": 18,
-      "xpToNext": 2213
+      "xpToNext": 1660
     },
     {
       "currentLevel": 19,
-      "xpToNext": 2325
+      "xpToNext": 1744
     },
     {
       "currentLevel": 20,
-      "xpToNext": 2438
+      "xpToNext": 1829
     },
     {
       "currentLevel": 21,
-      "xpToNext": 2550
+      "xpToNext": 1913
     },
     {
       "currentLevel": 22,
-      "xpToNext": 2663
+      "xpToNext": 1997
     },
     {
       "currentLevel": 23,
-      "xpToNext": 2775
+      "xpToNext": 2081
     },
     {
       "currentLevel": 24,
-      "xpToNext": 2888
+      "xpToNext": 2166
     },
     {
       "currentLevel": 25,
-      "xpToNext": 3000
+      "xpToNext": 2250
     },
     {
       "currentLevel": 26,
-      "xpToNext": 3113
+      "xpToNext": 2335
     },
     {
       "currentLevel": 27,
-      "xpToNext": 3225
+      "xpToNext": 2419
     },
     {
       "currentLevel": 28,
-      "xpToNext": 3338
+      "xpToNext": 2504
     },
     {
       "currentLevel": 29,
-      "xpToNext": 3450
+      "xpToNext": 2588
     },
     {
       "currentLevel": 30,
-      "xpToNext": 3563
+      "xpToNext": 2672
     },
     {
       "currentLevel": 31,
-      "xpToNext": 3675
+      "xpToNext": 2756
     },
     {
       "currentLevel": 32,
-      "xpToNext": 3788
+      "xpToNext": 2841
     },
     {
       "currentLevel": 33,
-      "xpToNext": 3900
+      "xpToNext": 2925
     },
     {
       "currentLevel": 34,
-      "xpToNext": 4013
+      "xpToNext": 3010
     },
     {
       "currentLevel": 35,
-      "xpToNext": 4125
+      "xpToNext": 3094
     },
     {
       "currentLevel": 36,
-      "xpToNext": 4238
+      "xpToNext": 3179
     },
     {
       "currentLevel": 37,
-      "xpToNext": 4350
+      "xpToNext": 3263
     },
     {
       "currentLevel": 38,
-      "xpToNext": 4463
+      "xpToNext": 3347
     },
     {
       "currentLevel": 39,
-      "xpToNext": 4575
+      "xpToNext": 3431
     },
     {
       "currentLevel": 40,
-      "xpToNext": 4688
+      "xpToNext": 3516
     },
     {
       "currentLevel": 41,
-      "xpToNext": 4800
+      "xpToNext": 3600
     },
     {
       "currentLevel": 42,
-      "xpToNext": 4913
+      "xpToNext": 3685
     },
     {
       "currentLevel": 43,
-      "xpToNext": 5025
+      "xpToNext": 3769
     },
     {
       "currentLevel": 44,
-      "xpToNext": 5138
+      "xpToNext": 3854
     },
     {
       "currentLevel": 45,
-      "xpToNext": 5250
+      "xpToNext": 3938
     },
     {
       "currentLevel": 46,
-      "xpToNext": 5363
+      "xpToNext": 4022
     },
     {
       "currentLevel": 47,
-      "xpToNext": 5475
+      "xpToNext": 4106
     },
     {
       "currentLevel": 48,
-      "xpToNext": 5588
+      "xpToNext": 4191
     },
     {
       "currentLevel": 49,
-      "xpToNext": 5700
+      "xpToNext": 4275
     },
     {
       "currentLevel": 50,
-      "xpToNext": 5813
+      "xpToNext": 4360
     },
     {
       "currentLevel": 51,
-      "xpToNext": 5925
+      "xpToNext": 4444
     },
     {
       "currentLevel": 52,
-      "xpToNext": 6038
+      "xpToNext": 4529
     },
     {
       "currentLevel": 53,
-      "xpToNext": 6150
+      "xpToNext": 4613
     },
     {
       "currentLevel": 54,
-      "xpToNext": 6263
+      "xpToNext": 4697
     },
     {
       "currentLevel": 55,
-      "xpToNext": 6375
+      "xpToNext": 4781
     },
     {
       "currentLevel": 56,
-      "xpToNext": 6488
+      "xpToNext": 4866
     },
     {
       "currentLevel": 57,
-      "xpToNext": 6600
+      "xpToNext": 4950
     },
     {
       "currentLevel": 58,
-      "xpToNext": 6713
+      "xpToNext": 5035
     },
     {
       "currentLevel": 59,
-      "xpToNext": 6825
+      "xpToNext": 5119
     },
     {
       "currentLevel": 60,
-      "xpToNext": 6938
+      "xpToNext": 5204
     }
   ],
   "weapons": {
@@ -282,7 +282,7 @@ export const BALANCE = deepFreeze({
       "weaponType": "missile",
       "damage": 85,
       "fireIntervalSec": 0.5,
-      "readySlots": 8,
+      "readySlots": 16,
       "reloadSec": 30,
       "lockRangeM": 3000,
       "projectileSpeedMps": 450,
@@ -348,16 +348,36 @@ export const BALANCE = deepFreeze({
       "operationName": "OP: CANYON SCOUT",
       "title": "STAGE 01: CANYON SCOUT",
       "environmentTheme": "DESERT",
-      "maxActive": 30,
+      "maxActive": 45,
       "attackBudget": 4,
       "aircraftHealth": 60,
       "bossHealth": 2200,
       "bossName": "CANYON LEVIATHAN",
       "xpRewardMultiplier": 0.85,
       "waves": [
-        16,
-        24,
-        31
+        19,
+        29
+      ],
+      "eliteRatios": [
+        0,
+        0.1
+      ]
+    },
+    {
+      "stageId": 2,
+      "operationName": "OP: OCEAN TRIDENT",
+      "title": "STAGE 02: OCEAN TRIDENT",
+      "environmentTheme": "OCEAN",
+      "maxActive": 54,
+      "attackBudget": 5,
+      "aircraftHealth": 100,
+      "bossHealth": 3400,
+      "bossName": "OCEAN DREADNOUGHT",
+      "xpRewardMultiplier": 0.9,
+      "waves": [
+        35,
+        44,
+        53
       ],
       "eliteRatios": [
         0,
@@ -366,53 +386,27 @@ export const BALANCE = deepFreeze({
       ]
     },
     {
-      "stageId": 2,
-      "operationName": "OP: OCEAN TRIDENT",
-      "title": "STAGE 02: OCEAN TRIDENT",
-      "environmentTheme": "OCEAN",
-      "maxActive": 36,
-      "attackBudget": 5,
-      "aircraftHealth": 100,
-      "bossHealth": 3400,
-      "bossName": "OCEAN DREADNOUGHT",
-      "xpRewardMultiplier": 0.9,
-      "waves": [
-        29,
-        37,
-        44,
-        50
-      ],
-      "eliteRatios": [
-        0,
-        0.1,
-        0.15,
-        0.2
-      ]
-    },
-    {
       "stageId": 3,
       "operationName": "OP: METROPOLIS SHIELD",
       "title": "STAGE 03: METROPOLIS SHIELD",
       "environmentTheme": "CITY",
-      "maxActive": 42,
+      "maxActive": 63,
       "attackBudget": 6,
       "aircraftHealth": 120,
       "bossHealth": 4800,
       "bossName": "METROPOLIS OVERLORD",
       "xpRewardMultiplier": 1.4,
       "waves": [
-        40,
-        47,
-        54,
-        61,
-        67
+        48,
+        56,
+        65,
+        73
       ],
       "eliteRatios": [
         0,
         0.1,
         0.15,
-        0.2,
-        0.25
+        0.2
       ]
     }
   ],

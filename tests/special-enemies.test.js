@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FISH_SCHOOL, schoolOffset, RADIAL_DIRECTIONS, BOMBER, stepBomberWeapons } from '../src/enemies/special-types.js';
+import { FISH_SCHOOL, schoolOffset, RADIAL_DIRECTIONS, BOMBER, stepBomberWeapons, stepBomberCannons } from '../src/enemies/special-types.js';
 import { advanceHomingMissile } from '../src/combat/homing.js';
 import { formationKind } from '../src/enemies/formation.js';
 test('four fish occupy distinct slots and retain relative formation after leader loss', () => {
@@ -48,3 +48,31 @@ test('reinforcement formations can exclude fixed ground and naval targets', () =
     assert.equal(formationKind(10, false, 0, true), 'tank');
     assert.equal(formationKind(10, true, 0, true), 'ship');
 });
+
+test('bomber fires alternating left and right wing cannons when player is in engagement arc and range', () => {
+    const enemy = { cannonCooldown: 0, burstCooldown: 0 };
+    const shots = [];
+    // Initiate and step through the 6-round burst
+    for (let i = 0; i < 20; i++) {
+        const shot = stepBomberCannons(enemy, 0.12, 1200, 0.95, true, () => 0);
+        if (shot?.fire) shots.push(shot.side);
+    }
+    assert.equal(shots.length, 6);
+    assert.deepEqual(shots, ['left', 'right', 'left', 'right', 'left', 'right']);
+    assert.ok(enemy.cannonCooldown > 0);
+    // While on cooldown, no shots fired
+    assert.equal(stepBomberCannons(enemy, 0.1, 1200, 0.95, true), null);
+});
+
+test('bomber suppresses cannon when out of range, out of arc, disallowed, or during missile warning', () => {
+    // Out of range (too far: 3000, too close: 100)
+    assert.equal(stepBomberCannons({ cannonCooldown: 0 }, 0.1, 3000, 0.9, true), null);
+    assert.equal(stepBomberCannons({ cannonCooldown: 0 }, 0.1, 100, 0.9, true), null);
+    // Out of forward arc (behind: alignment -0.5, side: 0.1)
+    assert.equal(stepBomberCannons({ cannonCooldown: 0 }, 0.1, 1200, 0.1, true), null);
+    // Disallowed
+    assert.equal(stepBomberCannons({ cannonCooldown: 0 }, 0.1, 1200, 0.9, false), null);
+    // Suppressed during missile warning
+    assert.equal(stepBomberCannons({ cannonCooldown: 0, salvoWarning: 0.5 }, 0.1, 1200, 0.9, true), null);
+});
+

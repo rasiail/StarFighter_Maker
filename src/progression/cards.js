@@ -11,6 +11,7 @@ const runtimeCards = [...BALANCE.cards.map(toRuntimeCard),
     extra('beamWidth', '빔 집속 확장', '홀드 빔 굵기를 단계마다 0.7m 늘립니다(0.9→3m). 단발 빔 굵기는 30%씩 증가합니다.', null, 3),
     extra('beamEfficiency', '빔 소모 효율', '단발·지속 발사 에너지 소모를 15%씩 줄입니다.', null, 3),
     extra('beamRecharge', '빔 신속 재장전', '빔 재장전 시간을 15%씩 줄입니다. 과부하 시간은 유지됩니다.', null, 3),
+    extra('beamLiveRecharge', '빔 실시간 충전', '빔 에너지를 초당 1 회복합니다. 잔량 0에서는 충전을 멈추고 과부하 후 재장전합니다.', null, 1),
     extra('unlockBomb', '범위 폭탄 획득', '착탄 시 직격 피해와 함께 대규모 범위 폭발을 일으키는 중폭탄을 장착합니다.', 4),
     extra('bombRadius', '폭발 반경 확장', '폭탄의 폭발 피해 반경을 단계마다 15% 넓힙니다.', null, 3),
     extra('bombDamage', '고폭 탄두 강화', '폭탄의 직격 피해와 폭발 범위 피해를 단계마다 15% 증가시킵니다.', null, 3),
@@ -18,7 +19,7 @@ const runtimeCards = [...BALANCE.cards.map(toRuntimeCard),
 ];
 const weaponRequirements = {
     multiRack: 2, multiSalvo: 2,
-    beamWidth: 3, beamEfficiency: 3, beamRecharge: 3,
+    beamWidth: 3, beamEfficiency: 3, beamRecharge: 3, beamLiveRecharge: 3,
     bombRadius: 4, bombDamage: 4, bombRack: 4,
 };
 export const CARDS = Object.freeze(runtimeCards.filter(card => card.id !== 'repair'));

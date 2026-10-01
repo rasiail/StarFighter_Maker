@@ -21,3 +21,34 @@ export function stepBomberWeapons(enemy, delta, distance, allowed, inFlight, coo
     enemy.missileCooldown = BOMBER.reload;
     return true;
 }
+
+// Alternating wing cannons for the heavy bomber (B-52)
+export function stepBomberCannons(enemy, delta, distance, alignment, allowed, random = Math.random) {
+    enemy.cannonCooldown = Math.max(0, (enemy.cannonCooldown ?? 1.5) - delta);
+    enemy.burstCooldown = Math.max(0, (enemy.burstCooldown ?? 0) - delta);
+
+    const inRange = distance > 250 && distance < 2500;
+    const inArc = alignment > 0.35;
+    const canEngage = allowed && inRange && inArc && !enemy.salvoWarning;
+
+    if (!canEngage && !enemy.cannonBurst) {
+        return null;
+    }
+
+    if (canEngage && enemy.cannonCooldown <= 0 && (!enemy.cannonBurst || enemy.cannonBurst <= 0)) {
+        enemy.cannonBurst = 6;
+        enemy.cannonCooldown = 2.5 + random() * 0.8;
+        enemy.burstCooldown = 0;
+        enemy.cannonSide = random() < 0.5 ? 'left' : 'right';
+    }
+
+    if (enemy.cannonBurst > 0 && enemy.burstCooldown <= 0) {
+        const side = enemy.cannonSide || 'left';
+        enemy.cannonSide = side === 'left' ? 'right' : 'left';
+        enemy.cannonBurst--;
+        enemy.burstCooldown = 0.12;
+        return { fire: true, side };
+    }
+
+    return null;
+}

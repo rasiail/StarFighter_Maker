@@ -58,6 +58,8 @@ export const english = {
     "빔 집속 확장": "Wider beam",
     "빔 소모 효율": "Beam efficiency",
     "빔 신속 재장전": "Rapid beam reload",
+    "빔 실시간 충전": "Live beam recharge",
+    "빔 에너지를 초당 1 회복합니다. 잔량 0에서는 충전을 멈추고 과부하 후 재장전합니다.": "Recover 1 beam energy per second. At zero energy, recharge stops until overload and reload finish.",
     "전방의 여러 표적을 동시에 공격하는 멀티 미사일을 장착합니다.": "Equip multi-missiles to attack several targets ahead simultaneously.",
     "단발·홀드 시작 시 에너지 소모. 고갈 시 과부하 2초 후 재장전하여 전량 보충합니다.": "Shots and sustained fire consume energy. When depleted, a 2-second overload is followed by a full reload.",
     "홀드 빔 굵기를 단계마다 0.7m 늘립니다(0.9→3m). 단발 빔 굵기는 30%씩 증가합니다.": "Increase sustained beam width by 0.7 m per rank (0.9 to 3 m), and single-shot width by 30%.",

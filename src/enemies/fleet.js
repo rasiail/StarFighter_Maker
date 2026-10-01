@@ -10,6 +10,7 @@ import { createEliteMesh } from '../assets/aircraft.js';
 import { playerMesh } from '../player/player.js';
 import { BALANCE } from '../data/generated/balance.js';
 import { formationKind, isEliteSpawn } from './formation.js';
+import { ENEMY_SIZE_MULTIPLIER } from './size.js';
 
 const enemyData = BALANCE.enemies;
 const spawnRules = Object.fromEntries(Object.entries(BALANCE.spawnRules).map(([key, rule]) => [key, rule.value]));
@@ -19,6 +20,7 @@ export let activeSinkingShips;
 
 function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
     const shipMesh = createBattleshipMesh();
+    shipMesh.scale.multiplyScalar(ENEMY_SIZE_MULTIPLIER);
     shipMesh.position.set(pos.x, 0, pos.z);
     shipMesh.rotation.y = headingAngle;
     scene.add(shipMesh);
@@ -28,7 +30,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
 
     // 1. 전함 본체 타깃 (HULL)
     const hullTargetMesh = new THREE.Group();
-    hullTargetMesh.position.set(pos.x, 12, pos.z);
+    hullTargetMesh.position.set(pos.x, 12 * ENEMY_SIZE_MULTIPLIER, pos.z);
     scene.add(hullTargetMesh);
 
     const hullEnemy = {
@@ -47,11 +49,11 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         sinkSpeed: 0,
         turretEnemies: [],
         callsign: `${callsign} [HULL]`,
-        hitRadius: enemyData.ship_hull.hitRadiusM
+        hitRadius: enemyData.ship_hull.hitRadiusM * ENEMY_SIZE_MULTIPLIER
     };
 
     // 2. 전방 함포 타깃 (GUN-A)
-    const fwdPos = pos.clone().add(shipFwd.clone().multiplyScalar(50)).add(new THREE.Vector3(0, 15, 0));
+    const fwdPos = pos.clone().add(shipFwd.clone().multiplyScalar(50 * ENEMY_SIZE_MULTIPLIER)).add(new THREE.Vector3(0, 15 * ENEMY_SIZE_MULTIPLIER, 0));
     const fwdTargetMesh = new THREE.Group();
     fwdTargetMesh.position.copy(fwdPos);
     scene.add(fwdTargetMesh);
@@ -72,11 +74,11 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         alive: true,
         fireCooldown: 1.5 + Math.random() * 2.0,
         callsign: `${callsign} [GUN-A]`,
-        hitRadius: enemyData.ship_turret.hitRadiusM
+        hitRadius: enemyData.ship_turret.hitRadiusM * ENEMY_SIZE_MULTIPLIER
     };
 
     // 3. 후방 함포 타깃 (GUN-B)
-    const aftPos = pos.clone().add(shipFwd.clone().multiplyScalar(-50)).add(new THREE.Vector3(0, 15, 0));
+    const aftPos = pos.clone().add(shipFwd.clone().multiplyScalar(-50 * ENEMY_SIZE_MULTIPLIER)).add(new THREE.Vector3(0, 15 * ENEMY_SIZE_MULTIPLIER, 0));
     const aftTargetMesh = new THREE.Group();
     aftTargetMesh.position.copy(aftPos);
     scene.add(aftTargetMesh);
@@ -97,7 +99,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
         alive: true,
         fireCooldown: 2.2 + Math.random() * 2.0,
         callsign: `${callsign} [GUN-B]`,
-        hitRadius: enemyData.ship_turret.hitRadiusM
+        hitRadius: enemyData.ship_turret.hitRadiusM * ENEMY_SIZE_MULTIPLIER
     };
 
     hullEnemy.turretEnemies = [fwdGunEnemy, aftGunEnemy];
@@ -107,6 +109,7 @@ function spawnBattleship(pos, headingAngle = 0, callsign = 'BATTLESHIP') {
 }
 function spawnGroundTank(pos, callsign) {
     const tankMesh = createTankMesh();
+    tankMesh.scale.multiplyScalar(ENEMY_SIZE_MULTIPLIER);
     const groundY = getSurfaceHeight(pos.x, pos.z);
     tankMesh.position.set(pos.x, groundY + 1.5, pos.z);
     scene.add(tankMesh);
@@ -125,7 +128,7 @@ function spawnGroundTank(pos, callsign) {
         alive: true,
         callsign: callsign || `TANK-0${enemies.filter(e => e.isGround && !e.isShip).length + 1} [GND]`,
         turret: tankMesh.turret,
-        hitRadius: enemyData.tank.hitRadiusM
+        hitRadius: enemyData.tank.hitRadiusM * ENEMY_SIZE_MULTIPLIER
     };
     enemies.push(enemy);
     return enemy;
@@ -140,8 +143,8 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, fish
 
     const enemyMesh = bomber ? createBomberMesh() : elite ? createEliteMesh() : createDroneMesh(boss || fish);
     enemyMesh.userData.isBoss = boss;
-    // 적기 크기: 원거리 및 도그파이트 시인성을 위해 2.5배로 크게 확대 설정
-    enemyMesh.scale.setScalar(boss ? 9 : fish ? FISH_SCHOOL.scale : bomber ? BOMBER.scale : 2.5);
+    // 모든 적기 유형에 기존 크기 대비 40% 확대를 적용합니다.
+    enemyMesh.scale.setScalar((boss ? 9 : fish ? FISH_SCHOOL.scale : bomber ? BOMBER.scale : 2.5) * ENEMY_SIZE_MULTIPLIER);
     enemyMesh.position.copy(pos);
     scene.add(enemyMesh);
 
@@ -153,7 +156,7 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, fish
         isElite: elite,
         isFishSchool: fish,
         isBomber: bomber,
-        hitRadius: bomber ? 28 : fish ? enemyData.boss.hitRadiusM * 0.5 : boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM,
+        hitRadius: (bomber ? 28 : fish ? enemyData.boss.hitRadiusM * 0.5 : boss ? enemyData.boss.hitRadiusM : elite ? enemyData.elite.hitRadiusM : enemyData.stage_aircraft.hitRadiusM) * ENEMY_SIZE_MULTIPLIER,
         speed: bomber ? BOMBER.speed : fish ? 280 : boss ? 240 : 340,
         velocity: new THREE.Vector3(0, 0, -1),
         altitudeOffset: boss ? 0 : altitudeOffset,
@@ -168,7 +171,7 @@ export function spawnEnemy(pos, { health = 60, boss = false, elite = false, fish
         isGround: false,
         isShip: false,
         type: 'AIR',
-        callsign: `${bomber ? 'BOMBER' : fish ? 'FISH' : elite ? 'ELITE' : 'BANDIT'}-0${enemies.filter(e => !e.isGround).length + 1}`
+        callsign: `${bomber ? 'B-52' : fish ? 'FISH' : elite ? 'ELITE' : 'BANDIT'}-0${enemies.filter(e => !e.isGround).length + 1}`
     };
     enemies.push(enemy);
     return enemy;

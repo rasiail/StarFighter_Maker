@@ -28,8 +28,12 @@ export const MECHA_FISH_ASSET = 'Enemy/MechaFish/Mecha_Fish/Mecha_Fish';
 export let mechaFishModelTemplate;
 export let isMechaFishReady = false;
 export let mechaFishPbrMat;
+export let b52ModelTemplate;
+export let isB52Ready = false;
+export let b52PbrMat;
 let enemyAssetsRequested = false;
 const pendingBossModels = new Set();
+export const pendingBomberModels = new Set();
 export let isFBXReady;
 
 function base64ToArrayBuffer(base64) {
@@ -267,6 +271,15 @@ function loadEnemyAssets() {
         console.warn('MechaFish FBX load failed; retaining fallback:', err);
         pendingBossModels.clear();
     });
+    loader.load('Enemy/B52/B52.fbx', fbx => {
+        b52ModelTemplate = processFBXTemplate(fbx);
+        isB52Ready = true;
+        for (const group of pendingBomberModels) populateB52(group);
+        pendingBomberModels.clear();
+    }, undefined, err => {
+        console.warn('B52 FBX load failed; retaining fallback:', err);
+        pendingBomberModels.clear();
+    });
 }
 
 export function loadFBXAsset() {
@@ -317,7 +330,10 @@ export function initAircraft() {
     textureLoader = new THREE.TextureLoader();
     enemyAssetsRequested = false;
     mechaFishModelTemplate = null;
+    b52ModelTemplate = null;
+    isB52Ready = false;
     pendingBossModels.clear();
+    pendingBomberModels.clear();
     const bossBase = textureLoader.load(MECHA_FISH_ASSET + '_texture.png');
     bossBase.encoding = THREE.sRGBEncoding;
     mechaFishPbrMat = new THREE.MeshStandardMaterial({
@@ -392,6 +408,18 @@ export function initAircraft() {
         roughnessMap: textureLoader.load('Enemy/MigFish/MigFish_texture_roughness.png'),
         metalnessMap: textureLoader.load('Enemy/MigFish/MigFish_texture_metallic.png'),
         normalMap: textureLoader.load('Enemy/MigFish/MigFish_texture_normal.png'),
+        normalScale: new THREE.Vector2(2.5, 2.5),
+        roughness: 0.70,
+        metalness: 0.15
+    });
+
+    const b52BaseTex = textureLoader.load('Enemy/B52/B52_texture.png');
+    b52BaseTex.encoding = THREE.sRGBEncoding;
+    b52PbrMat = new THREE.MeshStandardMaterial({
+        map: b52BaseTex,
+        roughnessMap: textureLoader.load('Enemy/B52/B52_texture_roughness.png'),
+        metalnessMap: textureLoader.load('Enemy/B52/B52_texture_metallic.png'),
+        normalMap: textureLoader.load('Enemy/B52/B52_texture_normal.png'),
         normalScale: new THREE.Vector2(2.5, 2.5),
         roughness: 0.70,
         metalness: 0.15
@@ -551,3 +579,26 @@ export function createMechaFishMesh() {
     }
     return group;
 }
+
+export function populateB52(group) {
+    while (group.children.length) group.remove(group.children[0]);
+    const model = b52ModelTemplate.clone(true);
+    model.traverse(child => {
+        if (!child.isMesh) return;
+        child.material = b52PbrMat;
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (child.geometry && !child.geometry.attributes.normal) child.geometry.computeVertexNormals();
+    });
+    group.add(model);
+    group.baseGlows = [];
+    group.baseGlow = undefined;
+    group.userData.model = 'B52';
+
+    // Salvo 경고등 유지 (미사일 발사 시각 효과)
+    const warning = new THREE.Mesh(new THREE.SphereGeometry(0.7, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0xff3311 }));
+    warning.position.set(0, 1.8, 0); warning.visible = false;
+    group.add(warning); group.userData.salvoLight = warning;
+}
+

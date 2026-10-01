@@ -1,4 +1,4 @@
-import { schoolOffset, RADIAL_DIRECTIONS, stepBomberWeapons } from './special-types.js';
+import { schoolOffset, RADIAL_DIRECTIONS, stepBomberWeapons, stepBomberCannons } from './special-types.js';
 // enemies/ai: imports are side-effect free; main.js controls initialization.
 import { gameState } from '../core/state.js';
 import { enemies } from './fleet.js';
@@ -154,6 +154,21 @@ export function updateEnemies(delta) {
                 hostileMissiles += RADIAL_DIRECTIONS.length;
                 missileLaunchCooldown = ATTACK_POLICY.missileSpacing;
             }
+
+            // 좌우 기총 공격 패턴: B-52 양 날개 포문에서 번갈아가며 조준 사격
+            const cannonShot = stepBomberCannons(enemy, delta, range, alignment,
+                attackers.has(enemy) && !gameState.isPlayerDead && enemy.state !== 'RECOVER',
+                Math.random);
+            if (cannonShot?.fire) {
+                enemy.mesh.updateMatrixWorld(true);
+                const sideSign = cannonShot.side === 'left' ? -1 : 1;
+                const wingOffset = new THREE.Vector3(sideSign * 3.5, 0, -1.0);
+                const spawnWorldPos = wingOffset.clone().applyMatrix4(enemy.mesh.matrixWorld);
+                const toPlayer = playerMesh.position.clone().sub(spawnWorldPos);
+                const spread = new THREE.Vector3((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 15);
+                const fireDir = toPlayer.add(spread).normalize();
+                fireCannon(false, enemy.mesh, { offset: wingOffset, direction: fireDir });
+            }
         } else {
             const shots = stepAirWeapons(enemy, delta, range, alignment, attackers.has(enemy) && !gameState.isPlayerDead,
                 Math.random, canLaunchMissile(missileLaunchCooldown, hostileMissiles));
@@ -167,6 +182,7 @@ export function updateEnemies(delta) {
         }
 
         // 적기 엔진 불꽃 업데이트 (로우폴리 파티클)
+        if (enemy.isBomber) return;
         const glows = enemy.mesh.baseGlows || (enemy.mesh.baseGlow ? [enemy.mesh.baseGlow] : []);
         glows.forEach(glow => {
             glow.scale.set(1 + Math.random() * 0.15, 1 + Math.random() * 0.15, 1);

@@ -1,3 +1,4 @@
+import { BEAM_CAPACITY } from '../combat/beam-energy.js';
 import { PLAYER_BASE_STATS } from '../config/player-stats.js';
 
 // Vector3는 호출자가 전달하여 상태 생성과 테스트가 Three.js/DOM에 의존하지 않게 합니다.
@@ -18,7 +19,7 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
         isAirbrake: false,
         health: effectiveStats.maxHealth,
         score: 0,
-        beamEnergy: 100,
+        beamEnergy: BEAM_CAPACITY,
         beamCooldown: 0,
         beamOverload: 0,
         beamReloadRemaining: 0,
@@ -40,7 +41,7 @@ export function createPlayerFlight(velocity, stats = PLAYER_BASE_STATS) {
 
 // 기존 출격 시 보충 정책을 유지합니다. 점수와 기체 유효 스탯은 출격 간 유지됩니다.
 export function replenishPlayerForSortie(flight) {
-    flight.beamEnergy = 100;
+    flight.beamEnergy = BEAM_CAPACITY;
     flight.beamCooldown = flight.beamOverload = flight.beamReloadRemaining = 0;
     flight.speed = flight.cruiseSpeed;
     flight.throttlePercent = 50;
